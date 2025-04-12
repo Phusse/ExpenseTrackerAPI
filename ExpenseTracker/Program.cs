@@ -1,4 +1,4 @@
-using ExpensesTracker.Data;
+using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
