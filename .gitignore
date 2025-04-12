@@ -1,6 +1,6 @@
 ## Build artifacts
-*/bin/
-*/obj/
+**/bin/
+**/obj/
 out/
 Generated_Code/
 
