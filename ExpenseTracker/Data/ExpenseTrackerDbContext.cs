@@ -1,15 +1,9 @@
-using ExpenseTracker.ExpensesTracker.Models;
+using ExpensesTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExpenseTracker.ExpensesTracker.Data
-{
-    public class ExpenseTrackerDbContext : DbContext
-    {
-        public ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> options)
-            : base(options)
-        {
-        }
+namespace ExpensesTracker.Data;
 
-        public DbSet<Expense> Expenses { get; set; }
-    }
+public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> options) : DbContext(options)
+{
+    public DbSet<Expense> Expenses { get; set; }
 }
