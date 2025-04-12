@@ -2738,19 +2738,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\TopBoy\\.nuget\\packages\\": {}
+    "C:\\Users\\awugo\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\TopBoy\\Documents\\project\\ExpenseTrackerAPI\\ExpenseTracker\\ExpenseTracker.csproj",
+      "projectUniqueName": "C:\\Users\\awugo\\Documents\\API\\expense-tracker-api\\ExpenseTracker\\ExpenseTracker.csproj",
       "projectName": "ExpenseTracker",
-      "projectPath": "C:\\Users\\TopBoy\\Documents\\project\\ExpenseTrackerAPI\\ExpenseTracker\\ExpenseTracker.csproj",
-      "packagesPath": "C:\\Users\\TopBoy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\TopBoy\\Documents\\project\\ExpenseTrackerAPI\\ExpenseTracker\\obj\\",
+      "projectPath": "C:\\Users\\awugo\\Documents\\API\\expense-tracker-api\\ExpenseTracker\\ExpenseTracker.csproj",
+      "packagesPath": "C:\\Users\\awugo\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\awugo\\Documents\\API\\expense-tracker-api\\ExpenseTracker\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\TopBoy\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\awugo\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -2773,7 +2773,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -2813,6 +2814,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.14, 8.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.14, 8.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.14, 8.0.14]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.14, 8.0.14]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -2821,7 +2840,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.405/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
