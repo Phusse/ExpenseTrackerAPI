@@ -1,3 +1,4 @@
+using Scalar.AspNetCore;
 using ExpenseTracker.Data;
 using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,20 +12,26 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
 
 
 // Register application services
+builder.Services.AddOpenApi();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Expense Tracker API";
+        options.DefaultHttpClient = new(ScalarTarget.CSharp, ScalarClient.HttpClient);
+        options.Theme = ScalarTheme.DeepSpace;
+        options.ShowSidebar = true;
+    });
 }
 
 app.UseHttpsRedirection();
