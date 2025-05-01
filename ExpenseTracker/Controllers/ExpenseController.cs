@@ -1,36 +1,32 @@
-using ExpenseTracker.Data;
 using ExpenseTracker.Models;
+using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Controllers;
 
 [ApiController, Route("api/[controller]")]
-public class ExpenseController(ExpenseTrackerDbContext dbContext) : ControllerBase
+public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
-    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
+    private readonly IExpenseService _expenseService = expenseService;
 
     // POST: api/Expense
     [HttpPost]
-    public async Task<ActionResult<Expense>> CreateExpense([FromBody] Expense newExpense)
+    public async Task<ActionResult<Expense>> CreateExpenseAsync([FromBody] Expense expenseToCreate)
     {
-        if (newExpense is null)
+        if (expenseToCreate is null)
         {
             return BadRequest("Expense data is required.");
         }
 
-        newExpense.Id = Guid.NewGuid();
-        await _dbContext.Expenses.AddAsync(newExpense);
-        await _dbContext.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetExpenseById), new { id = newExpense.Id }, newExpense);
+        Expense createdExpense = await _expenseService.CreateExpenseAsync(expenseToCreate);
+        return Ok(createdExpense);
     }
 
     // GET: api/Expense/{id}
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Expense>> GetExpenseById(Guid id)
+    public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
     {
-        Expense? expense = await _dbContext.Expenses.FindAsync(id);
+        Expense? expense = await _expenseService.GetExpenseByIdAsync(id);
 
         if (expense is null)
         {
@@ -42,52 +38,55 @@ public class ExpenseController(ExpenseTrackerDbContext dbContext) : ControllerBa
 
     // GET: api/Expense/all
     [HttpGet("all")]
-    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpenses()
+    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
     {
-        List<Expense> expenses = await _dbContext.Expenses.ToListAsync();
+        IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync();
         return Ok(expenses);
     }
 
     // PUT: api/Expense/{id}
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult> UpdateExpense(Guid id, [FromBody] Expense updatedExpense)
+    public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
     {
-        if (updatedExpense == null || id != updatedExpense.Id)
+        if (expenseToUpdate is null || id != expenseToUpdate.Id)
         {
             return BadRequest("Expense data is invalid or Id mismatch.");
         }
 
-        Expense? existingExpense = await _dbContext.Expenses.FindAsync(id);
+        bool updateSuccessful = await _expenseService.UpdateExpenseAsync(id, expenseToUpdate);
 
-        if (existingExpense is null)
+        if (!updateSuccessful)
         {
             return NotFound($"Expense with Id {id} not found.");
         }
-
-        existingExpense.Category = updatedExpense.Category;
-        existingExpense.Amount = updatedExpense.Amount;
-        existingExpense.Date = updatedExpense.Date;
-        existingExpense.Description = updatedExpense.Description;
-
-        _dbContext.Expenses.Update(existingExpense);
-        await _dbContext.SaveChangesAsync();
 
         return NoContent();
     }
 
     // DELETE: api/Expense/{id}
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> DeleteExpense(Guid id)
+    public async Task<ActionResult> DeleteExpenseAsync(Guid id)
     {
-        Expense? expenseToDelete = await _dbContext.Expenses.FindAsync(id);
+        bool deleteSuccessful = await _expenseService.DeleteExpenseAsync(id);
 
-        if (expenseToDelete is null)
+        if (!deleteSuccessful)
         {
             return NotFound($"Expense with Id {id} not found.");
         }
 
-        _dbContext.Expenses.Remove(expenseToDelete);
-        await _dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // DELETE: api/Expense/all
+    [HttpDelete("all")]
+    public async Task<ActionResult> DeleteAllExpensesAsync()
+    {
+        bool deleteSuccessful = await _expenseService.DeleteAllExpensesAsync();
+
+        if (!deleteSuccessful)
+        {
+            return NotFound($"Failed to delete all expenses.");
+        }
 
         return NoContent();
     }
