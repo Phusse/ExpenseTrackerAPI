@@ -4,22 +4,34 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTracker.Controllers;
 
-[ApiController, Route("api/[controller]")]
+[ApiController]
+[Route("api/v1/[controller]")]
 public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;
 
     // POST: api/Expense
     [HttpPost]
-    public async Task<ActionResult<Expense>> CreateExpenseAsync([FromBody] Expense expenseToCreate)
+    public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
     {
-        if (expenseToCreate is null)
-        {
-            return BadRequest("Expense data is required.");
-        }
+        var result = await _expenseService.CreateExpenseAsync(expense);
 
-        Expense createdExpense = await _expenseService.CreateExpenseAsync(expenseToCreate);
-        return Ok(createdExpense);
+    if (!result.IsSuccess)
+    {
+        return StatusCode(500, new ApiResponse<Expense>
+        {
+            Success = false,
+            Message = result.ErrorMessage ?? "An error occurred",
+            Data = null
+        });
+    }
+
+    return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
+    {
+        Success = true,
+        Message = "Expense recorded",
+        Data = result.Data
+    });
     }
 
     // GET: api/Expense/{id}
@@ -37,7 +49,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     // GET: api/Expense/all
-    [HttpGet("all")]
+    [HttpGet("getall")]
     public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
     {
         IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync();

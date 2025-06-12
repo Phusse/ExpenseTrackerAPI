@@ -8,12 +8,20 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;
 
-    public async Task<Expense> CreateExpenseAsync(Expense expenseToCreate)
+    public async Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate)
     {
-        expenseToCreate.Id = Guid.NewGuid();
-        await _dbContext.Expenses.AddAsync(expenseToCreate);
-        await _dbContext.SaveChangesAsync();
-        return expenseToCreate;
+        try
+        {
+            expenseToCreate.Id = Guid.NewGuid();
+            await _dbContext.Expenses.AddAsync(expenseToCreate);
+            await _dbContext.SaveChangesAsync();
+
+            return (true, expenseToCreate, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, null, ex.Message);
+        }
     }
 
     public async Task<Expense?> GetExpenseByIdAsync(Guid id)
