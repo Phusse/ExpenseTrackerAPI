@@ -14,6 +14,7 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
 
 // Register application services
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IMetaService, MetaService>();
 
 // Add services to the container
 builder.Services.AddControllers();
