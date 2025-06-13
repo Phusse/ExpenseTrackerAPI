@@ -1,7 +1,7 @@
 using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Models;
 
-namespace ExpenseTracker.Services;
+namespace ExpenseTracker.Contracts.Services;
 
 public interface IExpenseService
 {

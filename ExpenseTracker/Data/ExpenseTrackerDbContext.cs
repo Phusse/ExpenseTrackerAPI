@@ -22,5 +22,4 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
             b.ToTable("Expenses");
         });
     }
-
 }

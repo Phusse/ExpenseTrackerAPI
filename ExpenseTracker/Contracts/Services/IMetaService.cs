@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Services;
+namespace ExpenseTracker.Contracts.Services;
 
 public interface IMetaService
 {

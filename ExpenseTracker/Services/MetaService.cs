@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using ExpenseTracker.Contracts.Services;
 using ExpenseTracker.Core.Enums;
 
 namespace ExpenseTracker.Services;
