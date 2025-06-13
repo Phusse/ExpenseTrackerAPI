@@ -1,5 +1,6 @@
 using System;
 using ExpenseTracker.Models;
+using ExpenseTracker.Models.Responses;
 using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -99,7 +100,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
             });
         }
     }
-    
+
     // PUT: api/Expense/{id}
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)

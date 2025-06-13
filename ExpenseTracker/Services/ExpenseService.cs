@@ -85,7 +85,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
     {
         Expense? existingExpense = await _dbContext.Expenses.FindAsync(id);
 
-        if (existingExpense == null) return false;
+        if (existingExpense is null) return false;
 
         existingExpense.Category = expenseToUpdate.Category;
         existingExpense.Amount = expenseToUpdate.Amount;
@@ -102,7 +102,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
     {
         Expense? expenseToDelete = await _dbContext.Expenses.FindAsync(id);
 
-        if (expenseToDelete == null) return false;
+        if (expenseToDelete is null) return false;
 
         _dbContext.Expenses.Remove(expenseToDelete);
         await _dbContext.SaveChangesAsync();
