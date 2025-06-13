@@ -1,4 +1,5 @@
 using System;
+using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.Responses;
 using ExpenseTracker.Services;
@@ -65,7 +66,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         [FromQuery] decimal? minAmount,
         [FromQuery] decimal? maxAmount,
         [FromQuery] decimal? exactAmount,
-        [FromQuery] int? category)
+        [FromQuery] ExpenseCategory? category)
     {
         try
         {

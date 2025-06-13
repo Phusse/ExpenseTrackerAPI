@@ -1,3 +1,4 @@
+using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Models;
 
 namespace ExpenseTracker.Services;
@@ -13,7 +14,7 @@ public interface IExpenseService
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        int? category = null
+        ExpenseCategory? category = null
     );
 
     Task<IEnumerable<Expense>> GetAllExpensesAsync();

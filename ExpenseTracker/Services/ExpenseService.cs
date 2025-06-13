@@ -44,7 +44,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        int? category = null
+        ExpenseCategory? category = null
     )
     {
         IQueryable<Expense> query = _dbContext.Expenses.AsQueryable();
@@ -78,7 +78,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
 
         if (category.HasValue)
         {
-            query = query.Where(e => e.Category == (ExpenseCategory)category);
+            query = query.Where(e => e.Category == category.Value);
         }
 
         return await query.ToListAsync();
