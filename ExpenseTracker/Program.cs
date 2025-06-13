@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ExpenseTracker.Data;
 using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,12 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }
+);
 
 WebApplication app = builder.Build();
 

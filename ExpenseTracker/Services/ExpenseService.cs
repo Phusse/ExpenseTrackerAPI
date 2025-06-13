@@ -1,3 +1,4 @@
+using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
@@ -36,13 +37,15 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
         List<Expense> expenses = await _dbContext.Expenses.ToListAsync();
         return expenses;
     }
+
     public async Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        string? category = null)
+        int? category = null
+    )
     {
         IQueryable<Expense> query = _dbContext.Expenses.AsQueryable();
 
@@ -73,11 +76,10 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
             }
         }
 
-        // TODO: the category was changed from string to int(enum) so chnage the code before pushing so query can work properly.
-        // if (!string.IsNullOrWhiteSpace(category))
-        // {
-        //     query = query.Where(e => e.Category == category);
-        // }
+        if (category.HasValue)
+        {
+            query = query.Where(e => e.Category == (ExpenseCategory)category);
+        }
 
         return await query.ToListAsync();
     }

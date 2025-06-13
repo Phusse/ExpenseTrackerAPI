@@ -65,7 +65,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         [FromQuery] decimal? minAmount,
         [FromQuery] decimal? maxAmount,
         [FromQuery] decimal? exactAmount,
-        [FromQuery] string? category)
+        [FromQuery] int? category)
     {
         try
         {
