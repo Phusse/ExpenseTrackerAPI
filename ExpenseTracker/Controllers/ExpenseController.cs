@@ -1,19 +1,19 @@
-using System;
+using ExpenseTracker.Contracts;
+using ExpenseTracker.Contracts.Services;
 using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.Responses;
-using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTracker.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/" + ApiRoute.Expenses.Base)]
 public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;
 
-    // POST: api/Expense
     [HttpPost]
     public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
     {
@@ -37,8 +37,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         });
     }
 
-    // GET: api/Expense/{id}
-    [HttpGet("{id:guid}")]
+    [HttpGet(ApiRoute.Expenses.GetById)]
     public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
     {
         Expense? expense = await _expenseService.GetExpenseByIdAsync(id);
@@ -51,26 +50,18 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         return Ok(expense);
     }
 
-    // GET: api/Expense/all
-    [HttpGet("getall")]
-    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
-    {
-        IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync();
-        return Ok(expenses);
-    }
-
-    [HttpGet("filter")]
+    [HttpGet(ApiRoute.Expenses.Filter)]
     public async Task<IActionResult> GetFilteredExpenses(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] decimal? minAmount,
-        [FromQuery] decimal? maxAmount,
-        [FromQuery] decimal? exactAmount,
-        [FromQuery] ExpenseCategory? category)
+    [FromQuery] DateTime? startDate,
+    [FromQuery] DateTime? endDate,
+    [FromQuery] decimal? minAmount,
+    [FromQuery] decimal? maxAmount,
+    [FromQuery] decimal? exactAmount,
+    [FromQuery] ExpenseCategory? category)
     {
         try
         {
-           var expenses = await _expenseService.GetFilteredExpensesAsync(startDate, endDate, minAmount, maxAmount, exactAmount, category);
+            var expenses = await _expenseService.GetFilteredExpensesAsync(startDate, endDate, minAmount, maxAmount, exactAmount, category);
 
             if (!expenses.Any())
             {
@@ -102,8 +93,14 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
-    // PUT: api/Expense/{id}
-    [HttpPut("{id:guid}")]
+    [HttpGet(ApiRoute.Expenses.GetAll)]
+    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
+    {
+        IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync();
+        return Ok(expenses);
+    }
+
+    [HttpPut(ApiRoute.Expenses.Update)]
     public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
     {
         if (expenseToUpdate is null || id != expenseToUpdate.Id)
@@ -121,8 +118,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Expense/{id}
-    [HttpDelete("{id:guid}")]
+    [HttpDelete(ApiRoute.Expenses.Delete)]
     public async Task<ActionResult> DeleteExpenseAsync(Guid id)
     {
         bool deleteSuccessful = await _expenseService.DeleteExpenseAsync(id);
@@ -135,8 +131,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Expense/all
-    [HttpDelete("all")]
+    [HttpDelete(ApiRoute.Expenses.DeleteAll)]
     public async Task<ActionResult> DeleteAllExpensesAsync()
     {
         bool deleteSuccessful = await _expenseService.DeleteAllExpensesAsync();

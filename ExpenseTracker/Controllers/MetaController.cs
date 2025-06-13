@@ -1,15 +1,17 @@
-using ExpenseTracker.Services;
+using ExpenseTracker.Contracts;
+using ExpenseTracker.Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTracker.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/" + ApiRoute.Meta.Base)]
 public class MetaController(IMetaService metaService) : ControllerBase
 {
 	private readonly IMetaService _metaService = metaService;
 
-	[HttpGet("get-expense-categories")]
+	[HttpGet(ApiRoute.Meta.GetExpenseCategories)]
 	public IActionResult GetExpenseCategories()
 	{
 		var categories = _metaService.GetExpenseCategories()
