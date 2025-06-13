@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using ExpenseTracker.Core.Enums;
 
 namespace ExpenseTracker.Models;
 
 public class Expense
 {
     [Key] public Guid Id { get; set; }
-    [Required] public string? Category { get; set; }
+    [Required] public ExpenseCategory Category { get; set; }
     [Required] public double Amount { get; set; }
     public DateTime DateRecorded { get; set; } // Auto-filled by backend
 

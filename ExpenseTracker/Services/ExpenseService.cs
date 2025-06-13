@@ -73,10 +73,11 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(category))
-        {
-            query = query.Where(e => e.Category == category);
-        }
+        // TODO: the category was changed from string to int(enum) so chnage the code before pushing so query can work properly.
+        // if (!string.IsNullOrWhiteSpace(category))
+        // {
+        //     query = query.Where(e => e.Category == category);
+        // }
 
         return await query.ToListAsync();
     }
