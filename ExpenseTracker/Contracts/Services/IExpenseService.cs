@@ -1,17 +1,22 @@
+using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Models;
 
-namespace ExpenseTracker.Services;
+namespace ExpenseTracker.Contracts.Services;
 
 public interface IExpenseService
 {
     Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate);
-    Task<Expense?> GetExpenseByIdAsync(Guid id);Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
+    Task<Expense?> GetExpenseByIdAsync(Guid id);
+
+    Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        string? category = null);
+        ExpenseCategory? category = null
+    );
+
     Task<IEnumerable<Expense>> GetAllExpensesAsync();
     Task<bool> UpdateExpenseAsync(Guid id, Expense expenseToUpdate);
     Task<bool> DeleteExpenseAsync(Guid id);
