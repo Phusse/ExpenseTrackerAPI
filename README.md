@@ -49,5 +49,3 @@ You can filter expenses using the following query parameters:
 - `maxAmount`: decimal
 - `exactAmount`: decimal
 - `category`: string
-
-Example:
