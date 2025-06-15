@@ -2,17 +2,18 @@ using System;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
+using ExpenseTracker.Contracts;
 
 namespace ExpenseTracker.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
 public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;
 
     // POST: api/Expense
     [HttpPost]
+    [Route(ExpenseRoutes.PostUrl.Create)]
     public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
     {
         var result = await _expenseService.CreateExpenseAsync(expense);
@@ -35,8 +36,8 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         });
     }
 
-    // GET: api/Expense/{id}
-    [HttpGet("{id:guid}")]
+    [HttpGet]
+    [Route(ExpenseRoutes.GetUrl.GetById)]
     public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
     {
         Expense? expense = await _expenseService.GetExpenseByIdAsync(id);
@@ -50,14 +51,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     // GET: api/Expense/all
-    [HttpGet("getall")]
+    [HttpGet]
+    [Route(ExpenseRoutes.GetUrl.GetAll)]
     public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
     {
         IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync();
         return Ok(expenses);
     }
 
-    [HttpGet("filter")]
+    [HttpGet]
+    [Route(ExpenseRoutes.GetUrl.Filter)]
     public async Task<IActionResult> GetFilteredExpenses(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
@@ -101,7 +104,8 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
     
     // PUT: api/Expense/{id}
-    [HttpPut("{id:guid}")]
+    [HttpPut]
+    [Route(ExpenseRoutes.PutUrl.Update)]
     public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
     {
         if (expenseToUpdate is null || id != expenseToUpdate.Id)
@@ -120,7 +124,8 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     // DELETE: api/Expense/{id}
-    [HttpDelete("{id:guid}")]
+    [HttpDelete]
+    [Route(ExpenseRoutes.DeleteUrl.Delete)]
     public async Task<ActionResult> DeleteExpenseAsync(Guid id)
     {
         bool deleteSuccessful = await _expenseService.DeleteExpenseAsync(id);
@@ -134,7 +139,8 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     // DELETE: api/Expense/all
-    [HttpDelete("all")]
+    [HttpDelete]
+    [Route(ExpenseRoutes.DeleteUrl.DeleteAll)]
     public async Task<ActionResult> DeleteAllExpensesAsync()
     {
         bool deleteSuccessful = await _expenseService.DeleteAllExpensesAsync();
