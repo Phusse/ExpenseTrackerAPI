@@ -1,5 +1,3 @@
-namespace ExpenseTracker.Models.Responses;
-
 public class ApiResponse<T>
 {
     public bool Success { get; set; }

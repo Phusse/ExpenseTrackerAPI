@@ -1,5 +1,3 @@
-using ExpenseTracker.Contracts.Services;
-using ExpenseTracker.Core.Enums;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
@@ -38,15 +36,13 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
         List<Expense> expenses = await _dbContext.Expenses.ToListAsync();
         return expenses;
     }
-
     public async Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        ExpenseCategory? category = null
-    )
+        string? category = null)
     {
         IQueryable<Expense> query = _dbContext.Expenses.AsQueryable();
 
@@ -77,9 +73,9 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
             }
         }
 
-        if (category.HasValue)
+        if (!string.IsNullOrWhiteSpace(category))
         {
-            query = query.Where(e => e.Category == category.Value);
+            query = query.Where(e => e.Category == category);
         }
 
         return await query.ToListAsync();
@@ -89,7 +85,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
     {
         Expense? existingExpense = await _dbContext.Expenses.FindAsync(id);
 
-        if (existingExpense is null) return false;
+        if (existingExpense == null) return false;
 
         existingExpense.Category = expenseToUpdate.Category;
         existingExpense.Amount = expenseToUpdate.Amount;
@@ -106,7 +102,7 @@ public class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
     {
         Expense? expenseToDelete = await _dbContext.Expenses.FindAsync(id);
 
-        if (expenseToDelete is null) return false;
+        if (expenseToDelete == null) return false;
 
         _dbContext.Expenses.Remove(expenseToDelete);
         await _dbContext.SaveChangesAsync();

@@ -25,20 +25,19 @@ namespace ExpenseTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Amount")
+                        .HasColumnType("double");
 
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("DateOfExpense")
+                    b.Property<DateTime?>("DateOfExpense")
+                        .IsRequired()
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("DateRecorded")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
@@ -49,7 +48,7 @@ namespace ExpenseTracker.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Expenses", (string)null);
+                    b.ToTable("Expenses");
                 });
 #pragma warning restore 612, 618
         }
