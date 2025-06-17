@@ -17,6 +17,7 @@ public static class ExpenseRoutes
         public const string GetById = $"{Base}/{{id}}";        // GET: api/v1/expense/{id}
         public const string GetAll = $"{Base}/getall";         // GET: api/v1/expense/getall
         public const string Filter = $"{Base}/filter";         // GET: api/v1/expense/filter
+        public const string Total = $"{Base}/total";           // GET: api/v1/expense/total
     }
     public static class PutUrl
     {
