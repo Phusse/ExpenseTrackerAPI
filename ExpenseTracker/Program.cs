@@ -13,7 +13,6 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 21))));
 
-
 // Register application services
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
@@ -21,6 +20,22 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// ✅ ADD CORS CONFIGURATION
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",     // Local development
+                "https://localhost:3000",    // Local development with HTTPS
+                "http://localhost:3001"     // Alternative local port
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 WebApplication app = builder.Build();
 
@@ -32,6 +47,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ USE CORS (Must be BEFORE UseAuthorization and MapControllers)
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 app.MapControllers();
 
