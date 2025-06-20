@@ -1,21 +1,20 @@
 using ExpenseTracker.Models;
 
-namespace ExpenseTracker.Services;
-
 public interface IExpenseService
 {
-    Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate);
-    Task<Expense?> GetExpenseByIdAsync(Guid id); Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
+    Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId);
+    Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId);
+    Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
+        Guid userId,
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
         string? category = null);
-    Task<IEnumerable<Expense>> GetAllExpensesAsync();
-    Task<double> GetTotalExpenseAsync(DateTime? startDate, DateTime? endDate, int? month, int? year);
-    Task<bool> UpdateExpenseAsync(Guid id, Expense expenseToUpdate);
-    Task<bool> DeleteExpenseAsync(Guid id);
-    Task<bool> DeleteAllExpensesAsync();
-    
+    Task<IEnumerable<Expense>> GetAllExpensesAsync(Guid userId);
+    Task<double> GetTotalExpenseAsync(Guid userId, DateTime? startDate, DateTime? endDate, int? month, int? year);
+    Task<bool> UpdateExpenseAsync(Guid id, Expense expenseToUpdate, Guid userId);
+    Task<bool> DeleteExpenseAsync(Guid id, Guid userId);
+    Task<bool> DeleteAllExpensesAsync(Guid userId);
 }

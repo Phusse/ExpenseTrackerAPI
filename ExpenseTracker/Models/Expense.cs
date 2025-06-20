@@ -15,4 +15,9 @@ public class Expense
     public string PaymentMethod{get; set; }
 
     public string? Description { get; set; }
+    [Required]
+    public Guid UserId { get; set; }
+    
+    // Navigation property
+    public virtual User? User { get; set; }
 }
