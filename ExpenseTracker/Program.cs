@@ -1,6 +1,9 @@
+using System.Text;
 using ExpenseTracker.Data;
 using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +17,7 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 21))));
 
 // Register application services
-builder.Services.AddScoped<IExpenseService, ExpenseService>();
+// builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -37,6 +40,34 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Services
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -51,6 +82,7 @@ app.UseHttpsRedirection();
 // ✅ USE CORS (Must be BEFORE UseAuthorization and MapControllers)
 app.UseCors("AllowFrontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
