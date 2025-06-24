@@ -26,7 +26,12 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
         modelBuilder.Entity<Expense>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Category).IsRequired();
+
+            // Convert enum to string
+            entity.Property(e => e.Category)
+                  .HasConversion<string>()
+                  .IsRequired();
+
             entity.Property(e => e.Amount).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
 

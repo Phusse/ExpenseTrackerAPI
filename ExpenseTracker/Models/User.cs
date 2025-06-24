@@ -12,7 +12,8 @@ public class User
     public required string Name { get; set; }
     
     [Required]
-    [EmailAddress]
+    [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    ErrorMessage = "Please enter a valid email address.")]
     [StringLength(255)]
     public required string Email { get; set; }
     
