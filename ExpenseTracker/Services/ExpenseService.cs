@@ -8,30 +8,42 @@ namespace ExpenseTracker.Services;
 public class ExpenseService : IExpenseService
 {
     private readonly ExpenseTrackerDbContext _dbContext;
+    private readonly IEmailService _emailService;
 
-    public ExpenseService(ExpenseTrackerDbContext dbContext)
+    public ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService)
     {
         _dbContext = dbContext;
+        _emailService = emailService;
     }
 
 public async Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
 {
-    
     try
-        {
-            expenseToCreate.Id = Guid.NewGuid();
-            expenseToCreate.DateRecorded = DateTime.UtcNow;
-            expenseToCreate.UserId = userId;
+    {
+        expenseToCreate.Id = Guid.NewGuid();
+        expenseToCreate.DateRecorded = DateTime.UtcNow;
+        expenseToCreate.UserId = userId;
 
-            await _dbContext.Expenses.AddAsync(expenseToCreate);
-            await _dbContext.SaveChangesAsync();
-            return (true, expenseToCreate, null);
-        }
-        catch (Exception ex)
+        await _dbContext.Expenses.AddAsync(expenseToCreate);
+        await _dbContext.SaveChangesAsync();
+
+        // Fetch user to get email and name
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user != null)
         {
-            return (false, null, ex.Message);
+            string subject = "New Expense Recorded";
+            string message = $"Hi {user.Name},<br><br>You just added an expense of <strong>₦{expenseToCreate.Amount}</strong> in category <strong>{expenseToCreate.Category}</strong>.<br><br>Thanks for tracking your spending with us!";
+            await _emailService.SendEmailAsync(user.Email, subject, message);
         }
+
+        return (true, expenseToCreate, null);
+    }
+    catch (Exception ex)
+    {
+        return (false, null, ex.Message);
+    }
 }
+
 
     public async Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId)
     {

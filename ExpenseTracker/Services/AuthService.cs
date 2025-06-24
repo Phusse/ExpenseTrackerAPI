@@ -13,11 +13,13 @@ public class AuthService : IAuthService
 {
     private readonly ExpenseTrackerDbContext _dbContext;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
-    public AuthService(ExpenseTrackerDbContext dbContext, IConfiguration configuration)
+    public AuthService(ExpenseTrackerDbContext dbContext, IConfiguration configuration, IEmailService emailService)
     {
         _dbContext = dbContext;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<(bool IsSuccess, AuthData? Data, string? ErrorMessage)> LoginAsync(LoginRequest request)
@@ -25,7 +27,7 @@ public class AuthService : IAuthService
         try
         {
             var user = await GetUserByEmailAsync(request.Email);
-            
+
             if (user == null)
             {
                 return (false, null, "Invalid email or password");
@@ -67,10 +69,12 @@ public class AuthService : IAuthService
     {
         try
         {
-            // Check if user already exists
+            Console.WriteLine($"[INFO] Registering user with email: {request.Email}");
+
             var existingUser = await GetUserByEmailAsync(request.Email);
             if (existingUser != null)
             {
+                Console.WriteLine($"[INFO] User with email {request.Email} already exists.");
                 return (false, null, "User with this email already exists");
             }
 
@@ -87,11 +91,36 @@ public class AuthService : IAuthService
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                Console.WriteLine("[WARNING] Email is missing or empty.");
+                return (false, null, "Email address is missing or empty.");
+            }
+
+            try
+            {
+                Console.WriteLine($"[INFO] Attempting to send welcome email to: {user.Email}");
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Welcome!",
+                    "Thanks for registering with us."
+                );
+                Console.WriteLine("[INFO] Welcome email sent successfully.");
+            }
+            catch (Exception emailEx)
+            {
+                Console.WriteLine($"[ERROR] Failed to send welcome email: {emailEx.Message}");
+                return (false, null, $"Registration saved but failed to send email: {emailEx.Message}");
+            }
+
+            Console.WriteLine($"[SUCCESS] User registered successfully: {user.Email}");
             return (true, user, null);
         }
         catch (Exception ex)
         {
-            return (false, null, ex.Message);
+            var errorMessage = ex.InnerException?.Message ?? ex.Message;
+            Console.WriteLine($"[ERROR] Registration failed for {request.Email}: {errorMessage}");
+            return (false, null, $"Registration failed: {errorMessage}");
         }
     }
 

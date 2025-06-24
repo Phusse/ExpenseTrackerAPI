@@ -18,7 +18,9 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 21))));
 
 // Register application services
-// builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddHttpClient<IEmailService, EmailService>();
+
 
 // Add services to the container
 builder.Services.AddControllers()
