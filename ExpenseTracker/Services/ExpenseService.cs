@@ -1,4 +1,5 @@
 using ExpenseTracker.Data;
+using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,24 +14,24 @@ public class ExpenseService : IExpenseService
         _dbContext = dbContext;
     }
 
-    public async Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
-    {
-        try
+public async Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
+{
+    
+    try
         {
             expenseToCreate.Id = Guid.NewGuid();
             expenseToCreate.DateRecorded = DateTime.UtcNow;
             expenseToCreate.UserId = userId;
-            
+
             await _dbContext.Expenses.AddAsync(expenseToCreate);
             await _dbContext.SaveChangesAsync();
-
             return (true, expenseToCreate, null);
         }
         catch (Exception ex)
         {
             return (false, null, ex.Message);
         }
-    }
+}
 
     public async Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId)
     {
@@ -87,7 +88,15 @@ public class ExpenseService : IExpenseService
 
         if (!string.IsNullOrWhiteSpace(category))
         {
-            query = query.Where(e => e.Category == category);
+            if (Enum.TryParse<ExpenseCategory>(category, out var parsedCategory))
+            {
+                query = query.Where(e => e.Category == parsedCategory);
+            }
+            else
+            {
+                // If parsing fails, return empty result
+                return new List<Expense>();
+            }
         }
 
         return await query.OrderByDescending(e => e.DateRecorded).ToListAsync();
