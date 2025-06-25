@@ -7,6 +7,7 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
 {
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Budget> Budgets { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,5 +42,8 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
+            modelBuilder.Entity<Budget>()
+        .HasIndex(b => new { b.UserId, b.Category, b.Month })
+        .IsUnique();
     }
 }

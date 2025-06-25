@@ -9,5 +9,6 @@ public enum ExpenseCategory
     Utilities,
     Education,
     Savings,
+    Investments,
     Miscellaneous
 }
