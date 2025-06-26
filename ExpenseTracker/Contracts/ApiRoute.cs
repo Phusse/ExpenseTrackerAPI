@@ -47,4 +47,18 @@ public static class ExpenseRoutes
         public const string Summary = $"{BudgetBase}/summary";        // GET: api/v1/budget/summary
         public const string Status = $"{BudgetBase}/status";          // GET: api/v1/budget/status
     }
+
+        // ✅ Budget Routes
+    private const string SavingGoalController = "budget";
+    public const string SavingGoalBase = $"{root}/{version}/{SavingGoalController}";
+
+    public static class SavingGoalPostUrl
+    {
+        public const string Create = $"{SavingGoalBase}";
+    }
+
+    public static class SavingGoalGetUrl
+    {
+        public const string Status = $"{SavingGoalBase}/status"; 
+    }
 }
