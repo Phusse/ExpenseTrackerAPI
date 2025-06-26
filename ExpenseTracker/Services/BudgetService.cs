@@ -13,7 +13,6 @@ public class BudgetService : IBudgetService
         _dbContext = dbContext;
     }
 
-    // Create a new monthly budget for a category
     public async Task<(bool IsSuccess, Budget? Data, string? ErrorMessage)> CreateBudgetAsync(CreateBudgetRequest request, Guid userId)
     {
         try
@@ -48,7 +47,6 @@ public class BudgetService : IBudgetService
         }
     }
 
-    // Get how much the user has spent in a given category for the month
     public async Task<double> GetSpentAmountForCategoryAsync(Guid userId, ExpenseCategory category, int month, int year)
     {
         return await _dbContext.Expenses
@@ -60,7 +58,6 @@ public class BudgetService : IBudgetService
             .SumAsync(e => e.Amount);
     }
 
-    // Get the budget amount and amount spent for a given category/month/year
     public async Task<(double budgetedAmount, double spentAmount)> GetBudgetStatusAsync(Guid userId, ExpenseCategory category, int month, int year)
     {
         var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
@@ -73,7 +70,6 @@ public class BudgetService : IBudgetService
         return (budget?.LimitAmount ?? 0, spent);
     }
 
-    // 🔥 Get status with percentage spent and a warning message if needed
     public async Task<BudgetSummaryResponse> GetBudgetSummaryAsync(Guid userId, ExpenseCategory category, int month, int year)
     {
         var (budgeted, spent) = await GetBudgetStatusAsync(userId, category, month, year);
