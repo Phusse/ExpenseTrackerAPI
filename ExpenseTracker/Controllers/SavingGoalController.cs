@@ -7,7 +7,6 @@ namespace ExpenseTracker.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/v1/savinggoal")]
 public class SavingGoalController : ControllerBase
 {
     private readonly ISavingGoalService _savingGoalService;
