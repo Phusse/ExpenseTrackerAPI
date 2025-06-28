@@ -16,34 +16,61 @@ public class ExpenseService : IExpenseService
         _emailService = emailService;
     }
 
-public async Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
-{
-    try
+    public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
     {
-        expenseToCreate.Id = Guid.NewGuid();
-        expenseToCreate.DateRecorded = DateTime.UtcNow;
-        expenseToCreate.UserId = userId;
-
-        await _dbContext.Expenses.AddAsync(expenseToCreate);
-        await _dbContext.SaveChangesAsync();
-
-        // Fetch user to get email and name
-        var user = await _dbContext.Users.FindAsync(userId);
-        if (user != null)
+        try
         {
-            string subject = "New Expense Recorded";
-            string message = $"Hi {user.Name},<br><br>You just added an expense of <strong>₦{expenseToCreate.Amount}</strong> in category <strong>{expenseToCreate.Category}</strong>.<br><br>Thanks for tracking your spending with us!";
-            await _emailService.SendEmailAsync(user.Email, subject, message);
+            expenseToCreate.Id = Guid.NewGuid();
+            expenseToCreate.DateRecorded = DateTime.UtcNow;
+            expenseToCreate.UserId = userId;
+
+            await _dbContext.Expenses.AddAsync(expenseToCreate);
+            await _dbContext.SaveChangesAsync();
+
+            var now = DateTime.UtcNow;
+            var month = now.Month;
+            var year = now.Year;
+
+            var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
+                b.UserId == userId &&
+                b.Category == expenseToCreate.Category &&
+                b.Month == month &&
+                b.Year == year);
+
+            double spent = await _dbContext.Expenses
+                .Where(e => e.UserId == userId &&
+                            e.Category == expenseToCreate.Category &&
+                            e.DateOfExpense.HasValue &&
+                            e.DateOfExpense.Value.Month == month &&
+                            e.DateOfExpense.Value.Year == year)
+                .SumAsync(e => e.Amount);
+
+            string message = "Expense recorded";
+
+            if (budget != null)
+            {
+                double remaining = budget.LimitAmount - spent;
+
+                if (remaining <= 0)
+                {
+                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}.";
+                }
+                else
+                {
+                    message = $"You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
+                }
+            }
+
+            // remove user navigation to prevent sending user info
+            expenseToCreate.User = null;
+
+            return (true, expenseToCreate, message);
         }
-
-        return (true, expenseToCreate, null);
+        catch (Exception ex)
+        {
+            return (false, null, ex.Message);
+        }
     }
-    catch (Exception ex)
-    {
-        return (false, null, ex.Message);
-    }
-}
-
 
     public async Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId)
     {

@@ -44,12 +44,11 @@ public static class ExpenseRoutes
 
     public static class BudgetGetUrl
     {
-        public const string Summary = $"{BudgetBase}/summary";        // GET: api/v1/budget/summary
-        public const string Status = $"{BudgetBase}/status";          // GET: api/v1/budget/status
+        public const string Summary = $"{BudgetBase}/summary";
+        public const string Status = $"{BudgetBase}/status";
     }
-
-        // ✅ Budget Routes
-    private const string SavingGoalController = "budget";
+    //  savings Routes
+    private const string SavingGoalController = "savings";
     public const string SavingGoalBase = $"{root}/{version}/{SavingGoalController}";
 
     public static class SavingGoalPostUrl
@@ -59,6 +58,14 @@ public static class ExpenseRoutes
 
     public static class SavingGoalGetUrl
     {
-        public const string Status = $"{SavingGoalBase}/status"; 
+        public const string Status = $"{SavingGoalBase}/status";
+    }
+    //  Dashboard Routes
+    private const string DashboardController = "dashboard";
+    public const string DashboardBase = $"{root}/{version}/{DashboardController}";
+
+    public static class DashboardGetUrl
+    {
+        public const string Summary = $"{DashboardBase}/summary";
     }
 }

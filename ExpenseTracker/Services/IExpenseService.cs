@@ -2,7 +2,7 @@ using ExpenseTracker.Models;
 
 public interface IExpenseService
 {
-    Task<(bool IsSuccess, Expense? Data, string? ErrorMessage)> CreateExpenseAsync(Expense expenseToCreate, Guid userId);
+    Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId);
     Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId);
     Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
         Guid userId,

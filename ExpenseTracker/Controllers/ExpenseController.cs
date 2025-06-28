@@ -32,35 +32,50 @@ public class ExpenseController : ControllerBase
     // POST: api/v1/expense
     [HttpPost]
     [Route(ExpenseRoutes.PostUrl.Create)]
-    public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
+public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
+{
+    try
     {
-        try
+        var userId = GetCurrentUserId();
+        var result = await _expenseService.CreateExpenseAsync(expense, userId);
+
+        if (!result.IsSuccess)
         {
-            var userId = GetCurrentUserId();
-            var result = await _expenseService.CreateExpenseAsync(expense, userId);
-
-            if (!result.IsSuccess)
+            return StatusCode(500, new ApiResponse<Expense>
             {
-                return StatusCode(500, new ApiResponse<Expense>
-                {
-                    Success = false,
-                    Message = result.ErrorMessage ?? "An error occurred",
-                    Data = null
-                });
-            }
-
-            return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
-            {
-                Success = true,
-                Message = "Expense recorded",
-                Data = result.Data
+                Success = false,
+                Message = result.Message ?? "An error occurred",
+                Data = null
             });
         }
-        catch (UnauthorizedAccessException)
+
+        return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
         {
-            return Unauthorized();
-        }
+            Success = true,
+            Message = result.Message, // ✅ Use the budget summary message here
+            Data = result.Data        // ✅ Already has user stripped
+        });
     }
+    catch (UnauthorizedAccessException)
+    {
+        return Unauthorized(new ApiResponse<Expense>
+        {
+            Success = false,
+            Message = "User not authorized.",
+            Data = null
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new ApiResponse<Expense>
+        {
+            Success = false,
+            Message = $"Unexpected error: {ex.Message}",
+            Data = null
+        });
+    }
+}
+
 
     [HttpGet]
     [Route(ExpenseRoutes.GetUrl.GetById)]

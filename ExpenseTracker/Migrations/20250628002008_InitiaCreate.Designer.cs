@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ExpenseTrackerDbContext))]
-    [Migration("20250626121531_AddSavingGoalsTable")]
-    partial class AddSavingGoalsTable
+    [Migration("20250628002008_InitiaCreate")]
+    partial class InitiaCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
