@@ -1,6 +1,7 @@
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ExpenseTracker.Controllers;
 
@@ -109,5 +110,18 @@ public class AuthController : ControllerBase
                 lastLoginAt = user.LastLoginAt
             }
         });
+    }
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized(new { message = "Invalid token" });
+
+        var result = await _authService.LogoutAsync(userId);
+        if (!result.IsSuccess)
+            return NotFound(new { message = result.Message });
+
+        return Ok(new { message = result.Message });
     }
 }

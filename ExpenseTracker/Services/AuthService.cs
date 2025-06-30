@@ -134,6 +134,17 @@ public class AuthService : IAuthService
         return await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
     }
+    public async Task<(bool IsSuccess, string? Message)> LogoutAsync(Guid userId)
+    {
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null)
+            return (false, "User not found");
+
+        user.LastLogoutAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        return (true, "Logout successful");
+    }
 
     public string GenerateJwtToken(User user)
     {
