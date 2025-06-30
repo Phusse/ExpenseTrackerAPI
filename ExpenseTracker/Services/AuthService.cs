@@ -5,6 +5,8 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+// using ExpenseTracker.Services.EmailService;
+using ExpenseTracker.Services;
 using BCrypt.Net;
 
 namespace ExpenseTracker.Services;
@@ -100,16 +102,28 @@ public class AuthService : IAuthService
             try
             {
                 Console.WriteLine($"[INFO] Attempting to send welcome email to: {user.Email}");
-                await _emailService.SendEmailAsync(
-                    user.Email,
-                    "Welcome!",
-                    "Thanks for registering with us."
+
+                var model = new
+                {
+                    userName = user.Name
+                };
+                var emailSent = await _emailService.SendTemplateEmailAsync(
+                    to: user.Email,
+                    templateId: 40590712,
+                    templateModel: model
                 );
+
+                if (!emailSent)
+                {
+                    Console.WriteLine("[WARN] Email service returned false (not sent).");
+                    return (false, null, "Registration saved, but failed to send welcome email.");
+                }
+
                 Console.WriteLine("[INFO] Welcome email sent successfully.");
             }
             catch (Exception emailEx)
             {
-                Console.WriteLine($"[ERROR] Failed to send welcome email: {emailEx.Message}");
+                Console.WriteLine($"[ERROR] Failed to send welcome email: {emailEx}");
                 return (false, null, $"Registration saved but failed to send email: {emailEx.Message}");
             }
 
@@ -123,6 +137,7 @@ public class AuthService : IAuthService
             return (false, null, $"Registration failed: {errorMessage}");
         }
     }
+
 
     public async Task<User?> GetUserByIdAsync(Guid userId)
     {
