@@ -24,6 +24,8 @@ public class User
     
     public DateTime? LastLoginAt { get; set; }
     
+    public DateTime? LastLogoutAt { get; set; }
+    
     public bool IsActive { get; set; } = true;
     
     // Navigation property for expenses
