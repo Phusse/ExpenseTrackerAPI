@@ -30,12 +30,7 @@ public class AuthService : IAuthService
         {
             var user = await GetUserByEmailAsync(request.Email);
 
-            if (user == null)
-            {
-                return (false, null, "Invalid email or password");
-            }
-
-            if (!VerifyPassword(request.Password, user.PasswordHash))
+            if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
             {
                 return (false, null, "Invalid email or password");
             }
@@ -45,9 +40,27 @@ public class AuthService : IAuthService
                 return (false, null, "Account is deactivated");
             }
 
-            // Update last login
             user.LastLoginAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
+            try
+            {
+                var model = new
+                {
+                    UserName = user.Name,
+                    LoginTime = user.LastLoginAt?.ToString("f"),
+                    CurrentYear = DateTime.Now.Year
+                };
+
+                await _emailService.SendTemplateEmailAsync(
+                    to: user.Email,
+                    templateId: 40597432, 
+                    templateModel: model
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Login email failed: {ex.Message}");
+            }
 
             var token = GenerateJwtToken(user);
             var authData = new AuthData
@@ -105,7 +118,7 @@ public class AuthService : IAuthService
 
                 var model = new
                 {
-                    userName = user.Name
+                    UserName = user.Name
                 };
                 var emailSent = await _emailService.SendTemplateEmailAsync(
                     to: user.Email,
@@ -157,6 +170,25 @@ public class AuthService : IAuthService
 
         user.LastLogoutAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
+
+        try
+        {
+            var model = new
+            {
+                UserName = user.Name,
+                LogoutTime = user.LastLogoutAt?.ToString("f") ?? "unknown"
+            };
+
+            await _emailService.SendTemplateEmailAsync(
+                to: user.Email,
+                templateId: 40597431,
+                templateModel: model
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WARN] Failed to send logout email: {ex.Message}");
+        }
 
         return (true, "Logout successful");
     }
