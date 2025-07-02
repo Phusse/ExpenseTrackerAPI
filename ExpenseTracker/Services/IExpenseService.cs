@@ -1,3 +1,4 @@
+using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 
 public interface IExpenseService
@@ -11,7 +12,7 @@ public interface IExpenseService
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        string? category = null);
+        ExpenseCategory? category = null);
     Task<IEnumerable<Expense>> GetAllExpensesAsync(Guid userId);
     Task<double> GetTotalExpenseAsync(Guid userId, DateTime? startDate, DateTime? endDate, int? month, int? year);
     Task<bool> UpdateExpenseAsync(Guid id, Expense expenseToUpdate, Guid userId);

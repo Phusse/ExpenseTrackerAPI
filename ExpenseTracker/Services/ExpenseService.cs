@@ -93,7 +93,7 @@ public class ExpenseService : IExpenseService
         decimal? minAmount = null,
         decimal? maxAmount = null,
         decimal? exactAmount = null,
-        string? category = null)
+        ExpenseCategory? category = null)
     {
         IQueryable<Expense> query = _dbContext.Expenses
             .Where(e => e.UserId == userId);
@@ -125,17 +125,9 @@ public class ExpenseService : IExpenseService
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(category))
+        if (category.HasValue)
         {
-            if (Enum.TryParse<ExpenseCategory>(category, out var parsedCategory))
-            {
-                query = query.Where(e => e.Category == parsedCategory);
-            }
-            else
-            {
-                // If parsing fails, return empty result
-                return new List<Expense>();
-            }
+            query = query.Where(e => e.Category == category.Value);
         }
 
         return await query.OrderByDescending(e => e.DateRecorded).ToListAsync();
