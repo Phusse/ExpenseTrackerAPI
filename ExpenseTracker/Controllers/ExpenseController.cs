@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using ExpenseTracker.Models;
-using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Contracts;
@@ -32,51 +31,51 @@ public class ExpenseController : ControllerBase
     // POST: api/v1/expense
     [HttpPost]
     [Route(ExpenseRoutes.PostUrl.Create)]
-public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
-{
-    try
+    public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
     {
-        var userId = GetCurrentUserId();
-        var result = await _expenseService.CreateExpenseAsync(expense, userId);
+        try
+        {
+            var userId = GetCurrentUserId();
+            var result = await _expenseService.CreateExpenseAsync(expense, userId);
 
-        if (!result.IsSuccess)
+            if (!result.IsSuccess)
+            {
+                return StatusCode(500, new ApiResponse<Expense>
+                {
+                    Success = false,
+                    Message = result.Message ?? "An error occurred",
+                    Data = null
+                });
+            }
+
+            return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
+            {
+                Success = true,
+                Message = result.Message, // ✅ Use the budget summary message here
+                Data = result.Data        // ✅ Already has user stripped
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new ApiResponse<Expense>
+            {
+                Success = false,
+                Message = "User not authorized.",
+                Data = null
+            });
+        }
+        catch (Exception ex)
         {
             return StatusCode(500, new ApiResponse<Expense>
             {
                 Success = false,
-                Message = result.Message ?? "An error occurred",
+                Message = $"Unexpected error: {ex.Message}",
                 Data = null
             });
         }
-
-        return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
-        {
-            Success = true,
-            Message = result.Message, // ✅ Use the budget summary message here
-            Data = result.Data        // ✅ Already has user stripped
-        });
     }
-    catch (UnauthorizedAccessException)
-    {
-        return Unauthorized(new ApiResponse<Expense>
-        {
-            Success = false,
-            Message = "User not authorized.",
-            Data = null
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new ApiResponse<Expense>
-        {
-            Success = false,
-            Message = $"Unexpected error: {ex.Message}",
-            Data = null
-        });
-    }
-}
 
-
+    // GET: api/v1/expense/{id}
     [HttpGet]
     [Route(ExpenseRoutes.GetUrl.GetById)]
     public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using PostmarkDotNet;
 
 public class EmailService : IEmailService

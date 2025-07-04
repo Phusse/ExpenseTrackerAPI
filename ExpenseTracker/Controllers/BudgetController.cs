@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Enums;
-using ExpenseTracker.Models;
-using ExpenseTracker.Services;
 using ExpenseTracker.Contracts;
 using System.Security.Claims;
 
