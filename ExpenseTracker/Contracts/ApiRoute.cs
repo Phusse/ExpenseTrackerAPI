@@ -53,13 +53,31 @@ public static class ExpenseRoutes
 
     public static class SavingGoalPostUrl
     {
-        public const string Create = $"{SavingGoalBase}";
+        public const string Create = $"{SavingGoalBase}";                      // POST: api/v1/savings
+        public const string Contribute = $"{SavingGoalBase}/contribute";       // POST: api/v1/savings/contribute
     }
 
     public static class SavingGoalGetUrl
     {
-        public const string Status = $"{SavingGoalBase}/status";
+        public const string GetAll = $"{SavingGoalBase}/getall";               // GET: api/v1/savings/getall
+        public const string GetById = $"{SavingGoalBase}/{{id}}";              // GET: api/v1/savings/{id}
     }
+
+    public static class SavingGoalPutUrl
+    {
+        public const string Update = $"{SavingGoalBase}/{{id}}";               // PUT: api/v1/savings/{id}
+    }
+
+    public static class SavingGoalPatchUrl
+    {
+        public const string Archive = $"{SavingGoalBase}/{{id}}/archive";      // PATCH: api/v1/savings/{id}/archive
+    }
+
+    public static class SavingGoalDeleteUrl
+    {
+        public const string Delete = $"{SavingGoalBase}/{{id}}";               // DELETE: api/v1/savings/{id}
+    }
+
     //  Dashboard Routes
     private const string DashboardController = "dashboard";
     public const string DashboardBase = $"{root}/{version}/{DashboardController}";

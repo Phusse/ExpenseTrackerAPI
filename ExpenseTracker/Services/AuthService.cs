@@ -6,8 +6,6 @@ using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 // using ExpenseTracker.Services.EmailService;
-using ExpenseTracker.Services;
-using BCrypt.Net;
 
 namespace ExpenseTracker.Services;
 
@@ -53,7 +51,7 @@ public class AuthService : IAuthService
 
                 await _emailService.SendTemplateEmailAsync(
                     to: user.Email,
-                    templateId: 40597432, 
+                    templateId: 40597432,
                     templateModel: model
                 );
             }

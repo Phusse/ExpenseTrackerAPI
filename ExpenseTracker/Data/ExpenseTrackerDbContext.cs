@@ -9,6 +9,7 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
     public DbSet<User> Users { get; set; }
     public DbSet<Budget> Budgets { get; set; }
     public DbSet<SavingGoal> SavingGoals { get; set; }
+    public DbSet<SavingGoalContribution> SavingGoalContributions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,8 +44,33 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
-            modelBuilder.Entity<Budget>()
-        .HasIndex(b => new { b.UserId, b.Category, b.Month })
-        .IsUnique();
+
+        // configure budget entity
+        modelBuilder.Entity<Budget>(entity =>
+        {
+            entity.HasIndex(b => new { b.UserId, b.Category, b.Month }).IsUnique();
+        });
+
+        // configure saving goal entity
+        modelBuilder.Entity<SavingGoal>(entity =>
+        {
+            entity.Property(s => s.Status).HasConversion<string>().IsRequired();
+        });
+
+        // cofigure saving goal cotribution entity
+        modelBuilder.Entity<SavingGoalContribution>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+
+            entity.HasOne(c => c.SavingGoal)
+                .WithMany(g => g.Contributions)
+                .HasForeignKey(c => c.SavingGoalId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Expense)
+                .WithMany(e => e.Contributions)
+                .HasForeignKey(c => c.ExpenseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
