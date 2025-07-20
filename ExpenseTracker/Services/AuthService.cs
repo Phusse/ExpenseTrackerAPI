@@ -3,26 +3,19 @@ using System.Security.Claims;
 using System.Text;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
+using ExpenseTracker.Models.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-// using ExpenseTracker.Services.EmailService;
 
 namespace ExpenseTracker.Services;
 
-public class AuthService : IAuthService
+internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration configuration, IEmailService emailService) : IAuthService
 {
-    private readonly ExpenseTrackerDbContext _dbContext;
-    private readonly IConfiguration _configuration;
-    private readonly IEmailService _emailService;
+    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IEmailService _emailService = emailService;
 
-    public AuthService(ExpenseTrackerDbContext dbContext, IConfiguration configuration, IEmailService emailService)
-    {
-        _dbContext = dbContext;
-        _configuration = configuration;
-        _emailService = emailService;
-    }
-
-    public async Task<(bool IsSuccess, AuthData? Data, string? ErrorMessage)> LoginAsync(LoginRequest request)
+	public async Task<(bool IsSuccess, AuthData? Data, string? ErrorMessage)> LoginAsync(LoginRequest request)
     {
         try
         {

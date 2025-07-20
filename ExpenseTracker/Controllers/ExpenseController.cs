@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Contracts;
 using System.Globalization;
+using ExpenseTracker.Models.Responses;
 
 namespace ExpenseTracker.Controllers;
 
