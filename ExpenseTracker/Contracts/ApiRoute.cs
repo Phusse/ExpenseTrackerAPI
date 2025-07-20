@@ -1,5 +1,7 @@
 namespace ExpenseTracker.Contracts;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 public static class ExpenseRoutes
 {
     private const string root = "api";
@@ -87,3 +89,5 @@ public static class ExpenseRoutes
         public const string Summary = $"{DashboardBase}/summary";
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

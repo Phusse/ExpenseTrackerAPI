@@ -16,6 +16,18 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+
+    /// <summary>
+    /// Logs a user in and returns a JWT token.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint authenticates a user with their email and password.
+    /// On success, it returns a JWT that can be used for future requests.
+    /// </remarks>
+    /// <param name="request">The login model containing email and password.</param>
+    /// <returns>A JWT token if login is successful, otherwise 400 Bad Request.</returns>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {

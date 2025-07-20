@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTracker.Controllers;
 
+/// <summary>
+/// Controller for managing saving goals in the expense tracker application.
+/// </summary>
+/// <param name="savingGoalService"></param>
 [ApiController, Authorize]
 public class SavingGoalController(ISavingGoalService savingGoalService) : ControllerBase
 {
@@ -17,6 +21,20 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// <summary>
     /// Creates a new saving goal.
     /// </summary>
+    /// <remarks>
+    /// This endpoint authenticates a user with their email and password.
+    /// On success, it returns a JWT that can be used for future requests.
+    /// </remarks>
+    /// <param name="request">The data required to create the saving goal.</param>
+    /// <returns>The newly created saving goal.</returns>
+    /// <response code="201">Returns the created saving goal</response>
+    /// <response code="400">If the request is invalid</response>
+    /// <response code="401">If the user is not authenticated</response>
+    /// <response code="500">If an unhandled error occurs</response>
+    [ProducesResponseType(typeof(ApiResponse<SavingGoalResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Route(ExpenseRoutes.SavingGoalPostUrl.Create)]
     public async Task<IActionResult> CreateGoal([FromBody] CreateSavingGoalRequest request)
