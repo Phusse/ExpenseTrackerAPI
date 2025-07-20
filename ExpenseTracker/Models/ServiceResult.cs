@@ -18,6 +18,12 @@ public class ServiceResult<T>
 	public string? Message { get; init; }
 
 	/// <summary>
+	/// A list of errors related to the operation, such as validation or warnings.
+	/// Can be used for both success and failure responses.
+	/// </summary>
+	public List<string>? Errors { get; init; }
+
+	/// <summary>
 	/// The result data returned from the operation, if available.
 	/// May be <c>null</c> for failures or operations that don't produce a result.
 	/// </summary>
@@ -28,11 +34,13 @@ public class ServiceResult<T>
 	/// </summary>
 	/// <param name="data">The result data returned by the operation.</param>
 	/// <param name="message">An optional message describing the success. Defaults to <c>null</c>.</param>
+	/// <param name="errors">Optional list of non-fatal issues or warnings related to the operation.</param>
 	/// <returns>A new <see cref="ServiceResult{T}"/> representing a successful result.</returns>
-	public static ServiceResult<T> Success(T data, string? message = null) => new()
+	public static ServiceResult<T> Success(T data, string? message = null, List<string>? errors = null) => new()
 	{
 		IsSuccess = true,
 		Message = message,
+		Errors = errors,
 		Data = data,
 	};
 
@@ -40,12 +48,14 @@ public class ServiceResult<T>
 	/// Creates a failed <see cref="ServiceResult{T}"/> with optional result data and an error message.
 	/// </summary>
 	/// <param name="data">Optional data associated with the failure. May be <c>null</c>.</param>
-	/// <param name="errorMessage">An optional error message describing the failure. Defaults to <c>null</c>.</param>
+	/// <param name="message">An optional error message describing the failure. Defaults to <c>null</c>.</param>
+	/// <param name="errors">A list of error messages explaining the failure.</param>
 	/// <returns>A new <see cref="ServiceResult{T}"/> representing a failed result.</returns>
-	public static ServiceResult<T> Failure(T data, string? errorMessage = null) => new()
+	public static ServiceResult<T> Failure(T data, string? message = null, List<string>? errors = null) => new()
 	{
 		IsSuccess = false,
-		Message = errorMessage,
+		Message = message,
+		Errors = errors,
 		Data = data,
 	};
 }
