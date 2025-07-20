@@ -158,7 +158,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email.Equals(email, StringComparison.CurrentCultureIgnoreCase));
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
     }
 
     public async Task<ServiceResult<object?>> LogoutAsync(Guid userId)

@@ -11,6 +11,34 @@ internal static class ApiRoutes
     private const string Version = "v1";
 
     /// <summary>
+    /// Routes related to Auth operations.
+    /// </summary>
+    public static class Auth
+    {
+        private const string Base = $"{Root}/{Version}/auth";
+
+        /// <summary>POST endpoints for Auth.</summary>
+        public static class Post
+        {
+            /// <summary>Logs in a user.</summary>
+            public const string Login = $"{Base}/login";
+
+            /// <summary>Registers a new user.</summary>
+            public const string Register = $"{Base}/register";
+
+            /// <summary>Logs out the user.</summary>
+            public const string Logout = $"{Base}/logout";
+        }
+
+        /// <summary>GET endpoints for Auth.</summary>
+        public static class Get
+        {
+            /// <summary>Gets the user</summary>
+            public const string CurrentUser = $"{Base}/me";
+        }
+    }
+
+    /// <summary>
     /// Routes related to Expense operations.
     /// </summary>
     public static class Expense
