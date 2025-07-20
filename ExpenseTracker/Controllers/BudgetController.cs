@@ -16,7 +16,7 @@ public class BudgetController : ControllerBase
     }
 
     [HttpPost]
-    [Route(ExpenseRoutes.BudgetPostUrl.Create)]
+    [Route(ApiRoutes.Budget.Post.Create)]
     public async Task<IActionResult> CreateBudget([FromBody] CreateBudgetRequest request)
     {
         var userId = GetUserId();
@@ -28,11 +28,11 @@ public class BudgetController : ControllerBase
         if (!result.IsSuccess)
             return Conflict(new { message = result.ErrorMessage });
 
-        return Created($"{ExpenseRoutes.BudgetBase}?category={request.Category}&month={request.Month}&year={request.Year}", result.Data);
+        return Created($"{ApiRoutes.Budget.Post.Create}?category={request.Category}&month={request.Month}&year={request.Year}", result.Data);
     }
 
     [HttpGet]
-    [Route(ExpenseRoutes.BudgetGetUrl.Summary)]
+    [Route(ApiRoutes.Budget.Get.Summary)]
     public async Task<IActionResult> GetBudgetSummary(
         [FromQuery] ExpenseCategory category,
         [FromQuery] int month,
@@ -51,7 +51,7 @@ public class BudgetController : ControllerBase
     }
 
     [HttpGet]
-    [Route(ExpenseRoutes.BudgetGetUrl.Status)]
+    [Route(ApiRoutes.Budget.Get.Status)]
     public async Task<IActionResult> GetBudgetStatus(
         [FromQuery] ExpenseCategory category,
         [FromQuery] int month,

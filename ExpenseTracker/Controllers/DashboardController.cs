@@ -14,7 +14,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet]
-    [Route(ExpenseRoutes.DashboardGetUrl.Summary)]
+    [Route(ApiRoutes.Dashboard.Get.Summary)]
     public async Task<IActionResult> GetSummary()
     {
         var userId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;

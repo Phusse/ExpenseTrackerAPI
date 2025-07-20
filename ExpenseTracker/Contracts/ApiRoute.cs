@@ -1,93 +1,94 @@
 namespace ExpenseTracker.Contracts;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
-public static class ExpenseRoutes
+internal static class ApiRoutes
 {
-    private const string root = "api";
-    private const string version = "v1";
+    private const string Root = "api";
+    private const string Version = "v1";
 
-    // Expense Routes
-    private const string expenseController = "expense";
-    public const string ExpenseBase = $"{root}/{version}/{expenseController}";
-
-    public static class PostUrl
+    public static class Expense
     {
-        public const string Create = $"{ExpenseBase}";
+        private const string Base = $"{Root}/{Version}/expense";
+
+        public static class Post
+        {
+            public const string Create = Base;
+        }
+
+        public static class Get
+        {
+            public const string ById = $"{Base}/{{id}}";
+            public const string All = $"{Base}/getall";
+            public const string Filter = $"{Base}/filter";
+            public const string Total = $"{Base}/total";
+        }
+
+        public static class Put
+        {
+            public const string Update = $"{Base}/{{id}}";
+        }
+
+        public static class Delete
+        {
+            public const string ById = $"{Base}/{{id}}";
+            public const string All = $"{Base}/all";
+        }
     }
 
-    public static class GetUrl
+    public static class Budget
     {
-        public const string GetById = $"{ExpenseBase}/{{id}}";        // GET: api/v1/expense/{id}
-        public const string GetAll = $"{ExpenseBase}/getall";         // GET: api/v1/expense/getall
-        public const string Filter = $"{ExpenseBase}/filter";         // GET: api/v1/expense/filter
-        public const string Total = $"{ExpenseBase}/total";           // GET: api/v1/expense/total
+        private const string Base = $"{Root}/{Version}/budget";
+
+        public static class Post
+        {
+            public const string Create = Base;
+        }
+
+        public static class Get
+        {
+            public const string Summary = $"{Base}/summary";
+            public const string Status = $"{Base}/status";
+        }
     }
 
-    public static class PutUrl
+    public static class Savings
     {
-        public const string Update = $"{ExpenseBase}/{{id}}";         // PUT: api/v1/expense/{id}
+        private const string Base = $"{Root}/{Version}/savings";
+
+        public static class Post
+        {
+            public const string Create = Base;
+            public const string Contribute = $"{Base}/contribute";
+        }
+
+        public static class Get
+        {
+            public const string All = $"{Base}/getall";
+            public const string ById = $"{Base}/{{id}}";
+        }
+
+        public static class Put
+        {
+            public const string Update = $"{Base}/{{id}}";
+        }
+
+        public static class Patch
+        {
+            public const string Archive = $"{Base}/{{id}}/archive";
+        }
+
+        public static class Delete
+        {
+            public const string ById = $"{Base}/{{id}}";
+        }
     }
 
-    public static class DeleteUrl
+    public static class Dashboard
     {
-        public const string Delete = $"{ExpenseBase}/{{id}}";         // DELETE: api/v1/expense/{id}
-        public const string DeleteAll = $"{ExpenseBase}/all";         // DELETE: api/v1/expense/all
-    }
+        private const string Base = $"{Root}/{Version}/dashboard";
 
-    // ✅ Budget Routes
-    private const string budgetController = "budget";
-    public const string BudgetBase = $"{root}/{version}/{budgetController}";
-
-    public static class BudgetPostUrl
-    {
-        public const string Create = $"{BudgetBase}";
-    }
-
-    public static class BudgetGetUrl
-    {
-        public const string Summary = $"{BudgetBase}/summary";
-        public const string Status = $"{BudgetBase}/status";
-    }
-    //  savings Routes
-    private const string SavingGoalController = "savings";
-    public const string SavingGoalBase = $"{root}/{version}/{SavingGoalController}";
-
-    public static class SavingGoalPostUrl
-    {
-        public const string Create = $"{SavingGoalBase}";                      // POST: api/v1/savings
-        public const string Contribute = $"{SavingGoalBase}/contribute";       // POST: api/v1/savings/contribute
-    }
-
-    public static class SavingGoalGetUrl
-    {
-        public const string GetAll = $"{SavingGoalBase}/getall";               // GET: api/v1/savings/getall
-        public const string GetById = $"{SavingGoalBase}/{{id}}";              // GET: api/v1/savings/{id}
-    }
-
-    public static class SavingGoalPutUrl
-    {
-        public const string Update = $"{SavingGoalBase}/{{id}}";               // PUT: api/v1/savings/{id}
-    }
-
-    public static class SavingGoalPatchUrl
-    {
-        public const string Archive = $"{SavingGoalBase}/{{id}}/archive";      // PATCH: api/v1/savings/{id}/archive
-    }
-
-    public static class SavingGoalDeleteUrl
-    {
-        public const string Delete = $"{SavingGoalBase}/{{id}}";               // DELETE: api/v1/savings/{id}
-    }
-
-    //  Dashboard Routes
-    private const string DashboardController = "dashboard";
-    public const string DashboardBase = $"{root}/{version}/{DashboardController}";
-
-    public static class DashboardGetUrl
-    {
-        public const string Summary = $"{DashboardBase}/summary";
+        public static class Get
+        {
+            public const string Summary = $"{Base}/summary";
+        }
     }
 }
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

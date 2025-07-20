@@ -30,7 +30,7 @@ public class ExpenseController : ControllerBase
 
     // POST: api/v1/expense
     [HttpPost]
-    [Route(ExpenseRoutes.PostUrl.Create)]
+    [Route(ApiRoutes.Expense.Post.Create)]
     public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
     {
         try
@@ -77,7 +77,7 @@ public class ExpenseController : ControllerBase
 
     // GET: api/v1/expense/{id}
     [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.GetById)]
+    [Route(ApiRoutes.Expense.Get.ById)]
     public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
     {
         try
@@ -100,7 +100,7 @@ public class ExpenseController : ControllerBase
 
     // GET: api/v1/expense/getall
     [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.GetAll)]
+    [Route(ApiRoutes.Expense.Get.All)]
     public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
     {
         try
@@ -116,7 +116,7 @@ public class ExpenseController : ControllerBase
     }
 
     [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.Filter)]
+    [Route(ApiRoutes.Expense.Get.Filter)]
     public async Task<IActionResult> GetFilteredExpenses(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
@@ -163,7 +163,7 @@ public class ExpenseController : ControllerBase
         }
     }
 
-    [HttpGet(ExpenseRoutes.GetUrl.Total)]
+    [HttpGet(ApiRoutes.Expense.Get.Total)]
     public async Task<IActionResult> GetTotalExpense(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
@@ -245,7 +245,7 @@ public class ExpenseController : ControllerBase
 
     // PUT: api/v1/expense/{id}
     [HttpPut]
-    [Route(ExpenseRoutes.PutUrl.Update)]
+    [Route(ApiRoutes.Expense.Put.Update)]
     public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
     {
         try
@@ -274,7 +274,7 @@ public class ExpenseController : ControllerBase
 
     // DELETE: api/v1/expense/{id}
     [HttpDelete]
-    [Route(ExpenseRoutes.DeleteUrl.Delete)]
+    [Route(ApiRoutes.Expense.Delete.ById)]
     public async Task<ActionResult> DeleteExpenseAsync(Guid id)
     {
         try
@@ -297,7 +297,7 @@ public class ExpenseController : ControllerBase
 
     // DELETE: api/v1/expense/all
     [HttpDelete]
-    [Route(ExpenseRoutes.DeleteUrl.DeleteAll)]
+    [Route(ApiRoutes.Expense.Delete.All)]
     public async Task<ActionResult> DeleteAllExpensesAsync()
     {
         try

@@ -36,7 +36,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    [Route(ExpenseRoutes.SavingGoalPostUrl.Create)]
+    [Route(ApiRoutes.Savings.Post.Create)]
     public async Task<IActionResult> CreateGoal([FromBody] CreateSavingGoalRequest request)
     {
         Guid userId = GetUserId();
@@ -56,7 +56,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// Gets all saving goals for the user.
     /// </summary>
     [HttpGet]
-    [Route(ExpenseRoutes.SavingGoalGetUrl.GetAll)]
+    [Route(ApiRoutes.Savings.Get.All)]
     public async Task<IActionResult> GetAllGoals([FromQuery] bool includeArchived = false)
     {
         Guid userId = GetUserId();
@@ -67,7 +67,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// <summary>
     /// Gets a single saving goal by ID.
     /// </summary>
-    [HttpGet(ExpenseRoutes.SavingGoalGetUrl.GetById)]
+    [HttpGet(ApiRoutes.Savings.Get.ById)]
     public async Task<IActionResult> GetGoalById([FromRoute] Guid id)
     {
         Guid userId = GetUserId();
@@ -81,7 +81,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// <summary>
     /// Updates a saving goal.
     /// </summary>
-    [HttpPut(ExpenseRoutes.SavingGoalPutUrl.Update)]
+    [HttpPut(ApiRoutes.Savings.Put.Update)]
     public async Task<IActionResult> UpdateGoal([FromRoute] Guid id, [FromBody] UpdateSavingGoalRequest request)
     {
         Guid userId = GetUserId();
@@ -99,7 +99,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// <summary>
     /// Archives or unarchives a saving goal.
     /// </summary>
-    [HttpPatch(ExpenseRoutes.SavingGoalPatchUrl.Archive)]
+    [HttpPatch(ApiRoutes.Savings.Patch.Archive)]
     public async Task<IActionResult> ArchiveGoal([FromRoute] Guid id, [FromQuery] bool archiveGoal = true)
     {
         Guid userId = GetUserId();
@@ -120,7 +120,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// <summary>
     /// Deletes a saving goal permanently.
     /// </summary>
-    [HttpDelete(ExpenseRoutes.SavingGoalDeleteUrl.Delete)]
+    [HttpDelete(ApiRoutes.Savings.Delete.ById)]
     public async Task<IActionResult> DeleteGoal([FromRoute] Guid id)
     {
         var userId = GetUserId();
@@ -135,7 +135,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// Adds a savings contribution and creates an expense for it.
     /// </summary>
     [HttpPost]
-    [Route(ExpenseRoutes.SavingGoalPostUrl.Contribute)]
+    [Route(ApiRoutes.Savings.Post.Contribute)]
     public async Task<IActionResult> AddContribution([FromBody] AddSavingContributionRequest request)
     {
         var userId = GetUserId();
