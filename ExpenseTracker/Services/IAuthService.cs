@@ -13,14 +13,14 @@ public interface IAuthService
     /// </summary>
     /// <param name="request">The login request containing user credentials.</param>
     /// <returns>The <see cref="AuthLoginResponse"/> if credentials are valid; otherwise, null.</returns>
-    Task<AuthLoginResponse?> LoginAsync(AuthLoginRequest request);
+    Task<ServiceResult<AuthLoginResponse?>> LoginAsync(AuthLoginRequest request);
 
     /// <summary>
     /// Registers a new user with the provided information.
     /// </summary>
     /// <param name="request">The registration request containing user details.</param>
     /// <returns>The created <see cref="User"/> if registration succeeds; otherwise, null.</returns>
-    Task<User?> RegisterAsync(AuthLoginRequest request);
+    Task<ServiceResult<object?>> RegisterAsync(AuthRegisterRequest request);
 
     /// <summary>
     /// Retrieves a user by their unique identifier.
@@ -41,5 +41,5 @@ public interface IAuthService
     /// </summary>
     /// <param name="userId">The ID of the user to log out.</param>
     /// <returns><c>true</c> if logout was successful; otherwise, <c>false</c>.</returns>
-    Task<bool> LogoutAsync(Guid userId);
+    Task<ServiceResult<object?>> LogoutAsync(Guid userId);
 }
