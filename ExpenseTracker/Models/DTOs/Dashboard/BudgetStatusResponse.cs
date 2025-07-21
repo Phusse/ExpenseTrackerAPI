@@ -32,4 +32,18 @@ public class BudgetStatusResponse
 	/// Returns 0 if Budgeted is 0. Rounded to 2 decimal places.
 	/// </summary>
 	public double PercentageUsed => Budgeted == 0 ? 0 : Math.Round(Spent / Budgeted * 100, 2);
+
+	/// <summary>
+	/// Returns true if spending has exceeded the budgeted amount.
+	/// </summary>
+	public bool IsOverBudget => Spent > Budgeted;
+
+	/// <summary>
+	/// Returns a string status label for budget usage.
+	/// </summary>
+	public string StatusLabel =>
+		Budgeted == 0 ? "No Budget" :
+		Spent > Budgeted ? "Over Budget" :
+		Spent == 0 ? "Unused" :
+		"In Progress";
 }
