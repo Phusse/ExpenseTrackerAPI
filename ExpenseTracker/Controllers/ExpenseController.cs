@@ -42,7 +42,7 @@ public class ExpenseController : ControllerBase
             {
                 return StatusCode(500, new ApiResponse<Expense>
                 {
-                    Success = false,
+                    IsSuccess = false,
                     Message = result.Message ?? "An error occurred",
                     Data = null
                 });
@@ -50,7 +50,7 @@ public class ExpenseController : ControllerBase
 
             return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
             {
-                Success = true,
+                IsSuccess = true,
                 Message = result.Message, // ✅ Use the budget summary message here
                 Data = result.Data        // ✅ Already has user stripped
             });
@@ -59,7 +59,7 @@ public class ExpenseController : ControllerBase
         {
             return Unauthorized(new ApiResponse<Expense>
             {
-                Success = false,
+                IsSuccess = false,
                 Message = "User not authorized.",
                 Data = null
             });
@@ -68,7 +68,7 @@ public class ExpenseController : ControllerBase
         {
             return StatusCode(500, new ApiResponse<Expense>
             {
-                Success = false,
+                IsSuccess = false,
                 Message = $"Unexpected error: {ex.Message}",
                 Data = null
             });

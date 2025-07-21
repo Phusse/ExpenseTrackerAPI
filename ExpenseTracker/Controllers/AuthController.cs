@@ -1,133 +1,139 @@
+using ExpenseTracker.Contracts;
 using ExpenseTracker.Models;
+using ExpenseTracker.Models.DTOs.Auth;
 using ExpenseTracker.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace ExpenseTracker.Controllers;
 
+/// <summary>
+/// Handles authentication and user management requests.
+/// </summary>
+/// <param name="authService">The authentication service.</param>
 [ApiController]
-[Route("api/v1/auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
 
-	/// <summary>
-	/// Logs a user in and returns a JWT token.
-	/// </summary>
-	/// <remarks>
-	/// This endpoint authenticates a user with their email and password.
-	/// On success, it returns a JWT that can be used for future requests.
-	/// </remarks>
-	/// <param name="request">The login model containing email and password.</param>
-	/// <returns>A JWT token if login is successful, otherwise 400 Bad Request.</returns>
-	[ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    /// <summary>
+    /// Logs a user in and returns a JWT token.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint authenticates a user with their email and password.
+    /// On success, it returns a JWT token that must be used in the `Authorization` header
+    /// for accessing protected routes.
+    /// </remarks>
+    /// <param name="request">The login credentials (email and password).</param>
+    /// <returns>Returns a JWT token if login is successful.</returns>
+    /// <response code="200">Login successful; JWT returned in response.</response>
+    /// <response code="400">Login failed due to validation or business logic issues.</response>
+    /// <response code="401">Login failed due to invalid credentials.</response>
+    [ProducesResponseType(typeof(ApiResponse<AuthLoginResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpPost(ApiRoutes.Auth.Post.Login)]
+    public async Task<IActionResult> Login([FromBody] AuthLoginRequest request)
     {
-        if (!ModelState.IsValid)
+        ServiceResult<AuthLoginResponse?> result = await _authService.LoginAsync(request);
+
+        if (result.IsSuccess)
         {
-            return BadRequest(new AuthResponse
-            {
-                Success = false,
-                Message = "Invalid input data",
-                Data = null
-            });
+            return Ok(ApiResponse<AuthLoginResponse?>.Success(result.Data, "Login successful."));
         }
 
-        var result = await _authService.LoginAsync(request);
-
-        if (!result.IsSuccess)
-        {
-            return Unauthorized(new AuthResponse
-            {
-                Success = false,
-                Message = result.ErrorMessage ?? "Login failed",
-                Data = null
-            });
-        }
-
-        return Ok(new AuthResponse
-        {
-            Success = true,
-            Message = "Login successful",
-            Data = result.Data
-        });
+        return Unauthorized(ApiResponse<object?>.Failure(null, result.Message ?? "Login failed."));
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    /// <summary>
+    /// Registers a new user.
+    /// </summary>
+    /// <remarks>
+    /// Creates a new user account with the provided registration information.
+    /// </remarks>
+    /// <param name="request">The registration details (name, email, password).</param>
+    /// <returns>A success message upon successful registration.</returns>
+    /// <response code="201">User registered successfully.</response>
+    /// <response code="400">Registration failed due to validation or business logic issues.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
+    [HttpPost(ApiRoutes.Auth.Post.Register)]
+    public async Task<IActionResult> Register([FromBody] AuthRegisterRequest request)
     {
-        if (!ModelState.IsValid)
+        ServiceResult<object?> result = await _authService.RegisterAsync(request);
+
+        if (result.IsSuccess)
         {
-            return BadRequest(new AuthResponse
-            {
-                Success = false,
-                Message = "Invalid input data",
-                Data = null
-            });
+            return CreatedAtAction(nameof(Register), ApiResponse<object?>.Success(null, result.Message, result.Errors));
         }
 
-        var result = await _authService.RegisterAsync(request);
-
-        if (!result.IsSuccess)
-        {
-            return BadRequest(new AuthResponse
-            {
-                Success = false,
-                Message = result.ErrorMessage ?? "Registration failed",
-                Data = null
-            });
-        }
-
-        return CreatedAtAction(nameof(Register), new AuthResponse
-        {
-            Success = true,
-            Message = "User registered successfully",
-            Data = null
-        });
+        return BadRequest(ApiResponse<object?>.Failure(null, result.Message ?? "Registration failed."));
     }
 
-    [HttpGet("me")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    /// <summary>
+    /// Gets information about the currently authenticated user.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns user profile data for the current logged-in user.
+    /// It requires a valid JWT in the `Authorization` header.
+    /// </remarks>
+    /// <returns>Returns user ID, name, email, and other profile information.</returns>
+    /// <response code="200">User profile retrieved successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">User ID in the token does not correspond to any user.</response>
+    [ProducesResponseType(typeof(ApiResponse<UserProfileResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [Authorize]
+    [HttpGet(ApiRoutes.Auth.Get.CurrentUser)]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Failure(null, "Invalid or missing token."));
         }
 
-        var user = await _authService.GetUserByIdAsync(userId);
-        if (user == null)
+        UserProfileResponse? user = await _authService.GetUserProfileByIdAsync(userId);
+
+        if (user is null)
         {
-            return NotFound();
+            return NotFound(ApiResponse<object?>.Failure(null, "User not found."));
         }
 
-        return Ok(new
-        {
-            success = true,
-            data = new
-            {
-                id = user.Id,
-                name = user.Name,
-                email = user.Email,
-                createdAt = user.CreatedAt,
-                lastLoginAt = user.LastLoginAt
-            }
-        });
+        return Ok(ApiResponse<UserProfileResponse>.Success(user, "User retrieved successfully."));
     }
-    [HttpPost("logout")]
+
+    /// <summary>
+    /// Logs the current user out.
+    /// </summary>
+    /// <remarks>
+    /// Logs the user out from the application. JWT tokens are stateless,
+    /// so this may invalidate refresh tokens or update user login state.
+    /// </remarks>
+    /// <returns>A confirmation message.</returns>
+    /// <response code="200">User logged out successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">User not found or already logged out.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [Authorize]
+    [HttpPost(ApiRoutes.Auth.Post.Logout)]
     public async Task<IActionResult> Logout()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized(new { message = "Invalid token" });
+        Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-        var result = await _authService.LogoutAsync(userId);
-        if (!result.IsSuccess)
-            return NotFound(new { message = result.Message });
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized(ApiResponse<object?>.Failure(null, "Invalid or missing token."));
 
-        return Ok(new { message = result.Message });
+        ServiceResult<object?> result = await _authService.LogoutAsync(userId);
+
+        if (result.IsSuccess)
+            return Ok(ApiResponse<object?>.Success(null, result.Message));
+
+        return NotFound(ApiResponse<object?>.Failure(null, result.Message));
     }
 }
