@@ -17,71 +17,64 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
 
         // Total expenses
         double totalExpenses = await _dbContext.Expenses
-            .Where(e => e.UserId == userId &&
-                        e.DateOfExpense.HasValue &&
-                        e.DateOfExpense.Value.Month == currentMonth &&
-                        e.DateOfExpense.Value.Year == currentYear)
-            .SumAsync(e => e.Amount);
+            .Where(e =>
+                e.UserId == userId &&
+                e.DateOfExpense.Month == currentMonth &&
+                e.DateOfExpense.Year == currentYear
+            ).SumAsync(e => e.Amount);
 
         // Total savings
         double totalSavings = await _dbContext.Expenses
-            .Where(e => e.UserId == userId &&
-                        e.Category == ExpenseCategory.Savings &&
-                        e.DateOfExpense.HasValue &&
-                        e.DateOfExpense.Value.Month == currentMonth &&
-                        e.DateOfExpense.Value.Year == currentYear)
-            .SumAsync(e => e.Amount);
+            .Where(e =>
+                e.UserId == userId &&
+                e.Category == ExpenseCategory.Savings &&
+                e.DateOfExpense.Month == currentMonth &&
+                e.DateOfExpense.Year == currentYear
+            ).SumAsync(e => e.Amount);
 
         // Budgets
-        var userBudgets = await _dbContext.Budgets
-            .Where(b => b.UserId == userId &&
-                        b.Month == currentMonth &&
-                        b.Year == currentYear)
-            .ToListAsync();
+        List<Budget> userBudgets = await _dbContext.Budgets
+            .Where(b =>
+                b.UserId == userId &&
+                b.Month == currentMonth &&
+                b.Year == currentYear
+            ).ToListAsync();
 
-        var expensesByCategory = await _dbContext.Expenses
-            .Where(e => e.UserId == userId &&
-                        e.DateOfExpense.HasValue &&
-                        e.DateOfExpense.Value.Month == currentMonth &&
-                        e.DateOfExpense.Value.Year == currentYear)
-            .GroupBy(e => e.Category)
-            .Select(g => new
+        // Expenses by category
+        List<CategorySpendingDto> expensesByCategory = await _dbContext.Expenses
+            .Where(e =>
+                e.UserId == userId &&
+                e.DateOfExpense.Month == currentMonth &&
+                e.DateOfExpense.Year == currentYear
+            ).GroupBy(e => e.Category)
+            .Select(g => new CategorySpendingDto
             {
                 Category = g.Key,
-                TotalSpent = g.Sum(e => e.Amount)
-            })
-            .ToListAsync();
+                TotalSpent = g.Sum(e => e.Amount),
+            }).ToListAsync();
 
-        var spentLookup = expensesByCategory.ToDictionary(e => e.Category, e => e.TotalSpent);
+        Dictionary<ExpenseCategory, double> spentLookup = expensesByCategory.ToDictionary(e => e.Category, e => e.TotalSpent);
 
-        List<BudgetStatusResponse> budgetStatuses = userBudgets
-            .Select(budget => new BudgetStatusResponse
+        // Budget statuses
+        List<BudgetStatusDto> budgetStatuses = [.. userBudgets
+            .Select(budget => new BudgetStatusDto
             {
                 Category = budget.Category,
                 Budgeted = budget.LimitAmount,
                 Spent = spentLookup.TryGetValue(budget.Category, out var spent) ? spent : 0
-            })
-            .ToList();
-
-        // Category breakdown
-        List<CategorySpendingResponse> categoryBreakdown = expensesByCategory
-            .Select(c => new CategorySpendingResponse
-            {
-                Category = c.Category.ToString(),
-                TotalSpent = c.TotalSpent
-            }).ToList();
+            })];
 
         // Recent transactions (limit to 5)
-        List<RecentTransactionResponse> recentTransactions = await _dbContext.Expenses
-            .Where(e => e.UserId == userId && e.DateOfExpense.HasValue)
+        List<RecentTransactionDto> recentTransactions = await _dbContext.Expenses
+            .Where(e => e.UserId == userId)
             .OrderByDescending(e => e.DateOfExpense)
             .Take(5)
-            .Select(e => new RecentTransactionResponse
+            .Select(e => new RecentTransactionDto
             {
                 Id = e.Id,
                 Category = e.Category.ToString(),
                 Amount = e.Amount,
-                DateOfExpense = e.DateOfExpense.Value,
+                DateOfExpense = e.DateOfExpense,
                 Description = e.Description
             })
             .ToListAsync();
@@ -89,29 +82,29 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
         // Saving goals
         var savingGoals = await _dbContext.SavingGoals
             .Where(sg => sg.UserId == userId && !sg.IsArchived)
-            .OrderByDescending(sg => sg.UpdatedAt)  // or Deadline or CreatedAt
+            .OrderByDescending(sg => sg.UpdatedAt)
             .Take(3)
-            .Select(sg => new SavingGoalProgressResponse
+            .Select(sg => new SavingGoalProgressDto
             {
                 Title = sg.Title,
                 TargetAmount = sg.TargetAmount,
                 CurrentAmount = sg.CurrentAmount,
                 Deadline = sg.Deadline,
-                // ProgressPercent = sg.TargetAmount == 0 ? 0 : Math.Round(sg.CurrentAmount / sg.TargetAmount * 100, 2)
             })
             .ToListAsync();
 
         // Daily trend for current month
-        List<DailySpendingResponse> monthlyExpenseTrends = await _dbContext.Expenses
-            .Where(e => e.UserId == userId &&
-                        e.DateOfExpense.HasValue &&
-                        e.DateOfExpense.Value.Month == currentMonth &&
-                        e.DateOfExpense.Value.Year == currentYear)
-            .GroupBy(e => e.DateOfExpense.Value.Date)
-            .Select(g => new DailySpendingResponse
+        List<DailySpendingDto> monthlyExpenseTrends = await _dbContext.Expenses
+            .Where(e =>
+                e.UserId == userId &&
+                e.DateOfExpense.Month == currentMonth &&
+                e.DateOfExpense.Year == currentYear
+            )
+            .GroupBy(e => e.DateOfExpense.Date)
+            .Select(g => new DailySpendingDto
             {
                 Date = g.Key,
-                TotalSpent = g.Sum(e => e.Amount)
+                TotalSpent = g.Sum(e => e.Amount),
             })
             .ToListAsync();
 
@@ -121,7 +114,7 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
             TotalExpenses = totalExpenses,
             TotalSavings = totalSavings,
             Budgets = budgetStatuses,
-            CategoryBreakdown = categoryBreakdown,
+            CategoryBreakdown = expensesByCategory,
             RecentTransactions = recentTransactions,
             SavingGoals = savingGoals,
             DailyTrend = monthlyExpenseTrends

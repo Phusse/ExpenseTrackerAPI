@@ -4,7 +4,7 @@ namespace ExpenseTracker.Models.DTOs.Dashboard;
 /// Represents a recent individual expense transaction recorded by the user.
 /// Used to show a snapshot of latest financial activity.
 /// </summary>
-public class RecentTransactionResponse
+public class RecentTransactionDto
 {
 	/// <summary>
 	/// Gets or sets the unique identifier of the transaction.
@@ -24,7 +24,7 @@ public class RecentTransactionResponse
 	/// <summary>
 	/// Gets or sets the date the expense occurred.
 	/// </summary>
-	public required DateTime DateOfExpense { get; set; }
+	public required DateTime? DateOfExpense { get; set; }
 
 	/// <summary>
 	/// Gets or sets the optional description or note for the transaction.

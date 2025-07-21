@@ -10,7 +10,7 @@ public class ApiResponse<T>
     /// <summary>
     /// Indicates whether the API operation was successful.
     /// </summary>
-    public required bool IsSuccess { get; set; }
+    public required bool Success { get; set; }
 
     /// <summary>
     /// A message describing the outcome of the operation (e.g., success or error message).
@@ -40,9 +40,9 @@ public class ApiResponse<T>
     /// <param name="message">Optional success message. Defaults to "Operation successful".</param>
     /// <param name="errors">Optional list of non-fatal issues or warnings related to the operation.</param>
     /// <returns>A successful <see cref="ApiResponse{T}"/> instance.</returns>
-    public static ApiResponse<T> Success(T? data = default, string? message = null, List<string>? errors = null) => new()
+    public static ApiResponse<T> Ok(T? data = default, string? message = null, List<string>? errors = null) => new()
     {
-        IsSuccess = true,
+        Success = true,
         Message = string.IsNullOrWhiteSpace(message) ? "Operation successful." : message,
         Data = data,
         Errors = errors,
@@ -55,9 +55,9 @@ public class ApiResponse<T>
     /// <param name="message">Optional failure message. Defaults to "Operation failed".</param>
     /// <param name="errors">A list of error messages explaining the failure.</param>
     /// <returns>A failed <see cref="ApiResponse{T}"/> instance.</returns>
-    public static ApiResponse<T> Failure(T? data = default, string? message = null, List<string>? errors = null) => new()
+    public static ApiResponse<T> Fail(T? data = default, string? message = null, List<string>? errors = null) => new()
     {
-        IsSuccess = false,
+        Success = false,
         Message = string.IsNullOrWhiteSpace(message) ? "Operation failed." : message,
         Data = data,
         Errors = errors,

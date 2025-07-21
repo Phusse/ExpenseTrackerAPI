@@ -4,7 +4,7 @@ namespace ExpenseTracker.Models.DTOs.Dashboard;
 /// Represents the total amount spent by the user on a specific day.
 /// Used for rendering daily trends in line charts.
 /// </summary>
-public class DailySpendingResponse
+public class DailySpendingDto
 {
 	/// <summary>
 	/// Gets or sets the date of the expense activity.

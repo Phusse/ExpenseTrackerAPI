@@ -5,7 +5,7 @@ namespace ExpenseTracker.Models.DTOs.Dashboard;
 /// <summary>
 /// Represents the budget status for a specific expense category.
 /// </summary>
-public class BudgetStatusResponse
+public class BudgetStatusDto
 {
 	/// <summary>
 	/// Gets or sets the name of the expense category.

@@ -9,9 +9,8 @@ using System.Security.Claims;
 namespace ExpenseTracker.Controllers;
 
 /// <summary>
-/// Handles authentication and user management requests.
+/// Provides authentication endpoints for user login, registration, profile retrieval, and logout.
 /// </summary>
-/// <param name="authService">The authentication service.</param>
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
 {
@@ -38,12 +37,12 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         ServiceResult<AuthLoginResponse?> result = await _authService.LoginAsync(request);
 
-        if (result.IsSuccess)
+        if (result.Success)
         {
-            return Ok(ApiResponse<AuthLoginResponse?>.Success(result.Data, "Login successful."));
+            return Ok(ApiResponse<AuthLoginResponse?>.Ok(result.Data, "Login successful."));
         }
 
-        return Unauthorized(ApiResponse<object?>.Failure(null, result.Message ?? "Login failed."));
+        return Unauthorized(ApiResponse<object?>.Fail(null, result.Message ?? "Login failed."));
     }
 
     /// <summary>
@@ -63,12 +62,12 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         ServiceResult<object?> result = await _authService.RegisterAsync(request);
 
-        if (result.IsSuccess)
+        if (result.Success)
         {
-            return CreatedAtAction(nameof(Register), ApiResponse<object?>.Success(null, result.Message, result.Errors));
+            return CreatedAtAction(nameof(Register), ApiResponse<object?>.Ok(null, result.Message, result.Errors));
         }
 
-        return BadRequest(ApiResponse<object?>.Failure(null, result.Message ?? "Registration failed."));
+        return BadRequest(ApiResponse<object?>.Fail(null, result.Message ?? "Registration failed."));
     }
 
     /// <summary>
@@ -93,17 +92,17 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
-            return Unauthorized(ApiResponse<object?>.Failure(null, "Invalid or missing token."));
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
         }
 
         UserProfileResponse? user = await _authService.GetUserProfileByIdAsync(userId);
 
         if (user is null)
         {
-            return NotFound(ApiResponse<object?>.Failure(null, "User not found."));
+            return NotFound(ApiResponse<object?>.Fail(null, "User not found."));
         }
 
-        return Ok(ApiResponse<UserProfileResponse>.Success(user, "User retrieved successfully."));
+        return Ok(ApiResponse<UserProfileResponse>.Ok(user, "User retrieved successfully."));
     }
 
     /// <summary>
@@ -127,13 +126,13 @@ public class AuthController(IAuthService authService) : ControllerBase
         Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized(ApiResponse<object?>.Failure(null, "Invalid or missing token."));
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
 
         ServiceResult<object?> result = await _authService.LogoutAsync(userId);
 
-        if (result.IsSuccess)
-            return Ok(ApiResponse<object?>.Success(null, result.Message));
+        if (result.Success)
+            return Ok(ApiResponse<object?>.Ok(null, result.Message));
 
-        return NotFound(ApiResponse<object?>.Failure(null, result.Message));
+        return NotFound(ApiResponse<object?>.Fail(null, result.Message));
     }
 }

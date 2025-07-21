@@ -3,7 +3,7 @@ namespace ExpenseTracker.Models.DTOs.Dashboard;
 /// <summary>
 /// Represents a user's savings goal and current progress toward achieving it.
 /// </summary>
-public class SavingGoalProgressResponse
+public class SavingGoalProgressDto
 {
 	/// <summary>
 	/// Gets or sets the title or name of the savings goal.

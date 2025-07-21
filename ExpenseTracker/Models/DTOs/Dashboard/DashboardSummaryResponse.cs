@@ -22,28 +22,28 @@ public class DashboardSummaryResponse
     /// Gets or sets the list of budget statuses grouped by category.
     /// Each entry includes the budgeted amount, spent amount, and calculated remaining balance.
     /// </summary>
-    public List<BudgetStatusResponse> Budgets { get; set; } = [];
+    public List<BudgetStatusDto> Budgets { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the breakdown of total spending grouped by expense category.
     /// Useful for visualizing category proportions in pie charts.
     /// </summary>
-    public List<CategorySpendingResponse> CategoryBreakdown { get; set; } = [];
+    public List<CategorySpendingDto> CategoryBreakdown { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the trend of daily spending within the selected time period.
     /// Useful for generating line charts of user activity over time.
     /// </summary>
-    public List<DailySpendingResponse> DailyTrend { get; set; } = [];
+    public List<DailySpendingDto> DailyTrend { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of the user's most recent expense transactions.
     /// </summary>
-    public List<RecentTransactionResponse> RecentTransactions { get; set; } = [];
+    public List<RecentTransactionDto> RecentTransactions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of the user's active or archived savings goals,
     /// including progress toward each goal based on contributions.
     /// </summary>
-    public List<SavingGoalProgressResponse> SavingGoals { get; set; } = [];
+    public List<SavingGoalProgressDto> SavingGoals { get; set; } = [];
 }

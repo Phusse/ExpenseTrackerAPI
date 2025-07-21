@@ -9,7 +9,7 @@ public class ServiceResult<T>
 	/// <summary>
 	/// Indicates whether the operation completed successfully.
 	/// </summary>
-	public required bool IsSuccess { get; set; }
+	public required bool Success { get; set; }
 
 	/// <summary>
 	/// A descriptive message indicating the outcome of the operation.
@@ -36,9 +36,9 @@ public class ServiceResult<T>
 	/// <param name="message">An optional message describing the success. Defaults to <c>null</c>.</param>
 	/// <param name="errors">Optional list of non-fatal issues or warnings related to the operation.</param>
 	/// <returns>A new <see cref="ServiceResult{T}"/> representing a successful result.</returns>
-	public static ServiceResult<T> Success(T data, string? message = null, List<string>? errors = null) => new()
+	public static ServiceResult<T> Ok(T data, string? message = null, List<string>? errors = null) => new()
 	{
-		IsSuccess = true,
+		Success = true,
 		Message = message,
 		Errors = errors,
 		Data = data,
@@ -51,9 +51,9 @@ public class ServiceResult<T>
 	/// <param name="message">An optional error message describing the failure. Defaults to <c>null</c>.</param>
 	/// <param name="errors">A list of error messages explaining the failure.</param>
 	/// <returns>A new <see cref="ServiceResult{T}"/> representing a failed result.</returns>
-	public static ServiceResult<T> Failure(T data, string? message = null, List<string>? errors = null) => new()
+	public static ServiceResult<T> Fail(T data, string? message = null, List<string>? errors = null) => new()
 	{
-		IsSuccess = false,
+		Success = false,
 		Message = message,
 		Errors = errors,
 		Data = data,

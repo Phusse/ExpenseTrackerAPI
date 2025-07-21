@@ -40,9 +40,8 @@ public class ExpenseService : IExpenseService
             double spent = await _dbContext.Expenses
                 .Where(e => e.UserId == userId &&
                             e.Category == expenseToCreate.Category &&
-                            e.DateOfExpense.HasValue &&
-                            e.DateOfExpense.Value.Month == month &&
-                            e.DateOfExpense.Value.Year == year)
+                            e.DateOfExpense.Month == month &&
+                            e.DateOfExpense.Year == year)
                 .SumAsync(e => e.Amount);
 
             string message = "Expense recorded";
@@ -149,30 +148,29 @@ public class ExpenseService : IExpenseService
         // Filter by month and year
         if (month.HasValue && year.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                 e.DateOfExpense.Value.Month == month.Value &&
-                                 e.DateOfExpense.Value.Year == year.Value);
+            query = query.Where(e =>
+                                 e.DateOfExpense.Month == month.Value &&
+                                 e.DateOfExpense.Year == year.Value);
         }
         // Filter by date range
         else if (startDate.HasValue && endDate.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                e.DateOfExpense.Value >= startDate.Value &&
-                                e.DateOfExpense.Value <= endDate.Value);
+            query = query.Where(e =>
+                                e.DateOfExpense >= startDate.Value &&
+                                e.DateOfExpense <= endDate.Value);
         }
         // Filter only by year
         else if (year.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Year == year.Value);
+            query = query.Where(e => e.DateOfExpense.Year == year.Value);
         }
         // Filter only by month (with current year fallback)
         else if (month.HasValue)
         {
             var currentYear = DateTime.UtcNow.Year;
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Month == month.Value &&
-                                     e.DateOfExpense.Value.Year == currentYear);
+            query = query.Where(e =>
+                                     e.DateOfExpense.Month == month.Value &&
+                                     e.DateOfExpense.Year == currentYear);
         }
 
         double total = await query.SumAsync(e => e.Amount);

@@ -50,7 +50,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
             .SelectMany(e => e.Value!.Errors)
             .Select(e => e.ErrorMessage)];
 
-        var response = ApiResponse<object?>.Failure(null, "Invalid input data", errors);
+        var response = ApiResponse<object?>.Fail(null, "Invalid input data", errors);
         return new BadRequestObjectResult(response);
     };
 });
@@ -126,7 +126,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
 
-            var response = ApiResponse<object?>.Failure(null, "Invalid or missing token.");
+            var response = ApiResponse<object?>.Fail(null, "Invalid or missing token.");
             var json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
@@ -137,7 +137,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/json";
 
-            var response = ApiResponse<object?>.Failure(null, "You do not have access to this resource.");
+            var response = ApiResponse<object?>.Fail(null, "You do not have access to this resource.");
             var json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);

@@ -52,9 +52,8 @@ public class BudgetService : IBudgetService
         return await _dbContext.Expenses
             .Where(e => e.UserId == userId &&
                         e.Category == category &&
-                        e.DateOfExpense != null &&
-                        e.DateOfExpense.Value.Month == month &&
-                        e.DateOfExpense.Value.Year == year)
+                        e.DateOfExpense.Month == month &&
+                        e.DateOfExpense.Year == year)
             .SumAsync(e => e.Amount);
     }
 
