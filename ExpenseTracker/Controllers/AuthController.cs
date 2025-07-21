@@ -28,8 +28,10 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// <param name="request">The login credentials (email and password).</param>
     /// <returns>Returns a JWT token if login is successful.</returns>
     /// <response code="200">Login successful; JWT returned in response.</response>
+    /// <response code="400">Login failed due to validation or business logic issues.</response>
     /// <response code="401">Login failed due to invalid credentials.</response>
     [ProducesResponseType(typeof(ApiResponse<AuthLoginResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [HttpPost(ApiRoutes.Auth.Post.Login)]
     public async Task<IActionResult> Login([FromBody] AuthLoginRequest request)
@@ -38,10 +40,10 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         if (result.IsSuccess)
         {
-            return Ok(ApiResponse<object?>.Success(result.Data, "Login successful."));
+            return Ok(ApiResponse<AuthLoginResponse?>.Success(result.Data, "Login successful."));
         }
 
-        return Unauthorized(ApiResponse<object?>.Failure(null, result.Message ?? "Login failed"));
+        return Unauthorized(ApiResponse<object?>.Failure(null, result.Message ?? "Login failed."));
     }
 
     /// <summary>
@@ -80,7 +82,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// <response code="200">User profile retrieved successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">User ID in the token does not correspond to any user.</response>
-    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<UserProfileResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
     [Authorize]
@@ -94,23 +96,14 @@ public class AuthController(IAuthService authService) : ControllerBase
             return Unauthorized(ApiResponse<object?>.Failure(null, "Invalid or missing token."));
         }
 
-        User? user = await _authService.GetUserByIdAsync(userId);
+        UserProfileResponse? user = await _authService.GetUserProfileByIdAsync(userId);
 
         if (user is null)
         {
             return NotFound(ApiResponse<object?>.Failure(null, "User not found."));
         }
 
-        var userInfo = new
-        {
-            id = user.Id,
-            name = user.Name,
-            email = user.Email,
-            createdAt = user.CreatedAt,
-            lastLoginAt = user.LastLoginAt
-        };
-
-        return Ok(ApiResponse<object?>.Success(userInfo, "User retrieved successfully."));
+        return Ok(ApiResponse<UserProfileResponse>.Success(user, "User retrieved successfully."));
     }
 
     /// <summary>

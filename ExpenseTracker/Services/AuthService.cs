@@ -150,9 +150,20 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
         }
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid userId)
+    public async Task<UserProfileResponse?> GetUserProfileByIdAsync(Guid userId)
     {
-        return await _dbContext.Users.FindAsync(userId);
+        User? user = await _dbContext.Users.FindAsync(userId);
+
+        return user is null
+            ? null
+            : new UserProfileResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt
+            };
     }
 
     public async Task<User?> GetUserByEmailAsync(string email)

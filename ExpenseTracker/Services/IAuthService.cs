@@ -23,11 +23,11 @@ public interface IAuthService
     Task<ServiceResult<object?>> RegisterAsync(AuthRegisterRequest request);
 
     /// <summary>
-    /// Retrieves a user by their unique identifier.
+    /// Retrieves a user profile by their unique identifier.
     /// </summary>
     /// <param name="userId">The ID of the user to retrieve.</param>
-    /// <returns>The corresponding <see cref="User"/>, or null if not found.</returns>
-    Task<User?> GetUserByIdAsync(Guid userId);
+    /// <returns>The corresponding <see cref="UserProfileResponse"/>, or null if not found.</returns>
+    Task<UserProfileResponse?> GetUserProfileByIdAsync(Guid userId);
 
     /// <summary>
     /// Retrieves a user by their email address.
