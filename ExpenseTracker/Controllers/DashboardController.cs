@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ExpenseTracker.Contracts;
+using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 [ApiController]

@@ -9,25 +9,25 @@ public class ServiceResult<T>
 	/// <summary>
 	/// Indicates whether the operation completed successfully.
 	/// </summary>
-	public required bool IsSuccess { get; init; }
+	public required bool IsSuccess { get; set; }
 
 	/// <summary>
 	/// A descriptive message indicating the outcome of the operation.
 	/// Used to convey error messages, status updates, or informational text.
 	/// </summary>
-	public string? Message { get; init; }
+	public string? Message { get; set; }
 
 	/// <summary>
 	/// A list of errors related to the operation, such as validation or warnings.
 	/// Can be used for both success and failure responses.
 	/// </summary>
-	public List<string>? Errors { get; init; }
+	public List<string>? Errors { get; set; }
 
 	/// <summary>
 	/// The result data returned from the operation, if available.
 	/// May be <c>null</c> for failures or operations that don't produce a result.
 	/// </summary>
-	public T? Data { get; init; }
+	public T? Data { get; set; }
 
 	/// <summary>
 	/// Creates a successful <see cref="ServiceResult{T}"/> with the specified result data and optional message.

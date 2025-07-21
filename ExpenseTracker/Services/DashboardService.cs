@@ -1,5 +1,7 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
+using ExpenseTracker.Models.DTOs.Dashboard;
+using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
 public class DashboardService : IDashboardService
@@ -11,7 +13,7 @@ public class DashboardService : IDashboardService
         _dbContext = dbContext;
     }
 
-    public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(Guid userId)
+    public async Task<DashboardSummaryResponse> GetDashboardSummaryAsync(Guid userId)
     {
         var now = DateTime.UtcNow;
         var currentMonth = now.Month;
@@ -36,7 +38,7 @@ public class DashboardService : IDashboardService
         // 3. Budget health per category
         var categories = Enum.GetValues(typeof(ExpenseCategory)).Cast<ExpenseCategory>();
 
-        var budgetStatuses = new List<BudgetStatusDto>();
+        var budgetStatuses = new List<BudgetStatusResponse>();
 
         foreach (var category in categories)
         {
@@ -57,16 +59,16 @@ public class DashboardService : IDashboardService
 
             if (budget != null)
             {
-                budgetStatuses.Add(new BudgetStatusDto
+                budgetStatuses.Add(new BudgetStatusResponse
                 {
-                    Category = category.ToString(),
+                    // Category = category.ToString(),
                     Budgeted = budget.LimitAmount,
                     Spent = spent
                 });
             }
         }
 
-        return new DashboardSummaryDto
+        return new DashboardSummaryResponse
         {
             TotalExpenses = totalExpenses,
             TotalSavings = totalSavings,

@@ -63,7 +63,7 @@ if (builder.Environment.IsDevelopment())
         // get self generated xml document
         string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        options.IncludeXmlComments(xmlPath);
+        options.IncludeXmlComments(xmlPath, true);
 
         // Add security token auth to the api
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

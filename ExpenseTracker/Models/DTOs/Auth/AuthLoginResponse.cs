@@ -8,25 +8,25 @@ public class AuthLoginResponse
     /// <summary>
     /// The unique identifier of the authenticated user.
     /// </summary>
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 
     /// <summary>
     /// The full name of the user.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
 
     /// <summary>
     /// The email address of the user.
     /// </summary>
-    public string Email { get; set; } = string.Empty;
+    public required string Email { get; set; }
 
     /// <summary>
     /// The JWT token issued for the authenticated session.
     /// </summary>
-    public string Token { get; set; } = string.Empty;
+    public required string Token { get; set; }
 
     /// <summary>
     /// The date and time when the token expires.
     /// </summary>
-    public DateTime ExpiresAt { get; set; }
+    public required DateTime ExpiresAt { get; set; }
 }

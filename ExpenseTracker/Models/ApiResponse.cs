@@ -10,28 +10,28 @@ public class ApiResponse<T>
     /// <summary>
     /// Indicates whether the API operation was successful.
     /// </summary>
-    public required bool IsSuccess { get; init; }
+    public required bool IsSuccess { get; set; }
 
     /// <summary>
     /// A message describing the outcome of the operation (e.g., success or error message).
     /// </summary>
-    public required string Message { get; init; }
+    public required string Message { get; set; }
 
     /// <summary>
     /// A list of errors related to the operation, such as validation or warnings.
     /// Can be used for both success and failure responses.
     /// </summary>
-    public List<string>? Errors { get; init; }
+    public List<string>? Errors { get; set; }
 
     /// <summary>
     /// The UTC timestamp indicating when the response was generated.
     /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Optional data returned by the API. May be null for operations that do not return content.
     /// </summary>
-    public T? Data { get; init; }
+    public T? Data { get; set; }
 
     /// <summary>
     /// Creates a successful API response.
