@@ -1,9 +1,10 @@
 using System.Security.Claims;
-using ExpenseTracker.Contracts;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs;
 using ExpenseTracker.Models.Responses;
 using ExpenseTracker.Services;
+using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Utilities.Routing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,7 +40,10 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [Route(ApiRoutes.Savings.Post.Create)]
     public async Task<IActionResult> CreateGoal([FromBody] CreateSavingGoalRequest request)
     {
-        Guid userId = GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(new { message = "Invalid or missing user token." });
+        }
 
         (
             bool isSuccess,
@@ -59,9 +63,14 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [Route(ApiRoutes.Savings.Get.All)]
     public async Task<IActionResult> GetAllGoals([FromQuery] bool includeArchived = false)
     {
-        Guid userId = GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(new { message = "Invalid or missing user token." });
+        }
+
         IEnumerable<SavingGoal> goals = await _savingGoalService.GetAllGoalsAsync(userId, includeArchived);
         return Ok(goals.Select(SavingGoalResponse.MapToResponse));
+
     }
 
     /// <summary>
@@ -70,7 +79,11 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [HttpGet(ApiRoutes.Savings.Get.ById)]
     public async Task<IActionResult> GetGoalById([FromRoute] Guid id)
     {
-        Guid userId = GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(new { message = "Invalid or missing user token." });
+        }
+
         SavingGoal? goal = await _savingGoalService.GetGoalByIdAsync(id, userId);
 
         return goal is not null
@@ -84,7 +97,10 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [HttpPut(ApiRoutes.Savings.Put.Update)]
     public async Task<IActionResult> UpdateGoal([FromRoute] Guid id, [FromBody] UpdateSavingGoalRequest request)
     {
-        Guid userId = GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(new { message = "Invalid or missing user token." });
+        }
 
         (
             bool isSuccess,
@@ -102,7 +118,10 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [HttpPatch(ApiRoutes.Savings.Patch.Archive)]
     public async Task<IActionResult> ArchiveGoal([FromRoute] Guid id, [FromQuery] bool archiveGoal = true)
     {
-        Guid userId = GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(new { message = "Invalid or missing user token." });
+        }
 
         (
             bool isSuccess,
@@ -123,12 +142,14 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [HttpDelete(ApiRoutes.Savings.Delete.ById)]
     public async Task<IActionResult> DeleteGoal([FromRoute] Guid id)
     {
-        var userId = GetUserId();
-        var result = await _savingGoalService.DeleteGoalAsync(id, userId);
+        if (!User.TryGetUserId(out Guid userId))
+            return Unauthorized(new { message = "Invalid or missing user token." });
 
-        return result.IsSuccess
+        var (IsSuccess, ErrorMessage) = await _savingGoalService.DeleteGoalAsync(id, userId);
+
+        return IsSuccess
             ? Ok(new { message = "Saving goal deleted." })
-            : NotFound(new { message = result.ErrorMessage });
+            : NotFound(new { message = ErrorMessage });
     }
 
     /// <summary>
@@ -138,17 +159,13 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     [Route(ApiRoutes.Savings.Post.Contribute)]
     public async Task<IActionResult> AddContribution([FromBody] AddSavingContributionRequest request)
     {
-        var userId = GetUserId();
-        var result = await _savingGoalService.AddSavingContributionAsync(request, userId);
+        if (!User.TryGetUserId(out Guid userId))
+            return Unauthorized(new { message = "Invalid or missing user token." });
 
-        return result.IsSuccess
+        var (IsSuccess, ErrorMessage) = await _savingGoalService.AddSavingContributionAsync(request, userId);
+
+        return IsSuccess
             ? Ok(new { message = "Contribution added successfully." })
-            : BadRequest(new { message = result.ErrorMessage });
-    }
-
-    private Guid GetUserId()
-    {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(claim?.Value, out var userId) ? userId : Guid.Empty;
+            : BadRequest(new { message = ErrorMessage });
     }
 }

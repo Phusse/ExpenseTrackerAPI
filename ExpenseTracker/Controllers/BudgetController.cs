@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Enums;
-using ExpenseTracker.Contracts;
-using System.Security.Claims;
 using ExpenseTracker.Services;
+using ExpenseTracker.Models.DTOs.Budget;
+using ExpenseTracker.Utilities.Routing;
+using ExpenseTracker.Utilities.Extension;
 
-[ApiController]
 [Authorize]
+[ApiController]
 public class BudgetController(IBudgetService budgetService) : ControllerBase
 {
     private readonly IBudgetService _budgetService = budgetService;
 
-	[HttpPost]
-    [Route(ApiRoutes.Budget.Post.Create)]
+	[HttpPost(ApiRoutes.Budget.Post.Create)]
     public async Task<IActionResult> CreateBudget([FromBody] CreateBudgetRequest request)
     {
-        var userId = GetUserId();
+        var userId = User.GetUserId();
+
         if (userId == Guid.Empty)
             return Unauthorized(new { message = "Invalid user token." });
 
@@ -69,11 +70,5 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
             Remaining = budgeted - spent,
             PercentageUsed = Math.Round((spent / budgeted) * 100, 2)
         });
-    }
-
-    private Guid GetUserId()
-    {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(claim?.Value, out var userId) ? userId : Guid.Empty;
     }
 }

@@ -2,8 +2,8 @@ using System.Security.Claims;
 using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ExpenseTracker.Contracts;
 using System.Globalization;
+using ExpenseTracker.Utilities.Routing;
 
 namespace ExpenseTracker.Controllers;
 
@@ -20,7 +20,9 @@ public class ExpenseController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
+        //TODO: use the extension method User.getuserid 
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");

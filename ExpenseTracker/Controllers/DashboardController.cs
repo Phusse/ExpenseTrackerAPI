@@ -1,8 +1,9 @@
 using System.Security.Claims;
-using ExpenseTracker.Contracts;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Dashboard;
 using ExpenseTracker.Services;
+using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Utilities.Routing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,9 +33,7 @@ public class DashboardController(IDashboardService dashboardService, ILogger<Das
     [HttpGet(ApiRoutes.Dashboard.Get.Summary)]
     public async Task<IActionResult> GetSummary()
     {
-        Guid userId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;
-
-        if (userId == Guid.Empty)
+        if (!User.TryGetUserId(out Guid userId))
         {
             return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid user token."));
         }

@@ -1,7 +1,8 @@
-using ExpenseTracker.Contracts;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Auth;
 using ExpenseTracker.Services;
+using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Utilities.Routing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -88,11 +89,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpGet(ApiRoutes.Auth.Get.CurrentUser)]
     public async Task<IActionResult> GetCurrentUser()
     {
-        Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        if (!User.TryGetUserId(out Guid userId))
         {
-            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid user token."));
         }
 
         UserProfileResponse? user = await _authService.GetUserProfileByIdAsync(userId);

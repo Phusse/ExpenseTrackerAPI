@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Contracts;
+namespace ExpenseTracker.Utilities.Routing;
 
 /// <summary>
 /// Defines all static API route paths used in the application.
