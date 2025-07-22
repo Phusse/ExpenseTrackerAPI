@@ -20,28 +20,26 @@ public interface IBudgetService
     Task<ServiceResult<CreateBudgetResponse?>> CreateBudgetAsync(CreateBudgetRequest request, Guid userId);
 
     /// <summary>
-    /// Retrieves the total amount a user has spent in a specific category and month.
+    /// Calculates the total amount a user has spent in a specific expense category for a given month.
     /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <param name="category">The expense category.</param>
-    /// <param name="month">The month (1-12) to filter by.</param>
-    /// <param name="year">The year to filter by.</param>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="category">The expense category to filter by.</param>
+    /// <param name="date">Any date within the target month and year.</param>
     /// <returns>
-    /// A <see cref="ServiceResult{T}"/> containing the total amount spent.
+    /// A <see cref="double"/> representing the total amount spent by the user in the specified category and period.
     /// </returns>
-    Task<ServiceResult<double>> GetSpentAmountForCategoryAsync(Guid userId, ExpenseCategory category, int month, int year);
+    Task<double> GetSpentAmountForCategoryAsync(Guid userId, ExpenseCategory category, DateOnly date);
 
     /// <summary>
-    /// Retrieves the user's budget and actual spending for a specific category and month.
+    /// Retrieves the user's budgeted and actual spending amounts for a specific category and month.
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
-    /// <param name="category">The category to evaluate.</param>
-    /// <param name="month">The month (1-12).</param>
-    /// <param name="year">The year.</param>
+    /// <param name="category">The expense category to evaluate.</param>
+    /// <param name="date">A date representing the target month and year.</param>
     /// <returns>
-    /// A <see cref="ServiceResult{T}"/> containing budget and spending information.
+    /// A <see cref="BudgetStatusResponse"/> containing both the budgeted and spent amounts.
     /// </returns>
-    Task<ServiceResult<BudgetStatusResponse?>> GetBudgetStatusAsync(Guid userId, ExpenseCategory category, int month, int year);
+    Task<BudgetStatusResponse> GetBudgetStatusAsync(Guid userId, ExpenseCategory category, DateOnly date);
 
     /// <summary>
     /// Retrieves a detailed summary of a user's budget for a given category and month,
@@ -49,10 +47,9 @@ public interface IBudgetService
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
     /// <param name="category">The budget category.</param>
-    /// <param name="month">The month (1-12).</param>
-    /// <param name="year">The year.</param>
+    /// <param name="date">Any date within the target month and year.</param>
     /// <returns>
     /// A <see cref="BudgetSummaryResponse"/> object containing detailed budget performance information.
     /// </returns>
-    Task<BudgetSummaryResponse> GetBudgetSummaryAsync(Guid userId, ExpenseCategory category, int month, int year);
+    Task<BudgetSummaryResponse> GetBudgetSummaryAsync(Guid userId, ExpenseCategory category, DateOnly date);
 }
