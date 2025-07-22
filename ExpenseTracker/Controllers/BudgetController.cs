@@ -3,19 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Contracts;
 using System.Security.Claims;
+using ExpenseTracker.Services;
 
 [ApiController]
 [Authorize]
-public class BudgetController : ControllerBase
+public class BudgetController(IBudgetService budgetService) : ControllerBase
 {
-    private readonly IBudgetService _budgetService;
+    private readonly IBudgetService _budgetService = budgetService;
 
-    public BudgetController(IBudgetService budgetService)
-    {
-        _budgetService = budgetService;
-    }
-
-    [HttpPost]
+	[HttpPost]
     [Route(ApiRoutes.Budget.Post.Create)]
     public async Task<IActionResult> CreateBudget([FromBody] CreateBudgetRequest request)
     {

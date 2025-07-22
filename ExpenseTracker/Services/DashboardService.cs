@@ -36,8 +36,8 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
         List<Budget> userBudgets = await _dbContext.Budgets
             .Where(b =>
                 b.UserId == userId &&
-                b.Month == currentMonth &&
-                b.Year == currentYear
+                b.Period.Month == currentMonth &&
+                b.Period.Year == currentYear
             ).ToListAsync();
 
         // Expenses by category
@@ -60,7 +60,7 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
             .Select(budget => new BudgetStatusDto
             {
                 Category = budget.Category,
-                Budgeted = budget.LimitAmount,
+                Budgeted = budget.Limit,
                 Spent = spentLookup.TryGetValue(budget.Category, out var spent) ? spent : 0
             })];
 

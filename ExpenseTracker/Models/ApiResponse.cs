@@ -2,7 +2,6 @@ namespace ExpenseTracker.Models;
 
 /// <summary>
 /// Standard API response wrapper that provides a consistent structure for all API results.
-/// T represents the data payload returned in the response.
 /// </summary>
 /// <typeparam name="T">The type of the data payload returned in the response.</typeparam>
 public class ApiResponse<T>

@@ -5,18 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
-public class ExpenseService : IExpenseService
+public class ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService) : IExpenseService
 {
-    private readonly ExpenseTrackerDbContext _dbContext;
-    private readonly IEmailService _emailService;
+    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
+    private readonly IEmailService _emailService = emailService;
 
-    public ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService)
-    {
-        _dbContext = dbContext;
-        _emailService = emailService;
-    }
-
-    public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
+	public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
     {
         try
         {
@@ -34,8 +28,8 @@ public class ExpenseService : IExpenseService
             var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
                 b.UserId == userId &&
                 b.Category == expenseToCreate.Category &&
-                b.Month == month &&
-                b.Year == year);
+                b.Period.Month == month &&
+                b.Period.Year == year);
 
             double spent = await _dbContext.Expenses
                 .Where(e => e.UserId == userId &&
@@ -48,15 +42,15 @@ public class ExpenseService : IExpenseService
 
             if (budget != null)
             {
-                double remaining = budget.LimitAmount - spent;
+                double remaining = budget.Limit - spent;
 
                 if (remaining <= 0)
                 {
-                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}.";
+                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.Limit} budget for {expenseToCreate.Category}.";
                 }
                 else
                 {
-                    message = $"You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
+                    message = $"You’ve spent ₦{spent} out of your ₦{budget.Limit} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
                 }
             }
 

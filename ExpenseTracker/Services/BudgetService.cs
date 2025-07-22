@@ -3,25 +3,21 @@ using ExpenseTracker.Enums;
 using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Models.DTOs;
+using ExpenseTracker.Services;
 
-public class BudgetService : IBudgetService
+internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
 {
-    private readonly ExpenseTrackerDbContext _dbContext;
-
-    public BudgetService(ExpenseTrackerDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
 
     public async Task<(bool IsSuccess, Budget? Data, string? ErrorMessage)> CreateBudgetAsync(CreateBudgetRequest request, Guid userId)
     {
         try
         {
-            var existing = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
+            Budget? existing = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
                 b.UserId == userId &&
                 b.Category == request.Category &&
-                b.Month == request.Month &&
-                b.Year == request.Year);
+                b.Period.Month == request.Month &&
+                b.Period.Year == request.Year);
 
             if (existing != null)
                 return (false, null, "Budget already exists for this category and month.");
@@ -31,9 +27,8 @@ public class BudgetService : IBudgetService
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Category = request.Category,
-                LimitAmount = request.LimitAmount,
-                Month = request.Month,
-                Year = request.Year
+                Limit = request.Limit,
+                Period = new DateOnly(request.Year, request.Month, 1) // 1st day of the month
             };
 
             await _dbContext.Budgets.AddAsync(budget);
@@ -62,11 +57,11 @@ public class BudgetService : IBudgetService
         var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
             b.UserId == userId &&
             b.Category == category &&
-            b.Month == month &&
-            b.Year == year);
+            b.Period.Month == month &&
+            b.Period.Year == year);
 
         var spent = await GetSpentAmountForCategoryAsync(userId, category, month, year);
-        return (budget?.LimitAmount ?? 0, spent);
+        return (budget?.Limit ?? 0, spent);
     }
 
     public async Task<BudgetSummaryResponse> GetBudgetSummaryAsync(Guid userId, ExpenseCategory category, int month, int year)
