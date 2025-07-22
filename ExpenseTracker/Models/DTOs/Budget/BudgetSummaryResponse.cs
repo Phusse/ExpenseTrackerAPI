@@ -4,6 +4,7 @@ namespace ExpenseTracker.Models.DTOs.Budget;
 
 /// <summary>
 /// Represents a summary of a user's budget usage for a specific category and time period.
+/// Includes calculated metrics like percentage of budget used and contextual usage messages.
 /// </summary>
 public class BudgetSummaryResponse
 {
@@ -28,12 +29,35 @@ public class BudgetSummaryResponse
     public required double SpentAmount { get; set; }
 
     /// <summary>
-    /// The percentage of the budget that has been used (0 to 100).
+    /// Gets the remaining amount in the budget (Budgeted - Spent).
     /// </summary>
-    public required double PercentageUsed { get; set; }
+    public double RemainingAmount => BudgetedAmount - SpentAmount;
 
     /// <summary>
-    /// A message giving context or warnings about the budget usage.
+    /// The percentage of the budget that has been used, calculated as (SpentAmount / BudgetedAmount) * 100.
+    /// Returns 0 if the budgeted amount is zero.
     /// </summary>
-    public required string Message { get; set; }
+    public double PercentageUsed => BudgetedAmount == 0
+        ? 0
+        : Math.Round(SpentAmount / BudgetedAmount * 100, 2);
+
+    /// <summary>
+    /// A context-sensitive message indicating the user's current budget usage status:
+    /// - "No budget set for this category." if BudgetedAmount is 0.
+    /// - "You have exceeded your budget!" if usage exceeds 100%.
+    /// - "You have reached your budget limit." if usage is exactly 100%.
+    /// - "You have used more than 70% of your budget." if usage is 70% or higher.
+    /// - "You are within your budget." otherwise.
+    /// </summary>
+    public string Message => BudgetedAmount switch
+    {
+        0 => "No budget set for this category.",
+        _ => PercentageUsed switch
+        {
+            > 100 => "You have exceeded your budget!",
+            100 => "You have reached your budget limit.",
+            >= 70 => "You have used more than 70% of your budget.",
+            _ => "You are within your budget.",
+        }
+    };
 }

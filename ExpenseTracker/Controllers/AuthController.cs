@@ -5,7 +5,6 @@ using ExpenseTracker.Utilities.Extension;
 using ExpenseTracker.Utilities.Routing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace ExpenseTracker.Controllers;
 
@@ -122,15 +121,17 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost(ApiRoutes.Auth.Post.Logout)]
     public async Task<IActionResult> Logout()
     {
-        Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        if (!User.TryGetUserId(out Guid userId))
+        {
             return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+        }
 
         ServiceResult<object?> result = await _authService.LogoutAsync(userId);
 
         if (result.Success)
+        {
             return Ok(ApiResponse<object?>.Ok(null, result.Message));
+        }
 
         return NotFound(ApiResponse<object?>.Fail(null, result.Message));
     }

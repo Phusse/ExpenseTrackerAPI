@@ -1,3 +1,5 @@
+using ExpenseTracker.Models.DTOs.Budget;
+
 namespace ExpenseTracker.Models.DTOs.Dashboard;
 
 /// <summary>
@@ -22,7 +24,7 @@ public class DashboardSummaryResponse
     /// Gets or sets the list of budget statuses grouped by category.
     /// Each entry includes the budgeted amount, spent amount, and calculated remaining balance.
     /// </summary>
-    public List<BudgetStatusDto> Budgets { get; set; } = [];
+    public List<BudgetSummaryResponse> Budgets { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the breakdown of total spending grouped by expense category.

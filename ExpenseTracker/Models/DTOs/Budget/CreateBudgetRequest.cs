@@ -27,5 +27,5 @@ public class CreateBudgetRequest
     /// Only the month and year components are used; the day should typically be the first of the month.
     /// </summary>
     [Required]
-    public DateTime Period { get; set; }
+    public DateOnly Period { get; set; }
 }

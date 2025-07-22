@@ -1,6 +1,7 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
+using ExpenseTracker.Models.DTOs.Budget;
 using ExpenseTracker.Models.DTOs.Dashboard;
 using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,9 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
 
     public async Task<DashboardSummaryResponse> GetDashboardSummaryAsync(Guid userId)
     {
-        DateTime now = DateTime.UtcNow;
-        int currentMonth = now.Month;
-        int currentYear = now.Year;
+        DateTime currentTime = DateTime.UtcNow;
+        int currentMonth = currentTime.Month;
+        int currentYear = currentTime.Year;
 
         // Total expenses
         double totalExpenses = await _dbContext.Expenses
@@ -40,6 +41,8 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
                 b.Period.Year == currentYear
             ).ToListAsync();
 
+        Console.WriteLine("userBudgets: " + userBudgets.ToString());
+
         // Expenses by category
         List<CategorySpendingDto> expensesByCategory = await _dbContext.Expenses
             .Where(e =>
@@ -55,13 +58,16 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
 
         Dictionary<ExpenseCategory, double> spentLookup = expensesByCategory.ToDictionary(e => e.Category, e => e.TotalSpent);
 
+        Console.WriteLine("spent: " + spentLookup.ToString());
+
         // Budget statuses
-        List<BudgetStatusDto> budgetStatuses = [.. userBudgets
-            .Select(budget => new BudgetStatusDto
+        List<BudgetSummaryResponse> budgetStatuses = [.. userBudgets
+            .Select(budget => new BudgetSummaryResponse
             {
                 Category = budget.Category,
-                Budgeted = budget.Limit,
-                Spent = spentLookup.TryGetValue(budget.Category, out var spent) ? spent : 0
+                BudgetedAmount = budget.Limit,
+                SpentAmount = spentLookup.TryGetValue(budget.Category, out var spent) ? spent : 0,
+                Period = new DateOnly(budget.Period.Year, budget.Period.Month, 1),
             })];
 
         // Recent transactions (limit to 5)

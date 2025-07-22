@@ -5,6 +5,9 @@ using ExpenseTracker.Services;
 using ExpenseTracker.Models.DTOs.Budget;
 using ExpenseTracker.Utilities.Routing;
 using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Models;
+
+namespace ExpenseTracker.Controllers;
 
 [Authorize]
 [ApiController]
@@ -12,63 +15,68 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
 {
     private readonly IBudgetService _budgetService = budgetService;
 
-	[HttpPost(ApiRoutes.Budget.Post.Create)]
+    [HttpPost(ApiRoutes.Budget.Post.Create)]
     public async Task<IActionResult> CreateBudget([FromBody] CreateBudgetRequest request)
     {
-        var userId = User.GetUserId();
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+        }
 
-        if (userId == Guid.Empty)
-            return Unauthorized(new { message = "Invalid user token." });
+        ServiceResult<CreateBudgetResponse?> result = await _budgetService.CreateBudgetAsync(request, userId);
 
-        var result = await _budgetService.CreateBudgetAsync(request, userId);
+        if (result.Success)
+        {
+            return Created(
+                $"{ApiRoutes.Budget.Post.Create}?category={request.Category}&period={request.Period}",
+                ApiResponse<CreateBudgetResponse>.Ok(result.Data, "Budget created successfully.")
+            );
+        }
 
-        if (!result.IsSuccess)
-            return Conflict(new { message = result.ErrorMessage });
-
-        return Created($"{ApiRoutes.Budget.Post.Create}?category={request.Category}&month={request.Month}&year={request.Year}", result.Data);
+        return Conflict(ApiResponse<object?>.Fail(null, result.Message, result.Errors));
     }
 
-    [HttpGet]
-    [Route(ApiRoutes.Budget.Get.Summary)]
-    public async Task<IActionResult> GetBudgetSummary(
-        [FromQuery] ExpenseCategory category,
-        [FromQuery] int month,
-        [FromQuery] int year)
+    [HttpGet(ApiRoutes.Budget.Get.Summary)]
+    public async Task<IActionResult> GetBudgetSummary([FromQuery] ExpenseCategory category, [FromQuery] DateOnly period)
     {
-        var userId = GetUserId();
-        if (userId == Guid.Empty)
-            return Unauthorized(new { message = "Invalid user token." });
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+        }
 
-        var summary = await _budgetService.GetBudgetSummaryAsync(userId, category, month, year);
+        BudgetSummaryResponse summary = await _budgetService.GetBudgetSummaryAsync(userId, category, period);
 
         if (summary.BudgetedAmount == 0)
-            return NotFound(new { message = "No budget available for this category and month." });
+        {
+            return NotFound(ApiResponse<object?>.Fail(null, "No budget available for this category and month."));
+        }
 
-        return Ok(summary);
+        return Ok(ApiResponse<BudgetSummaryResponse>.Ok(summary, "Budget summary retrieved successfully."));
     }
 
-    [HttpGet]
-    [Route(ApiRoutes.Budget.Get.Status)]
-    public async Task<IActionResult> GetBudgetStatus(
-        [FromQuery] ExpenseCategory category,
-        [FromQuery] int month,
-        [FromQuery] int year)
+    [HttpGet(ApiRoutes.Budget.Get.Status)]
+    public async Task<IActionResult> GetBudgetStatus([FromQuery] ExpenseCategory category, [FromQuery] DateOnly period)
     {
-        var userId = GetUserId();
-        if (userId == Guid.Empty)
-            return Unauthorized(new { message = "Invalid user token." });
-
-        var (budgeted, spent) = await _budgetService.GetBudgetStatusAsync(userId, category, month, year);
-
-        if (budgeted == 0)
-            return NotFound(new { message = "No budget set for the selected category and time range." });
-
-        return Ok(new
+        if (!User.TryGetUserId(out Guid userId))
         {
-            Budgeted = budgeted,
-            Spent = spent,
-            Remaining = budgeted - spent,
-            PercentageUsed = Math.Round((spent / budgeted) * 100, 2)
-        });
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+        }
+
+        BudgetStatusResponse result = await _budgetService.GetBudgetStatusAsync(userId, category, period);
+
+        if (result.BudgetedAmount == 0)
+        {
+            return NotFound(ApiResponse<object?>.Fail(null, "No budget set for the selected category and time range."));
+        }
+
+        BudgetSummaryResponse summary = new()
+		{
+            Category = category,
+            Period = period,
+            BudgetedAmount = result.BudgetedAmount,
+            SpentAmount = result.SpentAmount,
+        };
+
+        return Ok(ApiResponse<BudgetSummaryResponse>.Ok(summary, "Budget summary retrieved."));
     }
 }

@@ -20,7 +20,7 @@ public class ExpenseController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
-        //TODO: use the extension method User.getuserid 
+        //TODO: use the extension method User.getuserid
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))

@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Services;
 using ExpenseTracker.Models.DTOs.Budget;
 
+namespace ExpenseTracker.Services;
+
 internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;
@@ -20,7 +22,7 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
                 b.Period.Year == request.Period.Year);
 
             if (existingBudget is not null)
-                return ServiceResult<CreateBudgetResponse?>.Fail(null, "Budget already exists for this category and month.");
+                return ServiceResult<CreateBudgetResponse?>.Fail(null, null, ["Budget already exists for this category and month."]);
 
             Budget createdBudget = new()
             {
@@ -83,30 +85,12 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
     {
         BudgetStatusResponse status = await GetBudgetStatusAsync(userId, category, date);
 
-        double budgeted = status.BudgetedAmount;
-        double spent = status.SpentAmount;
-        double percentage = budgeted > 0 ? spent / budgeted * 100 : 0;
-
-        string message = budgeted switch
-        {
-            0 => "No budget set for this category.",
-            _ => percentage switch
-            {
-                > 100 => "You have exceeded your budget!",
-                100 => "You have reached your budget limit.",
-                >= 70 => "You have used more than 70% of your budget.",
-                _ => "You are within your budget.",
-            }
-        };
-
         return new BudgetSummaryResponse
         {
             Category = category,
             Period = new DateOnly(date.Year, date.Month, 1),
-            BudgetedAmount = budgeted,
-            SpentAmount = spent,
-            PercentageUsed = Math.Round(percentage, 2),
-            Message = message,
+            BudgetedAmount = status.BudgetedAmount,
+            SpentAmount = status.SpentAmount,
         };
     }
 }
