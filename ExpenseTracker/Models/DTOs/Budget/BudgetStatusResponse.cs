@@ -7,6 +7,11 @@ namespace ExpenseTracker.Models.DTOs.Budget;
 public class BudgetStatusResponse
 {
 	/// <summary>
+	/// The unique identifier of the budget status.
+	/// </summary>
+	public required Guid Id { get; set; }
+
+	/// <summary>
 	/// The total amount allocated to the budget for the specified category and period.
 	/// </summary>
 	public double BudgetedAmount { get; set; }

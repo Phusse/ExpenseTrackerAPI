@@ -9,6 +9,11 @@ namespace ExpenseTracker.Models.DTOs.Budget;
 public class BudgetSummaryResponse
 {
     /// <summary>
+    /// The unique identifier of the budget summary.
+    /// </summary>
+    public required Guid Id { get; set; }
+    
+    /// <summary>
     /// The expense category this summary is for.
     /// </summary>
     public required ExpenseCategory Category { get; set; }

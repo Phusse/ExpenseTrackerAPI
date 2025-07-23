@@ -103,11 +103,25 @@ internal static class ApiRoutes
         /// <summary>GET endpoints for Budget.</summary>
         public static class Get
         {
-            /// <summary>Gets budget summary data.</summary>
-            public const string Summary = $"{Base}/summary";
-
             /// <summary>Gets current budget status.</summary>
             public const string Status = $"{Base}/status";
+
+            /// <summary>Gets a detailed overview of the user's budget.</summary>
+            public const string Overview = $"{Base}/overview";
+        }
+
+        /// <summary>PUT endpoints for Budget.</summary>
+        public static class Put
+        {
+            /// <summary>Updates the budget limit for a user.</summary>
+            public const string Update = $"{Base}/update";
+        }
+
+        /// <summary>DELETE endpoints for Budget.</summary>
+        public static class Delete
+        {
+            /// <summary>Delete the budget data</summary>
+            public const string Remove = $"{Base}/delete/{{id}}";
         }
     }
 

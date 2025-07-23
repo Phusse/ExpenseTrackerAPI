@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Models;
 using System.Text.Json;
+using ExpenseTracker.Middleware;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         List<string> errors = [.. context.ModelState
             .Where(e => e.Value?.Errors.Count > 0)
             .SelectMany(e => e.Value!.Errors)
-            .Select(e => e.ErrorMessage)];
+            .Select(e => e.ErrorMessage)
+        ];
 
         var response = ApiResponse<object?>.Fail(null, "Invalid input data", errors);
         return new BadRequestObjectResult(response);
@@ -165,6 +167,7 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

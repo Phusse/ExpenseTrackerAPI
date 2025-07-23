@@ -18,14 +18,4 @@ public static class ClaimsPrincipalExtensions
 		var claim = user.FindFirst(ClaimTypes.NameIdentifier);
 		return Guid.TryParse(claim?.Value, out userId);
 	}
-
-	/// <summary>
-	/// Determines whether the current user is authenticated and has a valid user ID.
-	/// </summary>
-	/// <param name="user">The current user's claims principal.</param>
-	/// <returns><c>true</c> if the user is authenticated; otherwise, <c>false</c>.</returns>
-	public static bool IsAuthenticated(this ClaimsPrincipal user)
-	{
-		return user.TryGetUserId(out _);
-	}
 }

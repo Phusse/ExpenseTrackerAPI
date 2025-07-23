@@ -60,15 +60,16 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
 
         Console.WriteLine("spent: " + spentLookup.ToString());
 
-        // Budget statuses
+        // Budget statuses (limit to 5)
         List<BudgetSummaryResponse> budgetStatuses = [.. userBudgets
             .Select(budget => new BudgetSummaryResponse
             {
+                Id = budget.Id,
                 Category = budget.Category,
                 BudgetedAmount = budget.Limit,
                 SpentAmount = spentLookup.TryGetValue(budget.Category, out var spent) ? spent : 0,
                 Period = new DateOnly(budget.Period.Year, budget.Period.Month, 1),
-            })];
+            }).OrderByDescending(b => b.PercentageUsed).Take(5)];
 
         // Recent transactions (limit to 5)
         List<RecentTransactionDto> recentTransactions = await _dbContext.Expenses
