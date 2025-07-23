@@ -25,12 +25,12 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
 
             if (user is null || !VerifyPassword(request.Password, user.PasswordHash))
             {
-                return ServiceResult<AuthLoginResponse?>.Failure(null, "Invalid email or password");
+                return ServiceResult<AuthLoginResponse?>.Fail(null, "Invalid email or password");
             }
 
             if (!user.IsActive)
             {
-                return ServiceResult<AuthLoginResponse?>.Failure(null, "Account is deactivated");
+                return ServiceResult<AuthLoginResponse?>.Fail(null, "Account is deactivated");
             }
 
             user.LastLoginAt = DateTime.UtcNow;
@@ -60,18 +60,24 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             string token = GenerateJwtToken(user);
             AuthLoginResponse authData = new()
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Token = token,
-                ExpiresAt = DateTime.UtcNow.AddHours(24)
+                User = new AuthUserDto
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email
+                },
+                Auth = new AuthTokenDto
+                {
+                    Token = token,
+                    ExpiresAt = DateTime.UtcNow.AddHours(24)
+                }
             };
 
-            return ServiceResult<AuthLoginResponse?>.Success(authData, null);
+            return ServiceResult<AuthLoginResponse?>.Ok(authData, null);
         }
         catch (Exception ex)
         {
-            return ServiceResult<AuthLoginResponse?>.Failure(null, ex.Message);
+            return ServiceResult<AuthLoginResponse?>.Fail(null, ex.Message);
         }
     }
 
@@ -86,7 +92,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             if (existingUser is not null)
             {
                 _logger.LogInformation("User with email {email} already exists.", request.Email);
-                return ServiceResult<object?>.Failure(null, "User with this email already exists.");
+                return ServiceResult<object?>.Fail(null, "User with this email already exists.");
             }
 
             User user = new()
@@ -102,7 +108,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             if (string.IsNullOrWhiteSpace(user.Email))
             {
                 _logger.LogWarning("Email is missing or empty.");
-                return ServiceResult<object?>.Failure(null, "Email is missing or empty.");
+                return ServiceResult<object?>.Fail(null, "Email is missing or empty.");
             }
 
             await _dbContext.Users.AddAsync(user);
@@ -128,7 +134,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
                 if (!emailSent)
                 {
                     _logger.LogWarning("Failed to send welcome email.");
-                    return ServiceResult<object?>.Success(null, "Registration successful.", ["Failed to send welcome email."]);
+                    return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
                 }
 
                 _logger.LogInformation("User registered successfully: {email}, and welcome email has been sent", request.Email);
@@ -136,17 +142,17 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             catch (Exception emailEx)
             {
                 _logger.LogError("Failed to send welcome email: {message}", emailEx.Message);
-                return ServiceResult<object?>.Success(null, "Registration successful.", ["Failed to send welcome email."]);
+                return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
             }
 
             _logger.LogInformation("User registered successfully: {email}, and welcome email has been sent", request.Email);
-            return ServiceResult<object?>.Success(null, "Registration successful.", ["Failed to send welcome email."]);
+            return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
         }
         catch (Exception ex)
         {
             string errorMessage = ex.InnerException?.Message ?? ex.Message;
             _logger.LogError("Failed to register user: {message}", errorMessage);
-            return ServiceResult<object?>.Failure(null, "Failed to register user", [errorMessage]);
+            return ServiceResult<object?>.Fail(null, "Failed to register user", [errorMessage]);
         }
     }
 
@@ -176,7 +182,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
     {
         User? user = await _dbContext.Users.FindAsync(userId);
 
-        if (user is null) return ServiceResult<object?>.Failure(null, "User not found.");
+        if (user is null) return ServiceResult<object?>.Fail(null, "User not found.");
 
         user.LastLogoutAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
@@ -201,7 +207,7 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             _logger.LogWarning("Failed to send logout email: {message}", ex.Message);
         }
 
-        return ServiceResult<object?>.Success(null, "Logout successful.");
+        return ServiceResult<object?>.Ok(null, "Logout successful.");
     }
 
     public string GenerateJwtToken(User user)

@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Models;
 using System.Text.Json;
+using ExpenseTracker.Middleware;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -48,9 +49,10 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         List<string> errors = [.. context.ModelState
             .Where(e => e.Value?.Errors.Count > 0)
             .SelectMany(e => e.Value!.Errors)
-            .Select(e => e.ErrorMessage)];
+            .Select(e => e.ErrorMessage)
+        ];
 
-        var response = ApiResponse<object?>.Failure(null, "Invalid input data", errors);
+        var response = ApiResponse<object?>.Fail(null, "Invalid input data", errors);
         return new BadRequestObjectResult(response);
     };
 });
@@ -63,7 +65,7 @@ if (builder.Environment.IsDevelopment())
         // get self generated xml document
         string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        options.IncludeXmlComments(xmlPath);
+        options.IncludeXmlComments(xmlPath, true);
 
         // Add security token auth to the api
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -126,7 +128,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
 
-            var response = ApiResponse<object?>.Failure(null, "Invalid or missing token.");
+            var response = ApiResponse<object?>.Fail(null, "Invalid or missing token.");
             var json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
@@ -137,7 +139,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/json";
 
-            var response = ApiResponse<object?>.Failure(null, "You do not have access to this resource.");
+            var response = ApiResponse<object?>.Fail(null, "You do not have access to this resource.");
             var json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
@@ -165,6 +167,7 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -29,5 +29,5 @@ public enum SavingGoalStatus
 	/// The goal is paused temporarily and contributions are on hold.
 	/// </summary>
 	[Display(Name = "Paused")]
-	Paused
+	Paused,
 }

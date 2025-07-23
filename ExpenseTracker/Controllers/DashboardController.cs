@@ -1,47 +1,60 @@
-using System.Security.Claims;
-using ExpenseTracker.Contracts;
+using ExpenseTracker.Models;
+using ExpenseTracker.Models.DTOs.Dashboard;
+using ExpenseTracker.Services;
+using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Utilities.Routing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-[ApiController]
+
+namespace ExpenseTracker.Controllers;
+
+/// <summary>
+/// Provides endpoints for accessing user dashboard data such as expenses, savings, budgets, and goals.
+/// </summary>
 [Authorize]
-public class DashboardController : ControllerBase
+[ApiController]
+public class DashboardController(IDashboardService dashboardService, ILogger<DashboardController> logger) : ControllerBase
 {
-    private readonly IDashboardService _dashboardService;
+    private readonly IDashboardService _dashboardService = dashboardService;
+    private readonly ILogger<DashboardController> _logger = logger;
 
-    public DashboardController(IDashboardService dashboardService)
-    {
-        _dashboardService = dashboardService;
-    }
-
-    [HttpGet]
-    [Route(ApiRoutes.Dashboard.Get.Summary)]
+    /// <summary>
+    /// Retrieves a summary of the user's dashboard data for the current month.
+    /// </summary>
+    /// <returns>
+    /// Returns a 200 OK response containing the dashboard summary if successful.
+    /// Returns a 401 Unauthorized if the user ID cannot be parsed.
+    /// Returns a 500 Internal Server Error if an exception occurs.
+    /// </returns>
+    [ProducesResponseType(typeof(ApiResponse<DashboardSummaryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
+    [HttpGet(ApiRoutes.Dashboard.Get.Summary)]
     public async Task<IActionResult> GetSummary()
     {
-        var userId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;
-        if (userId == Guid.Empty)
-            return Unauthorized(new { message = "Invalid user token." });
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid user token."));
+        }
 
         try
         {
-            var summary = await _dashboardService.GetDashboardSummaryAsync(userId);
+            DashboardSummaryResponse summary = await _dashboardService.GetDashboardSummaryAsync(userId);
 
-            if (summary == null)
-                return NotFound(new { message = "Unable to retrieve dashboard summary." });
-
-            return Ok(new
-            {
-                message = "Dashboard summary retrieved successfully.",
-                data = summary
-            });
+            return Ok(ApiResponse<DashboardSummaryResponse>.Ok(summary, "Dashboard summary retrieved successfully."));
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to get dashboard summary for {userId}: {ex.Message}");
-            return StatusCode(500, new
-            {
-                message = "An error occurred while processing your dashboard summary.",
-                error = ex.Message
-            });
+            _logger.LogError("Failed to get dashboard summary for {userId}: {message}", [userId, ex.Message]);
+
+            return StatusCode(
+                500,
+                ApiResponse<object?>.Fail(
+                    null,
+                    "An error occurred while processing your dashboard summary.",
+                    [ex.Message]
+                )
+            );
         }
     }
 }

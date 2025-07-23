@@ -2,8 +2,8 @@ using System.Security.Claims;
 using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ExpenseTracker.Contracts;
 using System.Globalization;
+using ExpenseTracker.Utilities.Routing;
 
 namespace ExpenseTracker.Controllers;
 
@@ -20,7 +20,9 @@ public class ExpenseController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
+        //TODO: use the extension method User.getuserid
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
@@ -42,7 +44,7 @@ public class ExpenseController : ControllerBase
             {
                 return StatusCode(500, new ApiResponse<Expense>
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = result.Message ?? "An error occurred",
                     Data = null
                 });
@@ -50,7 +52,7 @@ public class ExpenseController : ControllerBase
 
             return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
             {
-                IsSuccess = true,
+                Success = true,
                 Message = result.Message, // ✅ Use the budget summary message here
                 Data = result.Data        // ✅ Already has user stripped
             });
@@ -59,7 +61,7 @@ public class ExpenseController : ControllerBase
         {
             return Unauthorized(new ApiResponse<Expense>
             {
-                IsSuccess = false,
+                Success = false,
                 Message = "User not authorized.",
                 Data = null
             });
@@ -68,7 +70,7 @@ public class ExpenseController : ControllerBase
         {
             return StatusCode(500, new ApiResponse<Expense>
             {
-                IsSuccess = false,
+                Success = false,
                 Message = $"Unexpected error: {ex.Message}",
                 Data = null
             });

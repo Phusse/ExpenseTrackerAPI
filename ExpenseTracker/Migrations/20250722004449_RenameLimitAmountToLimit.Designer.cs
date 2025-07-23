@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ExpenseTrackerDbContext))]
-    [Migration("20250703111418_SavingGoalColumnsUpdate")]
-    partial class SavingGoalColumnsUpdate
+    [Migration("20250722004449_RenameLimitAmountToLimit")]
+    partial class RenameLimitAmountToLimit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,27 +28,25 @@ namespace ExpenseTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("Category")
-                        .HasColumnType("int");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<double>("LimitAmount")
+                    b.Property<double>("Limit")
                         .HasColumnType("double");
 
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
+                    b.Property<DateOnly>("Period")
+                        .HasColumnType("date");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "Category", "Month")
+                    b.HasIndex("UserId", "Category", "Period")
                         .IsUnique();
 
                     b.ToTable("Budgets");
@@ -67,8 +65,7 @@ namespace ExpenseTracker.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime?>("DateOfExpense")
-                        .IsRequired()
+                    b.Property<DateTime>("DateOfExpense")
                         .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("DateRecorded")

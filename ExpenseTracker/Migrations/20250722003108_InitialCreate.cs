@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExpenseTracker.Migrations
 {
     /// <inheritdoc />
-    public partial class InitiaCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,6 +27,7 @@ namespace ExpenseTracker.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     LastLoginAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    LastLogoutAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
@@ -41,10 +42,10 @@ namespace ExpenseTracker.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Category = table.Column<int>(type: "int", nullable: false),
+                    Category = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     LimitAmount = table.Column<double>(type: "double", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
+                    Period = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
@@ -93,10 +94,19 @@ namespace ExpenseTracker.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Title = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CurrentAmount = table.Column<double>(type: "double", nullable: false),
                     TargetAmount = table.Column<double>(type: "double", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    Deadline = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    ArchivedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -110,16 +120,54 @@ namespace ExpenseTracker.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "SavingGoalContributions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    SavingGoalId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ExpenseId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Amount = table.Column<double>(type: "double", nullable: false),
+                    ContributedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavingGoalContributions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavingGoalContributions_Expenses_ExpenseId",
+                        column: x => x.ExpenseId,
+                        principalTable: "Expenses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SavingGoalContributions_SavingGoals_SavingGoalId",
+                        column: x => x.SavingGoalId,
+                        principalTable: "SavingGoals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
-                name: "IX_Budgets_UserId_Category_Month",
+                name: "IX_Budgets_UserId_Category_Period",
                 table: "Budgets",
-                columns: new[] { "UserId", "Category", "Month" },
+                columns: new[] { "UserId", "Category", "Period" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Expenses_UserId",
                 table: "Expenses",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingGoalContributions_ExpenseId",
+                table: "SavingGoalContributions",
+                column: "ExpenseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingGoalContributions_SavingGoalId",
+                table: "SavingGoalContributions",
+                column: "SavingGoalId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SavingGoals_UserId",
@@ -138,6 +186,9 @@ namespace ExpenseTracker.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Budgets");
+
+            migrationBuilder.DropTable(
+                name: "SavingGoalContributions");
 
             migrationBuilder.DropTable(
                 name: "Expenses");

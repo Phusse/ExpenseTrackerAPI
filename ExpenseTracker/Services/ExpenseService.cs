@@ -5,18 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
-public class ExpenseService : IExpenseService
+public class ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService) : IExpenseService
 {
-    private readonly ExpenseTrackerDbContext _dbContext;
-    private readonly IEmailService _emailService;
+    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
+    private readonly IEmailService _emailService = emailService;
 
-    public ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService)
-    {
-        _dbContext = dbContext;
-        _emailService = emailService;
-    }
-
-    public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
+	public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
     {
         try
         {
@@ -34,30 +28,29 @@ public class ExpenseService : IExpenseService
             var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
                 b.UserId == userId &&
                 b.Category == expenseToCreate.Category &&
-                b.Month == month &&
-                b.Year == year);
+                b.Period.Month == month &&
+                b.Period.Year == year);
 
             double spent = await _dbContext.Expenses
                 .Where(e => e.UserId == userId &&
                             e.Category == expenseToCreate.Category &&
-                            e.DateOfExpense.HasValue &&
-                            e.DateOfExpense.Value.Month == month &&
-                            e.DateOfExpense.Value.Year == year)
+                            e.DateOfExpense.Month == month &&
+                            e.DateOfExpense.Year == year)
                 .SumAsync(e => e.Amount);
 
             string message = "Expense recorded";
 
             if (budget != null)
             {
-                double remaining = budget.LimitAmount - spent;
+                double remaining = budget.Limit - spent;
 
                 if (remaining <= 0)
                 {
-                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}.";
+                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.Limit} budget for {expenseToCreate.Category}.";
                 }
                 else
                 {
-                    message = $"You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
+                    message = $"You’ve spent ₦{spent} out of your ₦{budget.Limit} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
                 }
             }
 
@@ -149,30 +142,29 @@ public class ExpenseService : IExpenseService
         // Filter by month and year
         if (month.HasValue && year.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                 e.DateOfExpense.Value.Month == month.Value &&
-                                 e.DateOfExpense.Value.Year == year.Value);
+            query = query.Where(e =>
+                                 e.DateOfExpense.Month == month.Value &&
+                                 e.DateOfExpense.Year == year.Value);
         }
         // Filter by date range
         else if (startDate.HasValue && endDate.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                e.DateOfExpense.Value >= startDate.Value &&
-                                e.DateOfExpense.Value <= endDate.Value);
+            query = query.Where(e =>
+                                e.DateOfExpense >= startDate.Value &&
+                                e.DateOfExpense <= endDate.Value);
         }
         // Filter only by year
         else if (year.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Year == year.Value);
+            query = query.Where(e => e.DateOfExpense.Year == year.Value);
         }
         // Filter only by month (with current year fallback)
         else if (month.HasValue)
         {
             var currentYear = DateTime.UtcNow.Year;
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Month == month.Value &&
-                                     e.DateOfExpense.Value.Year == currentYear);
+            query = query.Where(e =>
+                                     e.DateOfExpense.Month == month.Value &&
+                                     e.DateOfExpense.Year == currentYear);
         }
 
         double total = await query.SumAsync(e => e.Amount);
