@@ -194,7 +194,7 @@ internal static class ApiRoutes
     /// </summary>
     public static class MetaData
     {
-        private const string Base = $"{Root}/{Version}/enums";
+        private const string Base = $"{Root}/{Version}/metadata";
 
         public static class Get
         {
@@ -208,5 +208,4 @@ internal static class ApiRoutes
             public const string SavingGoalStatuses = $"{Base}/saving-goal-statuses";
         }
     }
-
 }
