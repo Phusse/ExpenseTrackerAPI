@@ -5,9 +5,13 @@ namespace ExpenseTracker.Models.DTOs.MetaData;
 /// </summary>
 public class EnumOptionResponse
 {
-	/// <summary>The enum value (e.g., "Cash").</summary>
+	/// <summary>
+	/// The enum value (e.g., "Cash").
+	/// </summary>
 	public required string Value { get; set; }
 
-	/// <summary>The human-readable label (e.g., "Cash" or "Food and Groceries").</summary>
+	/// <summary>
+	/// The human-readable label (e.g., "Cash" or "Food and Groceries").
+	/// </summary>
 	public required string Label { get; set; }
 }
