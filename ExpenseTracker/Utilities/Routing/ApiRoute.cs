@@ -188,4 +188,25 @@ internal static class ApiRoutes
             public const string Summary = $"{Base}/summary";
         }
     }
+
+    /// <summary>
+    /// Routes related to MetaData.
+    /// </summary>
+    public static class MetaData
+    {
+        private const string Base = $"{Root}/{Version}/enums";
+
+        public static class Get
+        {
+            /// <summary>Gets all expense categories.</summary>
+            public const string ExpenseCategories = $"{Base}/expense-categories";
+
+            /// <summary>Gets all payment methods.</summary>
+            public const string PaymentMethods = $"{Base}/payment-methods";
+
+            /// <summary>Gets all saving goal statuses.</summary>
+            public const string SavingGoalStatuses = $"{Base}/saving-goal-statuses";
+        }
+    }
+
 }
