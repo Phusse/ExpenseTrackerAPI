@@ -13,6 +13,7 @@ using ExpenseTracker.Models;
 using System.Text.Json;
 using ExpenseTracker.Middleware;
 using ExpenseTracker.Configuration;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISavingGoalService, SavingGoalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IMetadataService, MetadataService>();
 
 // configure API behavior options
 builder.Services.Configure<ApiBehaviorOptions>(options =>
