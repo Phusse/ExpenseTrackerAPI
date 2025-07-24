@@ -1,5 +1,5 @@
 using ExpenseTracker.Models;
-using ExpenseTracker.Models.DTOs.Dashboard;
+using ExpenseTracker.Models.DTOs.Dashboards;
 using ExpenseTracker.Services;
 using ExpenseTracker.Utilities.Extension;
 using ExpenseTracker.Utilities.Routing;

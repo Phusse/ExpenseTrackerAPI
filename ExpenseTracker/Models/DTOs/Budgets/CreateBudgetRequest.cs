@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs.Budget;
+namespace ExpenseTracker.Models.DTOs.Budgets;
 
 /// <summary>
 /// Request model used for creating a new budget entry.

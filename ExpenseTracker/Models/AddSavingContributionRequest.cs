@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ExpenseTracker.Enums;
 
 namespace ExpenseTracker.Models.DTOs;
 
@@ -33,5 +34,5 @@ public class AddSavingContributionRequest
 	/// The payment method used.
 	/// </summary>
 	[Required]
-	public required string PaymentMethod { get; set; }
+	public required PaymentMethod PaymentMethod { get; set; }
 }

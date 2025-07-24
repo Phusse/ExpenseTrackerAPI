@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ExpenseTracker.Models.DTOs;
+namespace ExpenseTracker.Models.DTOs.SavingGoals;
 
 /// <summary>
 /// DTO for creating a new saving goal.

@@ -7,6 +7,7 @@ using ExpenseTracker.Utilities.Routing;
 using ExpenseTracker.Utilities.Extension;
 using ExpenseTracker.Models;
 using System.ComponentModel.DataAnnotations;
+using ExpenseTracker.Models.DTOs.Budgets;
 
 namespace ExpenseTracker.Controllers;
 

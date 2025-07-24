@@ -1,6 +1,6 @@
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs.Dashboard;
+namespace ExpenseTracker.Models.DTOs.Dashboards;
 
 /// <summary>
 /// Represents the total amount spent in a specific expense category.

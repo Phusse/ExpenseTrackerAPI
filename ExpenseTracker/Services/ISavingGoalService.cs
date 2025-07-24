@@ -1,78 +1,69 @@
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs;
+using ExpenseTracker.Models.DTOs.SavingGoals;
 
 namespace ExpenseTracker.Services;
 
 /// <summary>
-/// Service interface for managing user saving goals.
+/// Defines the contract for managing user saving goals.
 /// </summary>
 public interface ISavingGoalService
 {
     /// <summary>
-    /// Creates a new saving goal for the specified user.
+    /// Creates a new saving goal for a user.
     /// </summary>
-    /// <param name="request">The saving goal creation request.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <returns>
-    /// Tuple: (IsSuccess, Created SavingGoal or null, ErrorMessage or null)
-    /// </returns>
-    Task<(bool IsSuccess, SavingGoal? Data, string? ErrorMessage)> CreateGoalAsync(CreateSavingGoalRequest request, Guid userId);
+    /// <param name="request">The details of the saving goal to create.</param>
+    /// <param name="userId">The ID of the user creating the goal.</param>
+    /// <returns>A result containing the created goal and status information or null.</returns>
+    Task<ServiceResult<CreateSavingGoalResponse?>> CreateGoalAsync(CreateSavingGoalRequest request, Guid userId);
 
     /// <summary>
-    /// Retrieves a saving goal by its identifier for the specified user.
+    /// Retrieves a specific saving goal for a user by its ID.
     /// </summary>
-    /// <param name="id">The saving goal's unique identifier.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <returns>The found SavingGoal or null.</returns>
-    Task<SavingGoal?> GetGoalByIdAsync(Guid id, Guid userId);
+    /// <param name="id">The ID of the saving goal.</param>
+    /// <param name="userId">The ID of the user who owns the goal.</param>
+    /// <returns>The saving goal if found; otherwise, <c>null</c>.</returns>
+    Task<CreateSavingGoalResponse?> GetGoalByIdAsync(Guid id, Guid userId);
 
     /// <summary>
-    /// Retrieves all saving goals for the specified user.
+    /// Retrieves all saving goals for a user.
     /// </summary>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <param name="includeArchived">Whether to include archived goals.</param>
-    /// <returns>Enumerable of SavingGoal.</returns>
-    Task<IEnumerable<SavingGoal>> GetAllGoalsAsync(Guid userId, bool includeArchived = false);
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="includeArchived">Indicates whether to include archived goals.</param>
+    /// <returns>A list of saving goals.</returns>
+    Task<IEnumerable<CreateSavingGoalResponse>> GetAllGoalsAsync(Guid userId, bool includeArchived = false);
 
     /// <summary>
-    /// Updates an existing saving goal for the specified user.
+    /// Updates an existing saving goal for a user.
     /// </summary>
-    /// <param name="id">The saving goal's unique identifier.</param>
-    /// <param name="request">The update request.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <returns>
-    /// Tuple: (IsSuccess, ErrorMessage or null)
-    /// </returns>
-    Task<(bool IsSuccess, string? ErrorMessage)> UpdateGoalAsync(Guid id, UpdateSavingGoalRequest request, Guid userId);
+    /// <param name="id">The ID of the saving goal to update.</param>
+    /// <param name="request">The updated saving goal data.</param>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns>A result indicating success or failure of the update.</returns>
+    Task<ServiceResult<object?>> UpdateGoalAsync(Guid id, UpdateSavingGoalRequest request, Guid userId);
 
     /// <summary>
-    /// Adds a contribution to a user's saving goal.
+    /// Adds a contribution to an existing saving goal.
     /// </summary>
-    /// <param name="request">The request containing contribution details and the target saving goal.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <returns>
-    /// Tuple: (IsSuccess, ErrorMessage or null)
-    /// </returns>
-    Task<(bool IsSuccess, string? ErrorMessage)> AddSavingContributionAsync(AddSavingContributionRequest request, Guid userId);
+    /// <param name="request">The contribution details and target goal ID.</param>
+    /// <param name="userId">The ID of the user making the contribution.</param>
+    /// <returns>A result indicating success or failure of the contribution.</returns>
+    Task<ServiceResult<object?>> AddSavingContributionAsync(AddSavingContributionRequest request, Guid userId);
 
     /// <summary>
-    /// Deletes a saving goal for the specified user.
+    /// Deletes a saving goal for a user.
     /// </summary>
-    /// <param name="id">The saving goal's unique identifier.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <returns>
-    /// Tuple: (IsSuccess, ErrorMessage or null)
-    /// </returns>
-    Task<(bool IsSuccess, string? ErrorMessage)> DeleteGoalAsync(Guid id, Guid userId);
+    /// <param name="id">The ID of the saving goal to delete.</param>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns>A result indicating success or failure of the deletion.</returns>
+    Task<ServiceResult<object?>> DeleteGoalAsync(Guid id, Guid userId);
 
     /// <summary>
-    /// Archives a saving goal for the specified user.
+    /// Archives or unarchives a saving goal.
     /// </summary>
-    /// <param name="id">The saving goal's unique identifier.</param>
-    /// <param name="userId">The user's unique identifier.</param>
-    /// <param name="archiveGoal">The archive flag, defaults to true if not provided.</param>
-    /// <returns>
-    /// Tuple: (IsSuccess, Message or null)
-    /// </returns>
-    Task<(bool IsSuccess, string? Message)> ArchiveGoalAsync(Guid id, Guid userId, bool archiveGoal = true);
+    /// <param name="id">The ID of the saving goal.</param>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="archiveGoal">If <c>true</c>, the goal will be archived; otherwise, it will be unarchived. Default is <c>true</c>.</param>
+    /// <returns>A result indicating success or failure of the operation.</returns>
+    Task<ServiceResult<object?>> ArchiveGoalAsync(Guid id, Guid userId, bool archiveGoal = true);
 }
