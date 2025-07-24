@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Models.DTOs.MetaData;
+namespace ExpenseTracker.Models.DTOs.Metadata;
 
 /// <summary>
 /// Represents an enum value-label pair for frontend usage.

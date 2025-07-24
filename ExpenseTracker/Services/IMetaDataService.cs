@@ -1,11 +1,11 @@
-using ExpenseTracker.Models.DTOs.MetaData;
+using ExpenseTracker.Models.DTOs.Metadata;
 
 namespace ExpenseTracker.Services;
 
 /// <summary>
 /// Defines methods for retrieving enum values and their display names.
 /// </summary>
-public interface IEnumService
+public interface IMetadataService
 {
 	/// <summary>
 	/// Gets all expense categories and their display names.

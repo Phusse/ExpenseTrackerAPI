@@ -190,9 +190,9 @@ internal static class ApiRoutes
     }
 
     /// <summary>
-    /// Routes related to MetaData.
+    /// Routes related to Metadata.
     /// </summary>
-    public static class MetaData
+    public static class Metadata
     {
         private const string Base = $"{Root}/{Version}/metadata";
 

@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using ExpenseTracker.Enums;
-using ExpenseTracker.Models.DTOs.MetaData;
+using ExpenseTracker.Models.DTOs.Metadata;
 
 namespace ExpenseTracker.Services;
 
-internal class MetaDataService : IEnumService
+internal class MetadataService : IMetadataService
 {
 	private static List<EnumOptionResponse> GetEnumOptions<T>() where T : Enum
 	{
@@ -15,9 +15,9 @@ internal class MetaDataService : IEnumService
 			{
 				Value = e.ToString(),
 				Label = e.GetType()
-						 .GetMember(e.ToString())
-						 .First()
-						 .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+					.GetMember(e.ToString())
+					.First()
+					.GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
 			})];
 	}
 
