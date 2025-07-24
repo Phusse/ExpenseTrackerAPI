@@ -36,7 +36,6 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             user.LastLoginAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
 
-            //TODO: revamp when making an email request dto
             try
             {
                 var payLoad = new
@@ -118,7 +117,6 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             {
                 _logger.LogInformation("Sending welcome email to: {email}", user.Email);
 
-                //TODO: revamp when making an email request dto
                 var payLoad = new
                 {
                     UserName = user.Name
@@ -130,7 +128,6 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
                     templateModel: payLoad
                 );
 
-                //TODO: Handle email sending logic
                 if (!emailSent)
                 {
                     _logger.LogWarning("Failed to send welcome email.");
@@ -187,7 +184,6 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
         user.LastLogoutAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        //TODO: revamp when making an email request dto
         try
         {
             var model = new

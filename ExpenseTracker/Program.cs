@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using ExpenseTracker.Models;
 using System.Text.Json;
 using ExpenseTracker.Middleware;
+using ExpenseTracker.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

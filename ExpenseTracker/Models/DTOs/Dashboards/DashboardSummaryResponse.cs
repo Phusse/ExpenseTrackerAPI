@@ -1,4 +1,3 @@
-using ExpenseTracker.Models.DTOs.Budget;
 using ExpenseTracker.Models.DTOs.Budgets;
 
 namespace ExpenseTracker.Models.DTOs.Dashboards;

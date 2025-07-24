@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs;
+namespace ExpenseTracker.Models.DTOs.SavingGoals;
 
 /// <summary>
 /// DTO for adding a contribution to a saving goal.

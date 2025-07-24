@@ -1,7 +1,6 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
-using ExpenseTracker.Models.DTOs.Budget;
 using ExpenseTracker.Models.DTOs.Budgets;
 using ExpenseTracker.Models.DTOs.Dashboards;
 using ExpenseTracker.Services;
