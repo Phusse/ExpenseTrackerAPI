@@ -57,7 +57,7 @@ public class SavingGoal
     /// Gets or sets the status of the saving goal.
     /// See <see cref="SavingGoalStatus"/> provides the available statuses.
     /// </summary>
-    public SavingGoalStatus Status { get; set; } //TODO: consider removing this no need to be storing this into a the db but have it come back as a respose
+    public SavingGoalStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets the date and time when the saving goal was created. (defaults to current UTC time).

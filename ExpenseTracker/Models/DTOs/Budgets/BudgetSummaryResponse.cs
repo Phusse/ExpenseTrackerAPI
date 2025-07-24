@@ -1,6 +1,6 @@
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs.Budget;
+namespace ExpenseTracker.Models.DTOs.Budgets;
 
 /// <summary>
 /// Represents a summary of a user's budget usage for a specific category and time period.
@@ -12,7 +12,7 @@ public class BudgetSummaryResponse
     /// The unique identifier of the budget summary.
     /// </summary>
     public required Guid Id { get; set; }
-    
+
     /// <summary>
     /// The expense category this summary is for.
     /// </summary>

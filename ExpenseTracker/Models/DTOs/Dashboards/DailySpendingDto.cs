@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Models.DTOs.Dashboard;
+namespace ExpenseTracker.Models.DTOs.Dashboards;
 
 /// <summary>
 /// Represents the total amount spent by the user on a specific day.

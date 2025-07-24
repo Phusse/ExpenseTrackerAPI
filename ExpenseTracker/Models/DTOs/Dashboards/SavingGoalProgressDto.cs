@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Models.DTOs.Dashboard;
+namespace ExpenseTracker.Models.DTOs.Dashboards;
 
 /// <summary>
 /// Represents a user's savings goal and current progress toward achieving it.

@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Models.DTOs.Budget;
+namespace ExpenseTracker.Models.DTOs.Budgets;
 
 /// <summary>
 /// Represents the current status of a user's budget for a specific category and period,

@@ -60,6 +60,10 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
                 .HasConversion<string>()
                 .IsRequired();
 
+            entity.Property(e => e.PaymentMethod)
+                .HasConversion<string>()
+                .IsRequired();
+
             entity.Property(e => e.Amount).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
 

@@ -3,6 +3,7 @@ using ExpenseTracker.Enums;
 using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using ExpenseTracker.Models.DTOs.Budget;
+using ExpenseTracker.Models.DTOs.Budgets;
 
 namespace ExpenseTracker.Services;
 

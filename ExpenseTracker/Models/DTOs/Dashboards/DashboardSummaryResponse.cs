@@ -1,6 +1,7 @@
 using ExpenseTracker.Models.DTOs.Budget;
+using ExpenseTracker.Models.DTOs.Budgets;
 
-namespace ExpenseTracker.Models.DTOs.Dashboard;
+namespace ExpenseTracker.Models.DTOs.Dashboards;
 
 /// <summary>
 /// Represents a summary of the user's financial dashboard,

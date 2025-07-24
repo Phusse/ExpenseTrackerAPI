@@ -1,6 +1,6 @@
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs;
+namespace ExpenseTracker.Models.DTOs.SavingGoals;
 
 /// <summary>
 /// Represents a request to update a saving goal.

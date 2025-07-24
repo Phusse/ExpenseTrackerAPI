@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Models.DTOs.Dashboard;
+namespace ExpenseTracker.Models.DTOs.Dashboards;
 
 /// <summary>
 /// Represents a recent individual expense transaction recorded by the user.

@@ -1,4 +1,4 @@
-using ExpenseTracker.Models.DTOs.Dashboard;
+using ExpenseTracker.Models.DTOs.Dashboards;
 
 namespace ExpenseTracker.Services;
 

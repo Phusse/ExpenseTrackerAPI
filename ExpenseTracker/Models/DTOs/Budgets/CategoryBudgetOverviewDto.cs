@@ -1,6 +1,6 @@
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs.Budget;
+namespace ExpenseTracker.Models.DTOs.Budgets;
 
 /// <summary>
 /// Represents a lightweight summary of budget usage for a specific expense category
