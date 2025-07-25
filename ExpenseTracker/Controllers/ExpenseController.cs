@@ -9,12 +9,20 @@ using ExpenseTracker.Models;
 
 namespace ExpenseTracker.Controllers;
 
+/// <summary>
+/// Provides endpoints for managing user expenses, including creation, retrieval, filtering, updating, and deletion.
+/// </summary>
 [Authorize]
 [ApiController]
 public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;
 
+    /// <summary>
+    /// Retrieves the ID of the currently authenticated user.
+    /// </summary>
+    /// <returns>The GUID representing the current user's ID.</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when user ID cannot be resolved from the token.</exception>
     private Guid GetCurrentUserId()
     {
         if (!User.TryGetUserId(out Guid userId))
@@ -25,6 +33,17 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         return userId;
     }
 
+    /// <summary>
+    /// Creates a new expense for the authenticated user.
+    /// </summary>
+    /// <param name="request">The expense details.</param>
+    /// <returns>Returns the created expense.</returns>
+    /// <response code="201">Expense created successfully.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
     [HttpPost(ApiRoutes.Expense.Post.Create)]
     public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequest request)
     {
@@ -45,6 +64,17 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves a single expense by its ID.
+    /// </summary>
+    /// <param name="id">The expense ID.</param>
+    /// <returns>Returns the requested expense if found.</returns>
+    /// <response code="200">Expense found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Expense not found.</response>
+    [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
     [HttpGet(ApiRoutes.Expense.Get.ById)]
     public async Task<IActionResult> GetExpenseByIdAsync(Guid id)
     {
@@ -66,6 +96,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves all expenses associated with the authenticated user.
+    /// </summary>
+    /// <returns>A list of all user expenses.</returns>
+    /// <response code="200">Expenses retrieved successfully.</response>
+    /// <response code="404">No expenses found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CreateExpenseResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpGet(ApiRoutes.Expense.Get.All)]
     public async Task<IActionResult> GetAllExpensesAsync()
     {
@@ -87,6 +127,19 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves expenses filtered by the provided criteria (date range, category, etc.).
+    /// </summary>
+    /// <param name="request">The filtering options.</param>
+    /// <returns>Filtered list of user expenses.</returns>
+    /// <response code="200">Filtered expenses retrieved successfully.</response>
+    /// <response code="404">No expenses found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CreateExpenseResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
     [HttpGet(ApiRoutes.Expense.Get.Filter)]
     public async Task<IActionResult> GetFilteredExpenses([FromQuery] FilteredExpenseRequest request)
     {
@@ -112,6 +165,17 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Calculates the total expenses for a given date range or period.
+    /// </summary>
+    /// <param name="request">The filter request with optional start date, end date, or specific period.</param>
+    /// <returns>The total expense within the specified range.</returns>
+    /// <response code="200">Total calculated successfully.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<double>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
     [HttpGet(ApiRoutes.Expense.Get.Total)]
     public async Task<IActionResult> GetTotalExpense([FromQuery] TotalExpenseRequest request)
     {
@@ -155,9 +219,21 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
-    // PUT: api/v1/expense/{id}
-    [HttpPut]
-    [Route(ApiRoutes.Expense.Put.Update)]
+    /// <summary>
+    /// Updates an existing expense.
+    /// </summary>
+    /// <param name="id">The ID of the expense to update.</param>
+    /// <param name="request">The updated expense details.</param>
+    /// <returns>Confirmation of update or error response.</returns>
+    /// <response code="200">Expense updated successfully.</response>
+    /// <response code="400">Invalid data or ID mismatch.</response>
+    /// <response code="404">Expense not found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpPut(ApiRoutes.Expense.Put.Update)]
     public async Task<IActionResult> UpdateExpenseAsync(Guid id, [FromBody] UpdateExpenseRequest request)
     {
         try
@@ -184,9 +260,18 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
-    // DELETE: api/v1/expense/{id}
-    [HttpDelete]
-    [Route(ApiRoutes.Expense.Delete.ById)]
+    /// <summary>
+    /// Deletes a specific expense.
+    /// </summary>
+    /// <param name="id">The ID of the expense to delete.</param>
+    /// <returns>Confirmation of deletion.</returns>
+    /// <response code="200">Expense deleted successfully.</response>
+    /// <response code="404">Expense not found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpDelete(ApiRoutes.Expense.Delete.ById)]
     public async Task<IActionResult> DeleteExpenseAsync(Guid id)
     {
         try
@@ -207,9 +292,17 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
-    // DELETE: api/v1/expense/all
-    [HttpDelete]
-    [Route(ApiRoutes.Expense.Delete.All)]
+    /// <summary>
+    /// Deletes all expenses for the authenticated user.
+    /// </summary>
+    /// <returns>Confirmation message.</returns>
+    /// <response code="200">All expenses deleted successfully.</response>
+    /// <response code="404">No expenses found to delete.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpDelete(ApiRoutes.Expense.Delete.All)]
     public async Task<IActionResult> DeleteAllExpensesAsync()
     {
         try

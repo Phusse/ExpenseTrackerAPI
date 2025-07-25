@@ -33,7 +33,7 @@ public class FilteredExpenseRequest
 	public decimal? ExactAmount { get; set; }
 
 	/// <summary>
-	/// The category name to filter expenses by. Optional.
+	/// The expense category to filter by (e.g., Food, Utilities, etc.). Optional.
 	/// </summary>
 	public ExpenseCategory? Category { get; set; }
 }

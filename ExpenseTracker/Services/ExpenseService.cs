@@ -103,9 +103,9 @@ internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseServi
                 query = query.Where(e => (decimal)e.Amount <= request.MaxAmount.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(request.Category) && Enum.TryParse<ExpenseCategory>(request.Category, out var parsedCategory))
+        if (request.Category.HasValue)
         {
-            query = query.Where(e => e.Category == parsedCategory);
+            query = query.Where(e => e.Category == request.Category.Value);
         }
 
         List<CreateExpenseResponse> filteredResult = await query.OrderByDescending(e => e.DateRecorded)
