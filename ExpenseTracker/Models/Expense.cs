@@ -17,7 +17,6 @@ public class Expense
     /// <summary>
     /// Gets or sets the identifier of the user who made the expense.
     /// </summary>
-    [Required(ErrorMessage = "UserId is required.")]
     public Guid UserId { get; set; }
 
     /// <summary>
