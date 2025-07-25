@@ -2,6 +2,9 @@ using PostmarkDotNet;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides email-related services using configuration settings.
+/// </summary>
 internal class EmailService(IConfiguration config) : IEmailService
 {
     private readonly string _postmarkToken = config["Postmark:Token"]

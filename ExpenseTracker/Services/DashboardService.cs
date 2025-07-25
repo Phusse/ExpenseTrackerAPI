@@ -6,6 +6,9 @@ using ExpenseTracker.Models.DTOs.Dashboards;
 using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Provides dashboard-related services using the ExpenseTrackerDbContext.
+/// </summary>
 internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;

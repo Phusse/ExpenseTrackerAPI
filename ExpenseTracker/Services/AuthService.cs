@@ -10,6 +10,9 @@ using Encryption = BCrypt.Net;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides authentication services, including user management and email verification, using the specified database context, configuration, email service, and logger.
+/// </summary>
 internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration configuration, IEmailService emailService, ILogger<AuthService> logger) : IAuthService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;
