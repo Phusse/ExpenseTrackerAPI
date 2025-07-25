@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using ExpenseTracker.Utilities.Routing;
 using ExpenseTracker.Services;
+using ExpenseTracker.Models.DTOs.Expenses;
+using ExpenseTracker.Utilities.Extension;
 
 namespace ExpenseTracker.Controllers;
 
@@ -14,12 +16,9 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;
 
-	private Guid GetCurrentUserId()
+    private Guid GetCurrentUserId()
     {
-        //TODO: use the extension method User.getuserid
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        if (!User.TryGetUserId(out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
         }
@@ -29,46 +28,25 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     // POST: api/v1/expense
     [HttpPost]
     [Route(ApiRoutes.Expense.Post.Create)]
-    public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
+    public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequest request)
     {
         try
         {
             var userId = GetCurrentUserId();
-            var result = await _expenseService.CreateExpenseAsync(expense, userId);
+            var result = await _expenseService.CreateExpenseAsync(userId, request);
 
-            if (!result.IsSuccess)
-            {
-                return StatusCode(500, new ApiResponse<Expense>
-                {
-                    Success = false,
-                    Message = result.Message ?? "An error occurred",
-                    Data = null
-                });
-            }
-
-            return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
-            {
-                Success = true,
-                Message = result.Message, // ✅ Use the budget summary message here
-                Data = result.Data        // ✅ Already has user stripped
-            });
+            return CreatedAtAction(nameof(CreateExpense), result);
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized(new ApiResponse<Expense>
-            {
-                Success = false,
-                Message = "User not authorized.",
-                Data = null
-            });
+            return Unauthorized();
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ApiResponse<Expense>
+            return StatusCode(500, new
             {
-                Success = false,
-                Message = $"Unexpected error: {ex.Message}",
-                Data = null
+                success = false,
+                message = $"Unexpected error: {ex.Message}"
             });
         }
     }
@@ -76,16 +54,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     // GET: api/v1/expense/{id}
     [HttpGet]
     [Route(ApiRoutes.Expense.Get.ById)]
-    public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
+    public async Task<IActionResult> GetExpenseByIdAsync(Guid id)
     {
         try
         {
             var userId = GetCurrentUserId();
-            Expense? expense = await _expenseService.GetExpenseByIdAsync(id, userId);
+            var expense = await _expenseService.GetExpenseByIdAsync(id, userId);
 
             if (expense == null)
             {
-                return NotFound($"Expense with Id {id} not found.");
+                return NotFound();
             }
 
             return Ok(expense);
@@ -99,12 +77,12 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     // GET: api/v1/expense/getall
     [HttpGet]
     [Route(ApiRoutes.Expense.Get.All)]
-    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
+    public async Task<IActionResult> GetAllExpensesAsync()
     {
         try
         {
             var userId = GetCurrentUserId();
-            IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync(userId);
+            var expenses = await _expenseService.GetAllExpensesAsync(userId);
             return Ok(expenses);
         }
         catch (UnauthorizedAccessException)
@@ -126,8 +104,18 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var expenses = await _expenseService.GetFilteredExpensesAsync(
-                userId, startDate, endDate, minAmount, maxAmount, exactAmount, category);
+
+            var request = new FilteredExpenseRequest
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                MinAmount = minAmount,
+                MaxAmount = maxAmount,
+                ExactAmount = exactAmount,
+                Category = category
+            };
+
+            var expenses = await _expenseService.GetFilteredExpensesAsync(userId, request);
 
             if (!expenses.Any())
             {
@@ -151,7 +139,6 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error filtering expenses: {ex.Message}");
             return StatusCode(500, new
             {
                 success = false,
@@ -172,29 +159,26 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         {
             var userId = GetCurrentUserId();
 
-            // Validate month
             if (month.HasValue && (month < 1 || month > 12))
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Month must be between 1 and 12."
-                });
+                return BadRequest(new { success = false, message = "Month must be between 1 and 12." });
             }
 
-            // Validate year
             if (year.HasValue && year < 1)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Year must be a valid positive number."
-                });
+                return BadRequest(new { success = false, message = "Year must be a valid positive number." });
             }
 
-            var total = await _expenseService.GetTotalExpenseAsync(userId, startDate, endDate, month, year);
+            var request = new TotalExpenseRequest
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                Month = month,
+                Year = year
+            };
 
-            // Dynamic message
+            var total = await _expenseService.GetTotalExpenseAsync(userId, request);
+
             string message;
             if (month.HasValue && year.HasValue)
             {
@@ -219,12 +203,7 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
                 message = $"Total expense is: {total}";
             }
 
-            return Ok(new
-            {
-                success = true,
-                message,
-                totalExpense = total
-            });
+            return Ok(new { success = true, message, totalExpense = total });
         }
         catch (UnauthorizedAccessException)
         {
@@ -232,30 +211,25 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "An error occurred while calculating total expense.",
-                error = ex.Message
-            });
+            return StatusCode(500, new { success = false, message = "An error occurred while calculating total expense.", error = ex.Message });
         }
     }
 
     // PUT: api/v1/expense/{id}
     [HttpPut]
     [Route(ApiRoutes.Expense.Put.Update)]
-    public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
+    public async Task<IActionResult> UpdateExpenseAsync(Guid id, [FromBody] UpdateExpenseRequest request)
     {
         try
         {
             var userId = GetCurrentUserId();
 
-            if (expenseToUpdate == null || id != expenseToUpdate.Id)
+            if (request == null || id != request.Id)
             {
                 return BadRequest(new { success = false, message = "Invalid data or ID mismatch." });
             }
 
-            var success = await _expenseService.UpdateExpenseAsync(id, expenseToUpdate, userId);
+            var success = await _expenseService.UpdateExpenseAsync(userId, request);
 
             if (!success)
             {
@@ -273,16 +247,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     // DELETE: api/v1/expense/{id}
     [HttpDelete]
     [Route(ApiRoutes.Expense.Delete.ById)]
-    public async Task<ActionResult> DeleteExpenseAsync(Guid id)
+    public async Task<IActionResult> DeleteExpenseAsync(Guid id)
     {
         try
         {
             var userId = GetCurrentUserId();
-            bool deleteSuccessful = await _expenseService.DeleteExpenseAsync(id, userId);
+            bool deleted = await _expenseService.DeleteExpenseAsync(id, userId);
 
-            if (!deleteSuccessful)
+            if (!deleted)
             {
-                return NotFound($"Expense with Id {id} not found.");
+                return NotFound(new { success = false, message = $"Expense with Id {id} not found." });
             }
 
             return NoContent();
@@ -296,16 +270,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     // DELETE: api/v1/expense/all
     [HttpDelete]
     [Route(ApiRoutes.Expense.Delete.All)]
-    public async Task<ActionResult> DeleteAllExpensesAsync()
+    public async Task<IActionResult> DeleteAllExpensesAsync()
     {
         try
         {
             var userId = GetCurrentUserId();
-            bool deleteSuccessful = await _expenseService.DeleteAllExpensesAsync(userId);
+            bool deleted = await _expenseService.DeleteAllExpensesAsync(userId);
 
-            if (!deleteSuccessful)
+            if (!deleted)
             {
-                return NotFound($"No expenses found to delete.");
+                return NotFound(new { success = false, message = "No expenses found to delete." });
             }
 
             return NoContent();

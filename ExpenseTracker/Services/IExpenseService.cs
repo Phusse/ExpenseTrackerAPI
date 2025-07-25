@@ -11,9 +11,10 @@ public interface IExpenseService
     /// <summary>
     /// Creates a new expense for the specified user.
     /// </summary>
-    /// <param name="request">The expense creation details, including user ID and expense data.</param>
-    /// <returns>A response containing the created expense and metadata.</returns>
-    Task<CreateExpenseResponse> CreateExpenseAsync(CreateExpenseRequest request);
+    /// <param name="userId">The identifier of the user creating the expense.</param>
+    /// <param name="request">The expense creation details including category, amount, date, and description.</param>
+    /// <returns>A response containing the created expense data.</returns>
+    Task<CreateExpenseResponse> CreateExpenseAsync(Guid userId, CreateExpenseRequest request);
 
     /// <summary>
     /// Retrieves a specific expense by its ID and the associated user.
@@ -29,14 +30,14 @@ public interface IExpenseService
     /// <param name="userId">The identifier of the user whose expenses to query.</param>
     /// <param name="request">The filtering criteria including dates, amount ranges, and category.</param>
     /// <returns>A service result containing a list of matching expenses or an error message.</returns>
-    Task<ServiceResult<IEnumerable<CreateExpenseResponse>>> GetFilteredExpensesAsync(Guid userId, FilteredExpenseRequest request);
+    Task<IEnumerable<CreateExpenseResponse>> GetFilteredExpensesAsync(Guid userId, FilteredExpenseRequest request);
 
     /// <summary>
     /// Retrieves all expenses for a given user.
     /// </summary>
     /// <param name="userId">The identifier of the user.</param>
     /// <returns>A service result containing the full list of the user's expenses.</returns>
-    Task<ServiceResult<IEnumerable<CreateExpenseResponse>>> GetAllExpensesAsync(Guid userId);
+    Task<IEnumerable<CreateExpenseResponse>> GetAllExpensesAsync(Guid userId);
 
     /// <summary>
     /// Calculates the total expense for a user over a specified time period.
@@ -44,7 +45,7 @@ public interface IExpenseService
     /// <param name="userId">The identifier of the user.</param>
     /// <param name="request">The time range or monthly/yearly filter details.</param>
     /// <returns>A service result containing the total expense amount.</returns>
-    Task<ServiceResult<double>> GetTotalExpenseAsync(Guid userId, TotalExpenseRequest request);
+    Task<double> GetTotalExpenseAsync(Guid userId, TotalExpenseRequest request);
 
     /// <summary>
     /// Updates an existing expense for a user.
@@ -52,7 +53,7 @@ public interface IExpenseService
     /// <param name="id">The ID of the expense to update.</param>
     /// <param name="request">The new expense details to apply.</param>
     /// <returns>True if the update was successful; otherwise, false.</returns>
-    Task<bool> UpdateExpenseAsync(Guid id, CreateExpenseRequest request);
+    Task<bool> UpdateExpenseAsync(Guid id, UpdateExpenseRequest request);
 
     /// <summary>
     /// Deletes a specific expense for a user.
