@@ -7,6 +7,10 @@ using ExpenseTracker.Models.DTOs.Budgets;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides budget management services, including creating, updating, retrieving, and deleting budgets,
+/// as well as calculating spent amounts and generating budget overviews for users.
+/// </summary>
 internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;

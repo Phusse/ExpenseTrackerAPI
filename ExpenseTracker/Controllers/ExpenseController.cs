@@ -10,8 +10,8 @@ using ExpenseTracker.Utilities.Extension;
 
 namespace ExpenseTracker.Controllers;
 
-[ApiController]
 [Authorize]
+[ApiController]
 public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
     private readonly IExpenseService _expenseService = expenseService;

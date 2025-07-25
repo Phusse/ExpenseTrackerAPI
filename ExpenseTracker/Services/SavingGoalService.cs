@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides services for managing saving goals using the ExpenseTrackerDbContext.
+/// </summary>
 internal class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;

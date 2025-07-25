@@ -5,6 +5,9 @@ using ExpenseTracker.Models.DTOs.Metadata;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides methods to retrieve enum options for metadata, such as expense categories, payment methods, and saving goal statuses,
+/// </summary>
 internal class MetadataService : IMetadataService
 {
 	private static List<EnumOptionResponse> GetEnumOptions<T>() where T : Enum

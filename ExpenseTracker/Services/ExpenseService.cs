@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
+/// <summary>
+/// Provides services for managing user expenses, including creating, retrieving, filtering, updating, and deleting expense records,
+/// as well as calculating total expenses within specified criteria.
+/// </summary>
 internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;
@@ -186,7 +190,7 @@ internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseServi
     public async Task<bool> DeleteAllExpensesAsync(Guid userId)
     {
         List<Expense> expenses = await _dbContext.Expenses.Where(e => e.UserId == userId).ToListAsync();
-        
+
         if (expenses.Count == 0) return false;
 
         _dbContext.Expenses.RemoveRange(expenses);
