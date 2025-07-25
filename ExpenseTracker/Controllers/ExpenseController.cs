@@ -4,21 +4,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using ExpenseTracker.Utilities.Routing;
+using ExpenseTracker.Services;
 
 namespace ExpenseTracker.Controllers;
 
 [ApiController]
 [Authorize]
-public class ExpenseController : ControllerBase
+public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
-    private readonly IExpenseService _expenseService;
+    private readonly IExpenseService _expenseService = expenseService;
 
-    public ExpenseController(IExpenseService expenseService)
-    {
-        _expenseService = expenseService;
-    }
-
-    private Guid GetCurrentUserId()
+	private Guid GetCurrentUserId()
     {
         //TODO: use the extension method User.getuserid
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
