@@ -5,60 +5,103 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text.Json.Serialization;
+using Scalar.AspNetCore;
+using System.Reflection;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using ExpenseTracker.Models;
+using System.Text.Json;
+using ExpenseTracker.Middleware;
+using ExpenseTracker.Configuration;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// ✅ Allow Render to set the port dynamically
-// var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-// builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
-// Add database connection
+//--------------- Add database connection ---------------
 builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 21))));
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 0, 21))
+    )
+);
 
-// Register application services
+//--------------- Register application services ---------------
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddHttpClient<IEmailService, EmailService>();
 
-
-// Add services to the container
-builder.Services.AddControllers()
-    .AddJsonOptions(x =>
-    {
-        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// ✅ ADD CORS CONFIGURATION
-builder.Services.AddCors(options =>
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:3000",     // Local development
-                "https://localhost:3000",    // Local development with HTTPS
-                "http://localhost:3001"     // Alternative local port
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-// Services
+// register controllers
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISavingGoalService, SavingGoalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IMetadataService, MetadataService>();
 
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+// configure API behavior options
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        List<string> errors = [.. context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors)
+            .Select(e => e.ErrorMessage)
+        ];
+
+        var response = ApiResponse<object?>.Fail(null, "Invalid input data", errors);
+        return new BadRequestObjectResult(response);
+    };
+});
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        // get self generated xml document
+        string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        options.IncludeXmlComments(xmlPath, true);
+
+        // Add security token auth to the api
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter the token you are given after you login.\n\nExample: \"token eyJhbGciOiJIUzI1NiIsInR5cCI6...\"",
+        });
+
+        // Add global security requirement
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+        });
+    });
+}
+
+//--------------- JWT Authentication ---------------
+IConfigurationSection? jwtSettings = builder.Configuration.GetSection("JwtSettings");
+string? secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -78,22 +121,56 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
     };
+
+    // Configure authentication and authorization failures to return standardized ApiResponse
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            var response = ApiResponse<object?>.Fail(null, "Invalid or missing token.");
+            var json = JsonSerializer.Serialize(response);
+
+            return context.Response.WriteAsync(json);
+        },
+
+        OnForbidden = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/json";
+
+            var response = ApiResponse<object?>.Fail(null, "You do not have access to this resource.");
+            var json = JsonSerializer.Serialize(response);
+
+            return context.Response.WriteAsync(json);
+        }
+    };
 });
 
 WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Expense Tracker";
+        options.DefaultHttpClient = new(ScalarTarget.CSharp, ScalarClient.HttpClient);
+    });
+}
+else
+{
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
-
-// ✅ USE CORS (Must be BEFORE UseAuthorization and MapControllers)
-app.UseCors("AllowFrontend");
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

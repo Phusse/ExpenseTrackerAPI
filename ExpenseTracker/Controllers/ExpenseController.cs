@@ -1,320 +1,325 @@
-using System.Security.Claims;
-using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ExpenseTracker.Contracts;
 using System.Globalization;
+using ExpenseTracker.Utilities.Routing;
+using ExpenseTracker.Services;
+using ExpenseTracker.Models.DTOs.Expenses;
+using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Models;
 
 namespace ExpenseTracker.Controllers;
 
-[ApiController]
+/// <summary>
+/// Provides endpoints for managing user expenses, including creation, retrieval, filtering, updating, and deletion.
+/// </summary>
 [Authorize]
-public class ExpenseController : ControllerBase
+[ApiController]
+public class ExpenseController(IExpenseService expenseService) : ControllerBase
 {
-    private readonly IExpenseService _expenseService;
+    private readonly IExpenseService _expenseService = expenseService;
 
-    public ExpenseController(IExpenseService expenseService)
-    {
-        _expenseService = expenseService;
-    }
-
+    /// <summary>
+    /// Retrieves the ID of the currently authenticated user.
+    /// </summary>
+    /// <returns>The GUID representing the current user's ID.</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when user ID cannot be resolved from the token.</exception>
     private Guid GetCurrentUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        if (!User.TryGetUserId(out Guid userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
         }
+
         return userId;
     }
 
-    // POST: api/v1/expense
-    [HttpPost]
-    [Route(ExpenseRoutes.PostUrl.Create)]
-    public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
+    /// <summary>
+    /// Creates a new expense for the authenticated user.
+    /// </summary>
+    /// <param name="request">The expense details.</param>
+    /// <returns>Returns the created expense.</returns>
+    /// <response code="201">Expense created successfully.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
+    [HttpPost(ApiRoutes.Expense.Post.Create)]
+    public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
-            var result = await _expenseService.CreateExpenseAsync(expense, userId);
+            Guid userId = GetCurrentUserId();
+            CreateExpenseResponse result = await _expenseService.CreateExpenseAsync(userId, request);
 
-            if (!result.IsSuccess)
-            {
-                return StatusCode(500, new ApiResponse<Expense>
-                {
-                    Success = false,
-                    Message = result.Message ?? "An error occurred",
-                    Data = null
-                });
-            }
-
-            return CreatedAtAction(nameof(CreateExpense), new ApiResponse<Expense>
-            {
-                Success = true,
-                Message = result.Message, // ✅ Use the budget summary message here
-                Data = result.Data        // ✅ Already has user stripped
-            });
+            return CreatedAtAction(nameof(CreateExpense), ApiResponse<CreateExpenseResponse>.Ok(result, "Expense created successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(new ApiResponse<Expense>
-            {
-                Success = false,
-                Message = "User not authorized.",
-                Data = null
-            });
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ApiResponse<Expense>
-            {
-                Success = false,
-                Message = $"Unexpected error: {ex.Message}",
-                Data = null
-            });
+            return StatusCode(500, ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    // GET: api/v1/expense/{id}
-    [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.GetById)]
-    public async Task<ActionResult<Expense>> GetExpenseByIdAsync(Guid id)
+    /// <summary>
+    /// Retrieves a single expense by its ID.
+    /// </summary>
+    /// <param name="id">The expense ID.</param>
+    /// <returns>Returns the requested expense if found.</returns>
+    /// <response code="200">Expense found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="404">Expense not found.</response>
+    [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [HttpGet(ApiRoutes.Expense.Get.ById)]
+    public async Task<IActionResult> GetExpenseByIdAsync(Guid id)
     {
         try
         {
-            var userId = GetCurrentUserId();
-            Expense? expense = await _expenseService.GetExpenseByIdAsync(id, userId);
+            Guid userId = GetCurrentUserId();
+            CreateExpenseResponse? result = await _expenseService.GetExpenseByIdAsync(id, userId);
 
-            if (expense == null)
+            if (result is null)
             {
-                return NotFound($"Expense with Id {id} not found.");
+                return NotFound(ApiResponse<object?>.Fail(null, "Expense not found."));
             }
 
-            return Ok(expense);
+            return Ok(ApiResponse<CreateExpenseResponse?>.Ok(result, "Expense retrieved successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
-        }
-    }
-
-    // GET: api/v1/expense/getall
-    [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.GetAll)]
-    public async Task<ActionResult<IEnumerable<Expense>>> GetAllExpensesAsync()
-    {
-        try
-        {
-            var userId = GetCurrentUserId();
-            IEnumerable<Expense> expenses = await _expenseService.GetAllExpensesAsync(userId);
-            return Ok(expenses);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    [HttpGet]
-    [Route(ExpenseRoutes.GetUrl.Filter)]
-    public async Task<IActionResult> GetFilteredExpenses(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] decimal? minAmount,
-        [FromQuery] decimal? maxAmount,
-        [FromQuery] decimal? exactAmount,
-        [FromQuery] string? category)
+    /// <summary>
+    /// Retrieves all expenses associated with the authenticated user.
+    /// </summary>
+    /// <returns>A list of all user expenses.</returns>
+    /// <response code="200">Expenses retrieved successfully.</response>
+    /// <response code="404">No expenses found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CreateExpenseResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpGet(ApiRoutes.Expense.Get.All)]
+    public async Task<IActionResult> GetAllExpensesAsync()
     {
         try
         {
-            var userId = GetCurrentUserId();
-            var expenses = await _expenseService.GetFilteredExpensesAsync(
-                userId, startDate, endDate, minAmount, maxAmount, exactAmount, category);
+            Guid userId = GetCurrentUserId();
+            IEnumerable<CreateExpenseResponse> expenses = await _expenseService.GetAllExpensesAsync(userId);
 
             if (!expenses.Any())
             {
-                return NotFound(new
-                {
-                    success = false,
-                    message = "No matching expenses found."
-                });
+                return NotFound(ApiResponse<object?>.Ok(null, "No expenses found."));
             }
 
-            return Ok(new
-            {
-                success = true,
-                message = "Filtered expenses retrieved successfully.",
-                data = expenses
-            });
+            return Ok(ApiResponse<IEnumerable<CreateExpenseResponse>>.Ok(expenses, "Expenses retrieved successfully."));
         }
         catch (UnauthorizedAccessException)
         {
             return Unauthorized();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error filtering expenses: {ex.Message}");
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "An error occurred while retrieving expenses.",
-                error = ex.Message
-            });
-        }
     }
 
-    [HttpGet(ExpenseRoutes.GetUrl.Total)]
-    public async Task<IActionResult> GetTotalExpense(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] int? month,
-        [FromQuery] int? year)
+    /// <summary>
+    /// Retrieves expenses filtered by the provided criteria (date range, category, etc.).
+    /// </summary>
+    /// <param name="request">The filtering options.</param>
+    /// <returns>Filtered list of user expenses.</returns>
+    /// <response code="200">Filtered expenses retrieved successfully.</response>
+    /// <response code="404">No expenses found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CreateExpenseResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
+    [HttpGet(ApiRoutes.Expense.Get.Filter)]
+    public async Task<IActionResult> GetFilteredExpenses([FromQuery] FilteredExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
+            IEnumerable<CreateExpenseResponse> expenses = await _expenseService.GetFilteredExpensesAsync(userId, request);
 
-            // Validate month
-            if (month.HasValue && (month < 1 || month > 12))
+            if (!expenses.Any())
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Month must be between 1 and 12."
-                });
+                return NotFound(ApiResponse<object?>.Ok(null, "No expenses found."));
             }
 
-            // Validate year
-            if (year.HasValue && year < 1)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Year must be a valid positive number."
-                });
-            }
+            return Ok(ApiResponse<IEnumerable<CreateExpenseResponse>>.Ok(expenses, "Filtered expenses retrieved successfully."));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<object?>.Fail(null, "An error occurred while retriving expenses.", [ex.Message]));
+        }
+    }
 
-            var total = await _expenseService.GetTotalExpenseAsync(userId, startDate, endDate, month, year);
+    /// <summary>
+    /// Calculates the total expenses for a given date range or period.
+    /// </summary>
+    /// <param name="request">The filter request with optional start date, end date, or specific period.</param>
+    /// <returns>The total expense within the specified range.</returns>
+    /// <response code="200">Total calculated successfully.</response>
+    /// <response code="401">Unauthorized access.</response>
+    /// <response code="500">Internal server error.</response>
+    [ProducesResponseType(typeof(ApiResponse<double>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
+    [HttpGet(ApiRoutes.Expense.Get.Total)]
+    public async Task<IActionResult> GetTotalExpense([FromQuery] TotalExpenseRequest request)
+    {
+        try
+        {
+            Guid userId = GetCurrentUserId();
+            double total = await _expenseService.GetTotalExpenseAsync(userId, request);
 
-            // Dynamic message
             string message;
-            if (month.HasValue && year.HasValue)
+
+            if (request.Period.HasValue)
             {
-                var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month.Value);
-                message = $"Total expense for {monthName} {year} is: {total}";
+                DateOnly period = request.Period.Value;
+                message = $"Total expense for {period.ToString("MMMM yyyy", CultureInfo.CurrentCulture)} is: {total:C}";
             }
-            else if (startDate.HasValue || endDate.HasValue)
+            else if (request.StartDate.HasValue || request.EndDate.HasValue)
             {
-                message = $"Total expense from {startDate?.ToString("yyyy-MM-dd") ?? "beginning"} to {endDate?.ToString("yyyy-MM-dd") ?? "now"} is: {total}";
-            }
-            else if (year.HasValue)
-            {
-                message = $"Total expense for the year {year} is: {total}";
-            }
-            else if (month.HasValue)
-            {
-                var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month.Value);
-                message = $"Total expense for {monthName} is: ${total}";
+                string from = request.StartDate?.ToString("yyyy-MM-dd") ?? "beginning";
+                string to = request.EndDate?.ToString("yyyy-MM-dd") ?? "now";
+                message = $"Total expense from {from} to {to} is: {total:C}";
             }
             else
             {
-                message = $"Total expense is: {total}";
+                message = $"Total expense is: {total:C}";
             }
 
-            return Ok(new
-            {
-                success = true,
-                message,
-                totalExpense = total
-            });
+            return Ok(ApiResponse<double>.Ok(total, message));
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Unauthorized access."));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "An error occurred while calculating total expense.",
-                error = ex.Message
-            });
+            var errorResponse = ApiResponse<object?>.Fail(
+                null,
+                "An error occurred while calculating total expense.",
+                [ex.Message]
+            );
+            return StatusCode(500, errorResponse);
         }
     }
 
-    // PUT: api/v1/expense/{id}
-    [HttpPut]
-    [Route(ExpenseRoutes.PutUrl.Update)]
-    public async Task<ActionResult> UpdateExpenseAsync(Guid id, [FromBody] Expense expenseToUpdate)
+    /// <summary>
+    /// Updates an existing expense.
+    /// </summary>
+    /// <param name="id">The ID of the expense to update.</param>
+    /// <param name="request">The updated expense details.</param>
+    /// <returns>Confirmation of update or error response.</returns>
+    /// <response code="200">Expense updated successfully.</response>
+    /// <response code="400">Invalid data or ID mismatch.</response>
+    /// <response code="404">Expense not found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpPut(ApiRoutes.Expense.Put.Update)]
+    public async Task<IActionResult> UpdateExpenseAsync(Guid id, [FromBody] UpdateExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
-            if (expenseToUpdate == null || id != expenseToUpdate.Id)
+            if (request is null || id != request.Id)
             {
-                return BadRequest(new { success = false, message = "Invalid data or ID mismatch." });
+                return BadRequest(ApiResponse<object?>.Fail(null, "Invalid data or ID mismatch."));
             }
 
-            var success = await _expenseService.UpdateExpenseAsync(id, expenseToUpdate, userId);
+            bool result = await _expenseService.UpdateExpenseAsync(userId, request);
 
-            if (!success)
+            if (!result)
             {
-                return NotFound(new { success = false, message = $"Expense with ID {id} not found." });
+                return NotFound(ApiResponse<object?>.Fail(null, $"Expense with ID {id} not found"));
             }
 
-            return Ok(new { success = true, message = "Expense updated successfully." });
+            return Ok(ApiResponse<object?>.Ok(null, "Expense updated successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    // DELETE: api/v1/expense/{id}
-    [HttpDelete]
-    [Route(ExpenseRoutes.DeleteUrl.Delete)]
-    public async Task<ActionResult> DeleteExpenseAsync(Guid id)
+    /// <summary>
+    /// Deletes a specific expense.
+    /// </summary>
+    /// <param name="id">The ID of the expense to delete.</param>
+    /// <returns>Confirmation of deletion.</returns>
+    /// <response code="200">Expense deleted successfully.</response>
+    /// <response code="404">Expense not found.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpDelete(ApiRoutes.Expense.Delete.ById)]
+    public async Task<IActionResult> DeleteExpenseAsync(Guid id)
     {
         try
         {
-            var userId = GetCurrentUserId();
-            bool deleteSuccessful = await _expenseService.DeleteExpenseAsync(id, userId);
+            Guid userId = GetCurrentUserId();
+            bool result = await _expenseService.DeleteExpenseAsync(id, userId);
 
-            if (!deleteSuccessful)
+            if (!result)
             {
-                return NotFound($"Expense with Id {id} not found.");
+                return NotFound(ApiResponse<object?>.Fail(null, $"Expense with ID {id} not found"));
             }
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Ok(null, "Expense deleted successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    // DELETE: api/v1/expense/all
-    [HttpDelete]
-    [Route(ExpenseRoutes.DeleteUrl.DeleteAll)]
-    public async Task<ActionResult> DeleteAllExpensesAsync()
+    /// <summary>
+    /// Deletes all expenses for the authenticated user.
+    /// </summary>
+    /// <returns>Confirmation message.</returns>
+    /// <response code="200">All expenses deleted successfully.</response>
+    /// <response code="404">No expenses found to delete.</response>
+    /// <response code="401">Unauthorized access.</response>
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    [HttpDelete(ApiRoutes.Expense.Delete.All)]
+    public async Task<IActionResult> DeleteAllExpensesAsync()
     {
         try
         {
-            var userId = GetCurrentUserId();
-            bool deleteSuccessful = await _expenseService.DeleteAllExpensesAsync(userId);
+            Guid userId = GetCurrentUserId();
+            bool result = await _expenseService.DeleteAllExpensesAsync(userId);
 
-            if (!deleteSuccessful)
+            if (!result)
             {
-                return NotFound($"No expenses found to delete.");
+                return NotFound(ApiResponse<object?>.Fail(null, "No expenses found to delete."));
             }
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Ok(null, "All expenses deleted successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 }

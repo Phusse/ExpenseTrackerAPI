@@ -1,39 +1,41 @@
 using PostmarkDotNet;
 
-public class EmailService : IEmailService
-{
-    private readonly string _postmarkToken;
-    private readonly string _fromEmail;
+namespace ExpenseTracker.Services;
 
-    public EmailService(IConfiguration config)
-    {
-        _postmarkToken = config["Postmark:Token"];
-        _fromEmail = config["Postmark:FromEmail"];
-    }
+/// <summary>
+/// Provides email-related services using configuration settings.
+/// </summary>
+internal class EmailService(IConfiguration config) : IEmailService
+{
+    private readonly string _postmarkToken = config["Postmark:Token"]
+        ?? throw new InvalidOperationException($"Configuration setting 'Postmark:Token' is missing or invalid");
+
+    private readonly string _fromEmail = config["Postmark:FromEmail"]
+        ?? throw new InvalidOperationException($"Configuration setting 'Postmark:FromEmail' is missing or invalid");
 
     public async Task<bool> SendEmailAsync(string to, string subject, string htmlBody, string? plainText = null)
     {
-        var client = new PostmarkClient(_postmarkToken);
+        PostmarkClient client = new(_postmarkToken);
 
-        var message = new PostmarkMessage
+        PostmarkMessage message = new()
         {
             To = to,
             From = _fromEmail,
             Subject = subject,
             HtmlBody = htmlBody,
             TextBody = plainText ?? "This is a fallback plain-text version.",
-            TrackOpens = true
+            TrackOpens = true,
         };
 
-        var result = await client.SendMessageAsync(message);
+        PostmarkResponse result = await client.SendMessageAsync(message);
         return result.Status == PostmarkStatus.Success;
     }
 
     public async Task<bool> SendTemplateEmailAsync(string to, int templateId, object templateModel)
     {
-        var client = new PostmarkClient(_postmarkToken);
+        PostmarkClient client = new(_postmarkToken);
 
-        var result = await client.SendEmailWithTemplateAsync(new TemplatedPostmarkMessage
+        PostmarkResponse result = await client.SendEmailWithTemplateAsync(new TemplatedPostmarkMessage
         {
             To = to,
             From = _fromEmail,

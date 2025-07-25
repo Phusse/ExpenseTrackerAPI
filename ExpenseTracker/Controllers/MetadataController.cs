@@ -1,0 +1,52 @@
+using ExpenseTracker.Models;
+using ExpenseTracker.Models.DTOs.Metadata;
+using ExpenseTracker.Services;
+using ExpenseTracker.Utilities.Routing;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ExpenseTracker.Controllers;
+
+/// <summary>
+/// Provides endpoints to retrieve enum values used across the application.
+/// </summary>
+[ApiController]
+public class MetadataController(IMetadataService enumService) : ControllerBase
+{
+	private readonly IMetadataService _enumService = enumService;
+
+	/// <summary>
+	/// Returns all expense categories.
+	/// </summary>
+	/// <response code="200">Expense categories retrieved successfully.</response>
+	[HttpGet(ApiRoutes.Metadata.Get.ExpenseCategories)]
+	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
+	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetExpenseCategories()
+	{
+		List<EnumOptionResponse> result = _enumService.GetExpenseCategories();
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+	}
+
+	/// <summary>
+	/// Returns all payment methods.
+	/// </summary>
+	/// <response code="200">Payment methods retrieved successfully.</response>
+	[HttpGet(ApiRoutes.Metadata.Get.PaymentMethods)]
+	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
+	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetPaymentMethods()
+	{
+		List<EnumOptionResponse> result = _enumService.GetPaymentMethods();
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+	}
+
+	/// <summary>
+	/// Returns all saving goal statuses.
+	/// </summary>
+	/// <response code="200">Saving goal statuses retrieved successfully.</response>
+	[HttpGet(ApiRoutes.Metadata.Get.SavingGoalStatuses)]
+	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
+	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetSavingGoalStatuses()
+	{
+		List<EnumOptionResponse> result = _enumService.GetSavingGoalStatuses();
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+	}
+}

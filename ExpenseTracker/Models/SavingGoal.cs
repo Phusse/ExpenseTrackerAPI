@@ -6,6 +6,10 @@ namespace ExpenseTracker.Models;
 /// <summary>
 /// Represents a user's savings goal in the expense tracker application.
 /// </summary>
+/// <remarks>
+/// This endpoint authenticates a user with their email and password.
+/// On success, it returns a JWT that can be used for future requests.
+/// </remarks>
 public class SavingGoal
 {
     /// <summary>

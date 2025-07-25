@@ -2,61 +2,84 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs;
+using ExpenseTracker.Models.DTOs.SavingGoals;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
-public class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalService
+/// <summary>
+/// Provides services for managing saving goals using the ExpenseTrackerDbContext.
+/// </summary>
+internal class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalService
 {
     private readonly ExpenseTrackerDbContext _dbContext = dbContext;
 
-    public async Task<(bool IsSuccess, SavingGoal? Data, string? ErrorMessage)> CreateGoalAsync(CreateSavingGoalRequest request, Guid userId)
+    public async Task<ServiceResult<CreateSavingGoalResponse?>> CreateGoalAsync(CreateSavingGoalRequest request, Guid userId)
     {
         try
         {
             bool exists = await _dbContext.SavingGoals
-                .AnyAsync(g => g.UserId == userId && g.Title == request.Title && !g.IsArchived);
+                .AnyAsync(g => g.UserId == userId && g.Title.ToLower() == request.Title.ToLower() && !g.IsArchived);
 
-            if (exists) return (false, null, "You already have a similar saving goal.");
+            if (exists)
+            {
+                return ServiceResult<CreateSavingGoalResponse?>.Fail(null, "A saving goal with the same title already exists.");
+            }
 
             SavingGoal goal = new()
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                Title = request.Title,
-                Description = request.Description,
+                Title = request.Title.Trim(),
+                Description = request.Description?.Trim(),
                 TargetAmount = request.TargetAmount,
                 Deadline = request.Deadline,
-                Status = SavingGoalStatus.Active
+                Status = SavingGoalStatus.Active,
             };
 
             await _dbContext.SavingGoals.AddAsync(goal);
             await _dbContext.SaveChangesAsync();
 
-            return (true, goal, null);
+            var payload = CreateSavingGoalResponse.MapSavingGoal(goal);
+
+            return ServiceResult<CreateSavingGoalResponse?>.Ok(payload, "Saving goal created successfully.");
         }
         catch (Exception ex)
         {
-            return (false, null, ex.Message);
+            return ServiceResult<CreateSavingGoalResponse?>.Fail(null, null, [ex.Message]);
         }
     }
 
-    public async Task<SavingGoal?> GetGoalByIdAsync(Guid id, Guid userId) =>
-        await _dbContext.SavingGoals
+    public async Task<CreateSavingGoalResponse?> GetGoalByIdAsync(Guid id, Guid userId)
+    {
+        SavingGoal? goal = await _dbContext.SavingGoals
             .Include(g => g.Contributions)
             .FirstOrDefaultAsync(g => g.Id == id && g.UserId == userId);
 
-    public async Task<IEnumerable<SavingGoal>> GetAllGoalsAsync(Guid userId, bool includeArchived = false) =>
-        await _dbContext.SavingGoals
+        if (goal == null) return null;
+
+        return CreateSavingGoalResponse.MapSavingGoal(goal);
+    }
+
+    public async Task<IEnumerable<CreateSavingGoalResponse>> GetAllGoalsAsync(Guid userId, bool includeArchived = false)
+    {
+        List<CreateSavingGoalResponse> result = await _dbContext.SavingGoals
             .Where(g => g.UserId == userId && (includeArchived || !g.IsArchived))
             .OrderByDescending(g => g.CreatedAt)
+            .Select(g => CreateSavingGoalResponse.MapSavingGoal(g))
             .ToListAsync();
 
-    public async Task<(bool IsSuccess, string? ErrorMessage)> UpdateGoalAsync(Guid id, UpdateSavingGoalRequest request, Guid userId)
+        return result;
+    }
+
+    public async Task<ServiceResult<object?>> UpdateGoalAsync(Guid id, UpdateSavingGoalRequest request, Guid userId)
     {
         SavingGoal? goal = await _dbContext.SavingGoals.FirstOrDefaultAsync(g => g.Id == id && g.UserId == userId);
 
-        if (goal is null) return (false, "Saving goal not found.");
+        if (goal is null)
+        {
+            return ServiceResult<object?>.Fail(null, "Saving goal not found.");
+        }
 
         goal.Title = request.Title ?? goal.Title;
         goal.Description = request.Description ?? goal.Description;
@@ -67,47 +90,56 @@ public class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalS
         goal.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();
-
-        return (true, null);
+        return ServiceResult<object?>.Ok(null, "Saving goal updated successfully.");
     }
 
-    public async Task<(bool IsSuccess, string? ErrorMessage)> DeleteGoalAsync(Guid id, Guid userId)
+    public async Task<ServiceResult<object?>> DeleteGoalAsync(Guid id, Guid userId)
     {
         SavingGoal? goal = await _dbContext.SavingGoals.FirstOrDefaultAsync(g => g.Id == id && g.UserId == userId);
 
-        if (goal is null) return (false, "Saving goal not found.");
+        if (goal is null)
+        {
+            return ServiceResult<object?>.Fail(null, "Saving goal not found.");
+        }
 
         _dbContext.SavingGoals.Remove(goal);
         await _dbContext.SaveChangesAsync();
 
-        return (true, null);
+        return ServiceResult<object?>.Ok(null, "Saving goal deleted successfully.");
     }
 
-    public async Task<(bool IsSuccess, string? Message)> ArchiveGoalAsync(Guid id, Guid userId, bool archiveGoal = true)
+    public async Task<ServiceResult<object?>> ArchiveGoalAsync(Guid id, Guid userId, bool archiveGoal = true)
     {
         SavingGoal? goal = await _dbContext.SavingGoals.FirstOrDefaultAsync(g => g.Id == id && g.UserId == userId);
 
-        if (goal is null) return (false, "Saving goal not found.");
+        if (goal is null)
+        {
+            return ServiceResult<object?>.Fail(null, "Saving goal not found.");
+        }
 
         if (goal.IsArchived == archiveGoal)
         {
             string state = archiveGoal ? "already archived" : "already unarchived";
-            return (true, $"Saving goal is {state}.");
+            return ServiceResult<object?>.Ok(null, null, [$"Saving goal is {state}."]);
         }
 
         goal.IsArchived = archiveGoal;
         goal.ArchivedAt = DateTime.UtcNow;
+        goal.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
         string action = archiveGoal ? "archived." : "unarchived.";
-        return (true, $"Saving goal {action}");
+        return ServiceResult<object?>.Ok(null, $"Saving goal {action}.");
     }
 
-    public async Task<(bool IsSuccess, string? ErrorMessage)> AddSavingContributionAsync(AddSavingContributionRequest request, Guid userId)
+    public async Task<ServiceResult<object?>> AddSavingContributionAsync(AddSavingContributionRequest request, Guid userId)
     {
         SavingGoal? goal = await _dbContext.SavingGoals.FirstOrDefaultAsync(g => g.Id == request.SavingGoalId && g.UserId == userId);
 
-        if (goal is null) return (false, "Saving goal not found.");
+        if (goal is null)
+        {
+            return ServiceResult<object?>.Fail(null, "Saving goal not found.");
+        }
 
         Expense expense = new()
         {
@@ -118,7 +150,7 @@ public class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalS
             DateRecorded = DateTime.UtcNow,
             DateOfExpense = request.DateOfExpense ?? DateTime.UtcNow,
             PaymentMethod = request.PaymentMethod,
-            Description = request.Description
+            Description = request.Description,
         };
 
         SavingGoalContribution contribution = new()
@@ -127,15 +159,16 @@ public class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoalS
             SavingGoalId = goal.Id,
             ExpenseId = expense.Id,
             Amount = request.Amount,
-            ContributedAt = DateTime.UtcNow
+            ContributedAt = DateTime.UtcNow,
         };
 
         goal.CurrentAmount += request.Amount;
+        goal.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.Expenses.AddAsync(expense);
         await _dbContext.SavingGoalContributions.AddAsync(contribution);
         await _dbContext.SaveChangesAsync();
 
-        return (true, null);
+        return ServiceResult<object?>.Ok(null, "Saving contribution added successfully.");
     }
 }
