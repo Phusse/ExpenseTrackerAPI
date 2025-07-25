@@ -8,20 +8,15 @@ public class TotalExpenseRequest
 	/// <summary>
 	/// The start date for filtering expenses. Optional.
 	/// </summary>
-	public DateTime? StartDate { get; set; }
+	public DateOnly? StartDate { get; set; }
 
 	/// <summary>
 	/// The end date for filtering expenses. Optional.
 	/// </summary>
-	public DateTime? EndDate { get; set; }
+	public DateOnly? EndDate { get; set; }
 
 	/// <summary>
-	/// The specific month to filter by (1–12). Optional.
+	/// The specific period to filter by, typically the first day of the month (e.g., 2025-07-01 for July 2025).
 	/// </summary>
-	public int? Month { get; set; }
-
-	/// <summary>
-	/// The specific year to filter by (e.g., 2025). Optional.
-	/// </summary>
-	public int? Year { get; set; }
+	public DateOnly? Period { get; set; }
 }

@@ -1,3 +1,5 @@
+using ExpenseTracker.Enums;
+
 namespace ExpenseTracker.Models.DTOs.Expenses;
 
 /// <summary>
@@ -33,5 +35,5 @@ public class FilteredExpenseRequest
 	/// <summary>
 	/// The category name to filter expenses by. Optional.
 	/// </summary>
-	public string? Category { get; set; }
+	public ExpenseCategory? Category { get; set; }
 }

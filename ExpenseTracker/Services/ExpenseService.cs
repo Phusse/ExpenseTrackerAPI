@@ -128,25 +128,34 @@ internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseServi
     {
         IQueryable<Expense> query = _dbContext.Expenses.Where(e => e.UserId == userId);
 
-        if (request.Month.HasValue && request.Year.HasValue)
+        // 1. Filter by Period (interpreted as month start)
+        if (request.Period.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.Month == request.Month.Value && e.DateOfExpense.Year == request.Year.Value);
-        }
-        else if (request.StartDate.HasValue && request.EndDate.HasValue)
-        {
-            query = query.Where(e => e.DateOfExpense >= request.StartDate.Value && e.DateOfExpense <= request.EndDate.Value);
-        }
-        else if (request.Year.HasValue)
-        {
-            query = query.Where(e => e.DateOfExpense.Year == request.Year.Value);
-        }
-        else if (request.Month.HasValue)
-        {
-            var currentYear = DateTime.UtcNow.Year;
-            query = query.Where(e => e.DateOfExpense.Month == request.Month.Value && e.DateOfExpense.Year == currentYear);
+            DateOnly period = request.Period.Value;
+            DateTime start = period.ToDateTime(TimeOnly.MinValue);
+            DateTime end = period.AddMonths(1).AddDays(-1).ToDateTime(TimeOnly.MaxValue);
+
+            query = query.Where(e => e.DateOfExpense >= start && e.DateOfExpense <= end);
         }
 
-        return await query.SumAsync(e => e.Amount);
+        // 2. Filter by StartDate/EndDate
+        else if (request.StartDate.HasValue || request.EndDate.HasValue)
+        {
+            if (request.StartDate.HasValue)
+            {
+                DateTime start = request.StartDate.Value.ToDateTime(TimeOnly.MinValue);
+                query = query.Where(e => e.DateOfExpense >= start);
+            }
+
+            if (request.EndDate.HasValue)
+            {
+                DateTime end = request.EndDate.Value.ToDateTime(TimeOnly.MaxValue);
+                query = query.Where(e => e.DateOfExpense <= end);
+            }
+        }
+
+        double total = await query.SumAsync(e => e.Amount);
+        return total;
     }
 
     public async Task<bool> UpdateExpenseAsync(Guid userId, UpdateExpenseRequest request)

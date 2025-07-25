@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
@@ -7,6 +5,7 @@ using ExpenseTracker.Utilities.Routing;
 using ExpenseTracker.Services;
 using ExpenseTracker.Models.DTOs.Expenses;
 using ExpenseTracker.Utilities.Extension;
+using ExpenseTracker.Models;
 
 namespace ExpenseTracker.Controllers;
 
@@ -18,72 +17,69 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
 
     private Guid GetCurrentUserId()
     {
-        if (!User.TryGetUserId(out var userId))
+        if (!User.TryGetUserId(out Guid userId))
         {
             throw new UnauthorizedAccessException("Invalid user token");
         }
+
         return userId;
     }
 
-    // POST: api/v1/expense
-    [HttpPost]
-    [Route(ApiRoutes.Expense.Post.Create)]
+    [HttpPost(ApiRoutes.Expense.Post.Create)]
     public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
-            var result = await _expenseService.CreateExpenseAsync(userId, request);
+            Guid userId = GetCurrentUserId();
+            CreateExpenseResponse result = await _expenseService.CreateExpenseAsync(userId, request);
 
-            return CreatedAtAction(nameof(CreateExpense), result);
+            return CreatedAtAction(nameof(CreateExpense), ApiResponse<CreateExpenseResponse>.Ok(result, "Expense created successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = $"Unexpected error: {ex.Message}"
-            });
+            return StatusCode(500, ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    // GET: api/v1/expense/{id}
-    [HttpGet]
-    [Route(ApiRoutes.Expense.Get.ById)]
+    [HttpGet(ApiRoutes.Expense.Get.ById)]
     public async Task<IActionResult> GetExpenseByIdAsync(Guid id)
     {
         try
         {
-            var userId = GetCurrentUserId();
-            var expense = await _expenseService.GetExpenseByIdAsync(id, userId);
+            Guid userId = GetCurrentUserId();
+            CreateExpenseResponse? result = await _expenseService.GetExpenseByIdAsync(id, userId);
 
-            if (expense == null)
+            if (result is null)
             {
-                return NotFound();
+                return NotFound(ApiResponse<object?>.Fail(null, "Expense not found."));
             }
 
-            return Ok(expense);
+            return Ok(ApiResponse<CreateExpenseResponse?>.Ok(result, "Expense retrieved successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
-    // GET: api/v1/expense/getall
-    [HttpGet]
-    [Route(ApiRoutes.Expense.Get.All)]
+    [HttpGet(ApiRoutes.Expense.Get.All)]
     public async Task<IActionResult> GetAllExpensesAsync()
     {
         try
         {
-            var userId = GetCurrentUserId();
-            var expenses = await _expenseService.GetAllExpensesAsync(userId);
-            return Ok(expenses);
+            Guid userId = GetCurrentUserId();
+            IEnumerable<CreateExpenseResponse> expenses = await _expenseService.GetAllExpensesAsync(userId);
+
+            if (!expenses.Any())
+            {
+                return NotFound(ApiResponse<object?>.Ok(null, "No expenses found."));
+            }
+
+            return Ok(ApiResponse<IEnumerable<CreateExpenseResponse>>.Ok(expenses, "Expenses retrieved successfully."));
         }
         catch (UnauthorizedAccessException)
         {
@@ -91,127 +87,71 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
         }
     }
 
-    [HttpGet]
-    [Route(ApiRoutes.Expense.Get.Filter)]
-    public async Task<IActionResult> GetFilteredExpenses(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] decimal? minAmount,
-        [FromQuery] decimal? maxAmount,
-        [FromQuery] decimal? exactAmount,
-        [FromQuery] string? category)
+    [HttpGet(ApiRoutes.Expense.Get.Filter)]
+    public async Task<IActionResult> GetFilteredExpenses([FromQuery] FilteredExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
-
-            var request = new FilteredExpenseRequest
-            {
-                StartDate = startDate,
-                EndDate = endDate,
-                MinAmount = minAmount,
-                MaxAmount = maxAmount,
-                ExactAmount = exactAmount,
-                Category = category
-            };
-
-            var expenses = await _expenseService.GetFilteredExpensesAsync(userId, request);
+            Guid userId = GetCurrentUserId();
+            IEnumerable<CreateExpenseResponse> expenses = await _expenseService.GetFilteredExpensesAsync(userId, request);
 
             if (!expenses.Any())
             {
-                return NotFound(new
-                {
-                    success = false,
-                    message = "No matching expenses found."
-                });
+                return NotFound(ApiResponse<object?>.Ok(null, "No expenses found."));
             }
 
-            return Ok(new
-            {
-                success = true,
-                message = "Filtered expenses retrieved successfully.",
-                data = expenses
-            });
+            return Ok(ApiResponse<IEnumerable<CreateExpenseResponse>>.Ok(expenses, "Filtered expenses retrieved successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "An error occurred while retrieving expenses.",
-                error = ex.Message
-            });
+            return StatusCode(500, ApiResponse<object?>.Fail(null, "An error occurred while retriving expenses.", [ex.Message]));
         }
     }
 
     [HttpGet(ApiRoutes.Expense.Get.Total)]
-    public async Task<IActionResult> GetTotalExpense(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] int? month,
-        [FromQuery] int? year)
+    public async Task<IActionResult> GetTotalExpense([FromQuery] TotalExpenseRequest request)
     {
         try
         {
-            var userId = GetCurrentUserId();
-
-            if (month.HasValue && (month < 1 || month > 12))
-            {
-                return BadRequest(new { success = false, message = "Month must be between 1 and 12." });
-            }
-
-            if (year.HasValue && year < 1)
-            {
-                return BadRequest(new { success = false, message = "Year must be a valid positive number." });
-            }
-
-            var request = new TotalExpenseRequest
-            {
-                StartDate = startDate,
-                EndDate = endDate,
-                Month = month,
-                Year = year
-            };
-
-            var total = await _expenseService.GetTotalExpenseAsync(userId, request);
+            Guid userId = GetCurrentUserId();
+            double total = await _expenseService.GetTotalExpenseAsync(userId, request);
 
             string message;
-            if (month.HasValue && year.HasValue)
+
+            if (request.Period.HasValue)
             {
-                var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month.Value);
-                message = $"Total expense for {monthName} {year} is: {total}";
+                DateOnly period = request.Period.Value;
+                message = $"Total expense for {period.ToString("MMMM yyyy", CultureInfo.CurrentCulture)} is: {total:C}";
             }
-            else if (startDate.HasValue || endDate.HasValue)
+            else if (request.StartDate.HasValue || request.EndDate.HasValue)
             {
-                message = $"Total expense from {startDate?.ToString("yyyy-MM-dd") ?? "beginning"} to {endDate?.ToString("yyyy-MM-dd") ?? "now"} is: {total}";
-            }
-            else if (year.HasValue)
-            {
-                message = $"Total expense for the year {year} is: {total}";
-            }
-            else if (month.HasValue)
-            {
-                var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month.Value);
-                message = $"Total expense for {monthName} is: ${total}";
+                string from = request.StartDate?.ToString("yyyy-MM-dd") ?? "beginning";
+                string to = request.EndDate?.ToString("yyyy-MM-dd") ?? "now";
+                message = $"Total expense from {from} to {to} is: {total:C}";
             }
             else
             {
-                message = $"Total expense is: {total}";
+                message = $"Total expense is: {total:C}";
             }
 
-            return Ok(new { success = true, message, totalExpense = total });
+            return Ok(ApiResponse<double>.Ok(total, message));
         }
         catch (UnauthorizedAccessException)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Unauthorized access."));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { success = false, message = "An error occurred while calculating total expense.", error = ex.Message });
+            var errorResponse = ApiResponse<object?>.Fail(
+                null,
+                "An error occurred while calculating total expense.",
+                [ex.Message]
+            );
+            return StatusCode(500, errorResponse);
         }
     }
 
@@ -222,25 +162,25 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
-            if (request == null || id != request.Id)
+            if (request is null || id != request.Id)
             {
-                return BadRequest(new { success = false, message = "Invalid data or ID mismatch." });
+                return BadRequest(ApiResponse<object?>.Fail(null, "Invalid data or ID mismatch."));
             }
 
-            var success = await _expenseService.UpdateExpenseAsync(userId, request);
+            bool result = await _expenseService.UpdateExpenseAsync(userId, request);
 
-            if (!success)
+            if (!result)
             {
-                return NotFound(new { success = false, message = $"Expense with ID {id} not found." });
+                return NotFound(ApiResponse<object?>.Fail(null, $"Expense with ID {id} not found"));
             }
 
-            return Ok(new { success = true, message = "Expense updated successfully." });
+            return Ok(ApiResponse<object?>.Ok(null, "Expense updated successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
@@ -251,19 +191,19 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
-            bool deleted = await _expenseService.DeleteExpenseAsync(id, userId);
+            Guid userId = GetCurrentUserId();
+            bool result = await _expenseService.DeleteExpenseAsync(id, userId);
 
-            if (!deleted)
+            if (!result)
             {
-                return NotFound(new { success = false, message = $"Expense with Id {id} not found." });
+                return NotFound(ApiResponse<object?>.Fail(null, $"Expense with ID {id} not found"));
             }
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Ok(null, "Expense deleted successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 
@@ -274,19 +214,19 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
-            bool deleted = await _expenseService.DeleteAllExpensesAsync(userId);
+            Guid userId = GetCurrentUserId();
+            bool result = await _expenseService.DeleteAllExpensesAsync(userId);
 
-            if (!deleted)
+            if (!result)
             {
-                return NotFound(new { success = false, message = "No expenses found to delete." });
+                return NotFound(ApiResponse<object?>.Fail(null, "No expenses found to delete."));
             }
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Ok(null, "All expenses deleted successfully."));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized();
+            return Unauthorized(ApiResponse<object?>.Fail(null, null, [ex.Message]));
         }
     }
 }
