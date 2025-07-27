@@ -3,14 +3,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Data;
 
+/// <summary>
+/// Represents the Entity Framework database context for the Expense Tracker application.
+/// </summary>
 public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> options) : DbContext(options)
 {
+    /// <summary>
+    /// Gets or sets the Expenses table.
+    /// </summary>
     public DbSet<Expense> Expenses { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Users table.
+    /// </summary>
     public DbSet<User> Users { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Budgets table.
+    /// </summary>
     public DbSet<Budget> Budgets { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SavingGoals table.
+    /// </summary>
     public DbSet<SavingGoal> SavingGoals { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SavingGoalContributions table.
+    /// </summary>
     public DbSet<SavingGoalContribution> SavingGoalContributions { get; set; }
 
+    /// <summary>
+    /// Configures entity relationships and schema details using Fluent API.
+    /// </summary>
+    /// <param name="modelBuilder">Provides a simple API for configuring EF Core models.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -30,25 +56,28 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
         {
             entity.HasKey(e => e.Id);
 
-            // Convert enum to string
             entity.Property(e => e.Category)
-                  .HasConversion<string>()
-                  .IsRequired();
+                .HasConversion<string>()
+                .IsRequired();
+
+            entity.Property(e => e.PaymentMethod)
+                .HasConversion<string>()
+                .IsRequired();
 
             entity.Property(e => e.Amount).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
 
-            // Configure relationship
             entity.HasOne(e => e.User)
-                  .WithMany(u => u.Expenses)
-                  .HasForeignKey(e => e.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(u => u.Expenses)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // configure budget entity
         modelBuilder.Entity<Budget>(entity =>
         {
-            entity.HasIndex(b => new { b.UserId, b.Category, b.Month }).IsUnique();
+            entity.Property(e => e.Category).HasConversion<string>().IsRequired();
+            entity.HasIndex(b => new { b.UserId, b.Category, b.Period }).IsUnique();
         });
 
         // configure saving goal entity

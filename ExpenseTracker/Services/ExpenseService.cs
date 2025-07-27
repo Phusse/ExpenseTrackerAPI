@@ -1,221 +1,204 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
+using ExpenseTracker.Models.DTOs.Expenses;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services;
 
-public class ExpenseService : IExpenseService
+/// <summary>
+/// Provides services for managing user expenses, including creating, retrieving, filtering, updating, and deleting expense records,
+/// as well as calculating total expenses within specified criteria.
+/// </summary>
+internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseService
 {
-    private readonly ExpenseTrackerDbContext _dbContext;
-    private readonly IEmailService _emailService;
+    private readonly ExpenseTrackerDbContext _dbContext = dbContext;
 
-    public ExpenseService(ExpenseTrackerDbContext dbContext, IEmailService emailService)
+    public async Task<CreateExpenseResponse> CreateExpenseAsync(Guid userId, CreateExpenseRequest request)
     {
-        _dbContext = dbContext;
-        _emailService = emailService;
+        Expense expense = new()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Category = request.Category,
+            Amount = request.Amount,
+            DateRecorded = DateTime.UtcNow,
+            DateOfExpense = request.DateOfExpense,
+            PaymentMethod = request.PaymentMethod,
+            Description = request.Description,
+        };
+
+        await _dbContext.Expenses.AddAsync(expense);
+        await _dbContext.SaveChangesAsync();
+
+        return new CreateExpenseResponse
+        {
+            Id = expense.Id,
+            Category = expense.Category,
+            Amount = expense.Amount,
+            DateOfExpense = expense.DateOfExpense,
+            DateRecorded = expense.DateRecorded,
+            PaymentMethod = expense.PaymentMethod,
+            Description = expense.Description,
+        };
     }
 
-    public async Task<(bool IsSuccess, Expense? Data, string? Message)> CreateExpenseAsync(Expense expenseToCreate, Guid userId)
+    public async Task<CreateExpenseResponse?> GetExpenseByIdAsync(Guid id, Guid userId)
     {
-        try
-        {
-            expenseToCreate.Id = Guid.NewGuid();
-            expenseToCreate.DateRecorded = DateTime.UtcNow;
-            expenseToCreate.UserId = userId;
-
-            await _dbContext.Expenses.AddAsync(expenseToCreate);
-            await _dbContext.SaveChangesAsync();
-
-            var now = DateTime.UtcNow;
-            var month = now.Month;
-            var year = now.Year;
-
-            var budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
-                b.UserId == userId &&
-                b.Category == expenseToCreate.Category &&
-                b.Month == month &&
-                b.Year == year);
-
-            double spent = await _dbContext.Expenses
-                .Where(e => e.UserId == userId &&
-                            e.Category == expenseToCreate.Category &&
-                            e.DateOfExpense.HasValue &&
-                            e.DateOfExpense.Value.Month == month &&
-                            e.DateOfExpense.Value.Year == year)
-                .SumAsync(e => e.Amount);
-
-            string message = "Expense recorded";
-
-            if (budget != null)
-            {
-                double remaining = budget.LimitAmount - spent;
-
-                if (remaining <= 0)
-                {
-                    message = $"Budget exceeded! You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}.";
-                }
-                else
-                {
-                    message = $"You’ve spent ₦{spent} out of your ₦{budget.LimitAmount} budget for {expenseToCreate.Category}. ₦{remaining} remaining.";
-                }
-            }
-
-            // remove user navigation to prevent sending user info
-            expenseToCreate.User = null;
-
-            return (true, expenseToCreate, message);
-        }
-        catch (Exception ex)
-        {
-            return (false, null, ex.Message);
-        }
-    }
-
-    public async Task<Expense?> GetExpenseByIdAsync(Guid id, Guid userId)
-    {
-        return await _dbContext.Expenses
+        Expense? expense = await _dbContext.Expenses
             .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+
+        if (expense is null) return null;
+
+        return new CreateExpenseResponse
+        {
+            Id = expense.Id,
+            Category = expense.Category,
+            Amount = expense.Amount,
+            DateOfExpense = expense.DateOfExpense,
+            DateRecorded = expense.DateRecorded,
+            PaymentMethod = expense.PaymentMethod,
+            Description = expense.Description,
+        };
     }
 
-    public async Task<IEnumerable<Expense>> GetAllExpensesAsync(Guid userId)
+    public async Task<IEnumerable<CreateExpenseResponse>> GetAllExpensesAsync(Guid userId)
     {
-        return await _dbContext.Expenses
+        List<CreateExpenseResponse> result = await _dbContext.Expenses
             .Where(e => e.UserId == userId)
             .OrderByDescending(e => e.DateRecorded)
+            .Select(e => new CreateExpenseResponse
+            {
+                Id = e.Id,
+                Category = e.Category,
+                Amount = e.Amount,
+                DateOfExpense = e.DateOfExpense,
+                DateRecorded = e.DateRecorded,
+                PaymentMethod = e.PaymentMethod,
+                Description = e.Description,
+            })
             .ToListAsync();
+
+        return result;
     }
 
-    public async Task<IEnumerable<Expense>> GetFilteredExpensesAsync(
-        Guid userId,
-        DateTime? startDate = null,
-        DateTime? endDate = null,
-        decimal? minAmount = null,
-        decimal? maxAmount = null,
-        decimal? exactAmount = null,
-        string? category = null)
+    public async Task<IEnumerable<CreateExpenseResponse>> GetFilteredExpensesAsync(Guid userId, FilteredExpenseRequest request)
     {
-        IQueryable<Expense> query = _dbContext.Expenses
-            .Where(e => e.UserId == userId);
+        IQueryable<Expense> query = _dbContext.Expenses.Where(e => e.UserId == userId);
 
-        if (startDate.HasValue)
-        {
-            query = query.Where(e => e.DateOfExpense >= startDate.Value);
-        }
+        if (request.StartDate.HasValue)
+            query = query.Where(e => e.DateOfExpense >= request.StartDate.Value);
 
-        if (endDate.HasValue)
-        {
-            query = query.Where(e => e.DateOfExpense <= endDate.Value);
-        }
+        if (request.EndDate.HasValue)
+            query = query.Where(e => e.DateOfExpense <= request.EndDate.Value);
 
-        if (exactAmount.HasValue)
-        {
-            query = query.Where(e => (decimal)e.Amount == exactAmount.Value);
-        }
+        if (request.ExactAmount.HasValue)
+            query = query.Where(e => (decimal)e.Amount == request.ExactAmount.Value);
         else
         {
-            if (minAmount.HasValue)
-            {
-                query = query.Where(e => (decimal)e.Amount >= minAmount.Value);
-            }
+            if (request.MinAmount.HasValue)
+                query = query.Where(e => (decimal)e.Amount >= request.MinAmount.Value);
 
-            if (maxAmount.HasValue)
-            {
-                query = query.Where(e => (decimal)e.Amount <= maxAmount.Value);
-            }
+            if (request.MaxAmount.HasValue)
+                query = query.Where(e => (decimal)e.Amount <= request.MaxAmount.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(category))
+        if (request.Category.HasValue)
         {
-            if (Enum.TryParse<ExpenseCategory>(category, out var parsedCategory))
-            {
-                query = query.Where(e => e.Category == parsedCategory);
-            }
-            else
-            {
-                // If parsing fails, return empty result
-                return new List<Expense>();
-            }
+            query = query.Where(e => e.Category == request.Category.Value);
         }
 
-        return await query.OrderByDescending(e => e.DateRecorded).ToListAsync();
+        List<CreateExpenseResponse> filteredResult = await query.OrderByDescending(e => e.DateRecorded)
+            .Select(e => new CreateExpenseResponse
+            {
+                Id = e.Id,
+                Category = e.Category,
+                Amount = e.Amount,
+                DateOfExpense = e.DateOfExpense,
+                DateRecorded = e.DateRecorded,
+                PaymentMethod = e.PaymentMethod,
+                Description = e.Description,
+            })
+            .ToListAsync();
+
+        return filteredResult;
     }
 
-    public async Task<double> GetTotalExpenseAsync(Guid userId, DateTime? startDate, DateTime? endDate, int? month, int? year)
+    public async Task<double> GetTotalExpenseAsync(Guid userId, TotalExpenseRequest request)
     {
-        IQueryable<Expense> query = _dbContext.Expenses
-            .Where(e => e.UserId == userId);
+        IQueryable<Expense> query = _dbContext.Expenses.Where(e => e.UserId == userId);
 
-        // Filter by month and year
-        if (month.HasValue && year.HasValue)
+        // 1. Filter by Period (interpreted as month start)
+        if (request.Period.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                 e.DateOfExpense.Value.Month == month.Value &&
-                                 e.DateOfExpense.Value.Year == year.Value);
+            DateOnly period = request.Period.Value;
+            DateTime start = period.ToDateTime(TimeOnly.MinValue);
+            DateTime end = period.AddMonths(1).AddDays(-1).ToDateTime(TimeOnly.MaxValue);
+
+            query = query.Where(e => e.DateOfExpense >= start && e.DateOfExpense <= end);
         }
-        // Filter by date range
-        else if (startDate.HasValue && endDate.HasValue)
+
+        // 2. Filter by StartDate/EndDate
+        else if (request.StartDate.HasValue || request.EndDate.HasValue)
         {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                e.DateOfExpense.Value >= startDate.Value &&
-                                e.DateOfExpense.Value <= endDate.Value);
-        }
-        // Filter only by year
-        else if (year.HasValue)
-        {
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Year == year.Value);
-        }
-        // Filter only by month (with current year fallback)
-        else if (month.HasValue)
-        {
-            var currentYear = DateTime.UtcNow.Year;
-            query = query.Where(e => e.DateOfExpense.HasValue &&
-                                     e.DateOfExpense.Value.Month == month.Value &&
-                                     e.DateOfExpense.Value.Year == currentYear);
+            if (request.StartDate.HasValue)
+            {
+                DateTime start = request.StartDate.Value.ToDateTime(TimeOnly.MinValue);
+                query = query.Where(e => e.DateOfExpense >= start);
+            }
+
+            if (request.EndDate.HasValue)
+            {
+                DateTime end = request.EndDate.Value.ToDateTime(TimeOnly.MaxValue);
+                query = query.Where(e => e.DateOfExpense <= end);
+            }
         }
 
         double total = await query.SumAsync(e => e.Amount);
         return total;
     }
 
-    public async Task<bool> UpdateExpenseAsync(Guid id, Expense expenseToUpdate, Guid userId)
+    public async Task<bool> UpdateExpenseAsync(Guid userId, UpdateExpenseRequest request)
     {
-        Expense? existingExpense = await _dbContext.Expenses
-            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+        Expense? existing = await _dbContext.Expenses
+            .FirstOrDefaultAsync(e => e.Id == request.Id && e.UserId == userId);
 
-        if (existingExpense == null) return false;
+        if (existing is null) return false;
 
-        existingExpense.Category = expenseToUpdate.Category;
-        existingExpense.Amount = expenseToUpdate.Amount;
-        existingExpense.DateOfExpense = expenseToUpdate.DateOfExpense;
-        existingExpense.Description = expenseToUpdate.Description;
-        existingExpense.PaymentMethod = expenseToUpdate.PaymentMethod;
+        if (request.Category.HasValue)
+            existing.Category = request.Category.Value;
 
-        _dbContext.Expenses.Update(existingExpense);
+        if (request.Amount.HasValue)
+            existing.Amount = request.Amount.Value;
+
+        if (request.DateOfExpense.HasValue)
+            existing.DateOfExpense = request.DateOfExpense.Value;
+
+        if (request.PaymentMethod.HasValue)
+            existing.PaymentMethod = request.PaymentMethod.Value;
+
+        if (request.Description is not null)
+            existing.Description = request.Description;
+
+        _dbContext.Expenses.Update(existing);
         await _dbContext.SaveChangesAsync();
-
         return true;
     }
 
     public async Task<bool> DeleteExpenseAsync(Guid id, Guid userId)
     {
-        Expense? expenseToDelete = await _dbContext.Expenses
-            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+        Expense? expense = await _dbContext.Expenses.FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
 
-        if (expenseToDelete == null) return false;
+        if (expense is null) return false;
 
-        _dbContext.Expenses.Remove(expenseToDelete);
+        _dbContext.Expenses.Remove(expense);
         await _dbContext.SaveChangesAsync();
-
         return true;
     }
 
     public async Task<bool> DeleteAllExpensesAsync(Guid userId)
     {
-        List<Expense> expenses = await _dbContext.Expenses
-            .Where(e => e.UserId == userId)
-            .ToListAsync();
+        List<Expense> expenses = await _dbContext.Expenses.Where(e => e.UserId == userId).ToListAsync();
 
         if (expenses.Count == 0) return false;
 
