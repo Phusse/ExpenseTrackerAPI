@@ -18,7 +18,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.13" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
     <PackageReference Include="Postmark" Version="5.2.0" />
     <PackageReference Include="Resend" Version="0.1.4" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.6.3" />

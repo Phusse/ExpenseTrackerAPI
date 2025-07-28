@@ -13,17 +13,14 @@ using ExpenseTracker.Models;
 using System.Text.Json;
 using ExpenseTracker.Middleware;
 using ExpenseTracker.Configuration;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 //--------------- Add database connection ---------------
 builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 21))
-    )
-);
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 //--------------- Register application services ---------------
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

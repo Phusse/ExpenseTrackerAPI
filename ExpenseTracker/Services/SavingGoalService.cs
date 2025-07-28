@@ -1,7 +1,6 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
-using ExpenseTracker.Models.DTOs;
 using ExpenseTracker.Models.DTOs.SavingGoals;
 using Microsoft.EntityFrameworkCore;
 

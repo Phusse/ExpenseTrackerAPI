@@ -1,5 +1,4 @@
 using ExpenseTracker.Models;
-using ExpenseTracker.Models.DTOs;
 using ExpenseTracker.Models.DTOs.SavingGoals;
 using ExpenseTracker.Services;
 using ExpenseTracker.Utilities.Extension;
