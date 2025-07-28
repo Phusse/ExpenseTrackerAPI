@@ -114,7 +114,7 @@ internal static class ApiRoutes
         public static class Put
         {
             /// <summary>Updates the budget limit for a user.</summary>
-            public const string Update = $"{Base}/update";
+            public const string Update = $"{Base}/update/{{id}}";
         }
 
         /// <summary>DELETE endpoints for Budget.</summary>

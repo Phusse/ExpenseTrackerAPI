@@ -120,7 +120,7 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> UpdateBudget([FromRoute] Guid budgetId, [FromBody] UpdateBudgetRequest request)
+    public async Task<IActionResult> UpdateBudget([FromRoute(Name = "id")] Guid budgetId, [FromBody] UpdateBudgetRequest request)
     {
         if (!User.TryGetUserId(out Guid userId))
             return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
