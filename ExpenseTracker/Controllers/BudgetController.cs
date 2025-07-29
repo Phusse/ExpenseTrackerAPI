@@ -19,8 +19,12 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     private readonly IBudgetService _budgetService = budgetService;
 
     /// <summary>
-    /// Creates a new budget entry for a category and period.
+    /// Adds a new budget for a specific category and period.
     /// </summary>
+    /// <remarks>
+    /// Creates a budget entry tied to a user's account using the provided category and time period.
+    /// If a budget already exists for the same category-period pair, the request will be rejected to avoid duplication.
+    /// </remarks>
     /// <param name="request">The data required to create the budget.</param>
     /// <returns>A <see cref="CreateBudgetResponse"/> with the created budget details.</returns>
     /// <response code="201">Budget created successfully.</response>
@@ -49,8 +53,12 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a summary of budget usage for a category and period.
+    /// Returns usage summary for a specific budget.
     /// </summary>
+    /// <remarks>
+    /// Retrieves the budgeted amount and spending progress for a given category and month.
+    /// If no budget exists for the input, a <c>404 response</c> is returned to indicate absence of data.
+    /// </remarks>
     /// <param name="request">The budget category and period to evaluate.</param>
     /// <returns>A <see cref="BudgetSummaryResponse"/> containing usage details.</returns>
     /// <response code="200">Budget summary retrieved successfully.</response>
@@ -85,8 +93,12 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a high-level overview of all budget categories for a given period.
+    /// Returns an overview of all budget categories for a given month.
     /// </summary>
+    /// <remarks>
+    /// Provides a top-level summary of budget performance across all user-defined categories for the specified period.
+    /// This helps users identify areas of overspending or underutilization.
+    /// </remarks>
     /// <param name="period">The month and year to retrieve the overview for.</param>
     /// <returns>A <see cref="BudgetOverviewSummaryResponse"/> containing performance insights.</returns>
     /// <response code="200">Overview retrieved successfully.</response>
@@ -104,8 +116,12 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     }
 
     /// <summary>
-    /// Updates an existing budget entry using its ID.
+    /// Modifies an existing budget entry by ID.
     /// </summary>
+    /// <remarks>
+    /// Allows users to adjust budget values (amount, category, or period) using the budget's unique identifier.
+    /// If the budget does not exist, a <c>404 response</c> is returned. If the update violates any business rule or causes a conflict (e.g., duplicate budget), a <c>409 response</c> is issued.
+    /// </remarks>
     /// <param name="budgetId">The unique ID of the budget entry.</param>
     /// <param name="request">The data to update (limit, category, or period).</param>
     /// <returns>An operation result indicating success or failure.</returns>
@@ -139,8 +155,12 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a budget entry using its unique ID.
+    /// Removes a budget by its unique ID.
     /// </summary>
+    /// <remarks>
+    /// Deletes a user's budget entry from the system. If no budget matches the given ID, a <c>404 response</c> is returned.
+    /// This operation is irreversible and should be used cautiously.
+    /// </remarks>
     /// <param name="budgetId">The unique ID of the budget entry to delete.</param>
     /// <returns>An operation result indicating success or failure.</returns>
     /// <response code="200">Budget deleted successfully.</response>

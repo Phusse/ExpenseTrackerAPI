@@ -22,7 +22,7 @@ public class SavingGoalController(ISavingGoalService savingGoalService) : Contro
     /// </summary>
     /// <remarks>
     /// This endpoint requires the user to be authenticated with a valid token.
-    /// On success, it returns the created saving goal and sets the Location header
+    /// <c>On success</c>, it returns the created saving goal and sets the Location header
     /// to the endpoint where the goal can be retrieved.
     /// </remarks>
     /// <param name="request">The data required to create the saving goal.</param>

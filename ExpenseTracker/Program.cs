@@ -80,8 +80,7 @@ if (builder.Environment.IsDevelopment())
 
         // Add global security requirement
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-        {
+        {{
             new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference
@@ -91,8 +90,7 @@ if (builder.Environment.IsDevelopment())
                 }
             },
             Array.Empty<string>()
-        }
-        });
+        }});
     });
 }
 
@@ -129,7 +127,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.ContentType = "application/json";
 
             var response = ApiResponse<object?>.Fail(null, "Invalid or missing token.");
-            var json = JsonSerializer.Serialize(response);
+            string json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
         },
@@ -140,7 +138,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.ContentType = "application/json";
 
             var response = ApiResponse<object?>.Fail(null, "You do not have access to this resource.");
-            var json = JsonSerializer.Serialize(response);
+            string json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
         }
