@@ -1,4 +1,3 @@
-using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Expenses;
 
 namespace ExpenseTracker.Services;

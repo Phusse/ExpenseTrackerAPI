@@ -1,0 +1,16 @@
+services:
+  expensetracker:
+    image: expense-tracker
+    build:
+      context: ./ExpenseTracker
+      dockerfile: Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5068:5068
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    env_file:
+      - .env

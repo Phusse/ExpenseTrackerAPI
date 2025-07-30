@@ -1,3 +1,4 @@
+using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Metadata;
 using ExpenseTracker.Services;
@@ -17,6 +18,10 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	/// <summary>
 	/// Returns all expense categories.
 	/// </summary>
+	/// <remarks>
+	/// Retrives the values if the <c>ExpenseCategory</c> enum, including
+	/// their display names
+	/// </remarks>
 	/// <response code="200">Expense categories retrieved successfully.</response>
 	[HttpGet(ApiRoutes.Metadata.Get.ExpenseCategories)]
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
@@ -29,6 +34,10 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	/// <summary>
 	/// Returns all payment methods.
 	/// </summary>
+	/// <remarks>
+	/// Retrives the values if the <c>PaymentMethod</c> enum, including
+	/// their display names
+	/// </remarks>
 	/// <response code="200">Payment methods retrieved successfully.</response>
 	[HttpGet(ApiRoutes.Metadata.Get.PaymentMethods)]
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
@@ -41,6 +50,10 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	/// <summary>
 	/// Returns all saving goal statuses.
 	/// </summary>
+	/// <remarks>
+	/// Retrives the values if the <c>SavingGoalStatus</c> enum, including
+	/// their display names
+	/// </remarks>
 	/// <response code="200">Saving goal statuses retrieved successfully.</response>
 	[HttpGet(ApiRoutes.Metadata.Get.SavingGoalStatuses)]
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]

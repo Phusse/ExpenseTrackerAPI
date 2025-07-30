@@ -36,11 +36,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     /// <summary>
     /// Creates a new expense for the authenticated user.
     /// </summary>
-    /// <param name="request">The expense details.</param>
-    /// <returns>Returns the created expense.</returns>
+    /// <remarks>
+    /// Accepts an expense payload including amount, date, category, and description.
+    /// On success, returns the created expense.
+    /// A <c>401 response</c> is returned if the user's identity cannot be resolved.
+    /// Any unhandled exception returns a <c>500 error</c>.
+    /// </remarks>
+    /// <param name="request">The expense data to be recorded.</param>
     /// <response code="201">Expense created successfully.</response>
-    /// <response code="401">Unauthorized access.</response>
-    /// <response code="500">Internal server error.</response>
+    /// <response code="401">Unauthorized access due to invalid or missing token.</response>
+    /// <response code="500">An internal error occurred while processing the request.</response>
     [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
@@ -65,13 +70,19 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a single expense by its ID.
+    /// Retrieves all expenses recorded by the authenticated user.
     /// </summary>
-    /// <param name="id">The expense ID.</param>
-    /// <returns>Returns the requested expense if found.</returns>
-    /// <response code="200">Expense found.</response>
+    /// <remarks>
+    /// Returns a complete list of expenses.
+    /// If none exist, a 404 is returned with an empty result.
+    /// </remarks>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing a list of <see cref="CreateExpenseResponse"/> wrapped in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
+    /// <response code="200">Expenses retrieved successfully.</response>
+    /// <response code="404">No expenses found.</response>
     /// <response code="401">Unauthorized access.</response>
-    /// <response code="404">Expense not found.</response>
+
     [ProducesResponseType(typeof(ApiResponse<CreateExpenseResponse?>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
@@ -97,9 +108,15 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all expenses associated with the authenticated user.
+    /// Retrieves all expenses recorded by the authenticated user.
     /// </summary>
-    /// <returns>A list of all user expenses.</returns>
+    /// <remarks>
+    /// Returns a complete list of expenses.
+    /// If none exist, a 404 is returned with an empty result.
+    /// </remarks>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing a list of <see cref="CreateExpenseResponse"/> wrapped in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
     /// <response code="200">Expenses retrieved successfully.</response>
     /// <response code="404">No expenses found.</response>
     /// <response code="401">Unauthorized access.</response>
@@ -128,14 +145,21 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves expenses filtered by the provided criteria (date range, category, etc.).
+    /// Retrieves expenses based on filters such as date range or category.
     /// </summary>
-    /// <param name="request">The filtering options.</param>
-    /// <returns>Filtered list of user expenses.</returns>
+    /// <remarks>
+    /// Supports filtering by start date, end date, category, and other user-defined parameters.
+    /// If no records match the filter, a 404 is returned.
+    /// Authentication is required.
+    /// </remarks>
+    /// <param name="request">The filter criteria for narrowing down expenses.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing the filtered list of <see cref="CreateExpenseResponse"/> in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
     /// <response code="200">Filtered expenses retrieved successfully.</response>
-    /// <response code="404">No expenses found.</response>
+    /// <response code="404">No expenses match the provided criteria.</response>
     /// <response code="401">Unauthorized access.</response>
-    /// <response code="500">Internal server error.</response>
+    /// <response code="500">An internal error occurred during processing.</response>
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<CreateExpenseResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
@@ -166,13 +190,20 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Calculates the total expenses for a given date range or period.
+    /// Calculates the total amount spent within a specified period or date range.
     /// </summary>
-    /// <param name="request">The filter request with optional start date, end date, or specific period.</param>
-    /// <returns>The total expense within the specified range.</returns>
-    /// <response code="200">Total calculated successfully.</response>
+    /// <remarks>
+    /// Accepts optional filtering by month (period) or custom date range.
+    /// Returns the total sum of matching expenses.
+    /// Handles unauthorized or internal error responses accordingly.
+    /// </remarks>
+    /// <param name="request">Filter parameters to calculate the total.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing the total expense as a <see cref="double"/> in an <see cref="ApiResponse{T}"/>.
+    /// </returns>
+    /// <response code="200">Total expense calculated successfully.</response>
     /// <response code="401">Unauthorized access.</response>
-    /// <response code="500">Internal server error.</response>
+    /// <response code="500">An internal error occurred while calculating the total.</response>
     [ProducesResponseType(typeof(ApiResponse<double>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status500InternalServerError)]
@@ -220,14 +251,20 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Updates an existing expense.
+    /// Updates an existing expense for the authenticated user.
     /// </summary>
+    /// <remarks>
+    /// Matches the provided ID with the request body and updates the record accordingly.
+    /// If the expense doesn't exist or the IDs mismatch, appropriate error codes are returned.
+    /// </remarks>
     /// <param name="id">The ID of the expense to update.</param>
-    /// <param name="request">The updated expense details.</param>
-    /// <returns>Confirmation of update or error response.</returns>
+    /// <param name="request">The updated expense data.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating the outcome of the update operation.
+    /// </returns>
     /// <response code="200">Expense updated successfully.</response>
-    /// <response code="400">Invalid data or ID mismatch.</response>
-    /// <response code="404">Expense not found.</response>
+    /// <response code="400">Request data is invalid or ID does not match the request body.</response>
+    /// <response code="404">Expense with the specified ID not found.</response>
     /// <response code="401">Unauthorized access.</response>
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status400BadRequest)]
@@ -261,10 +298,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a specific expense.
+    /// Deletes a specific expense based on its unique ID.
     /// </summary>
-    /// <param name="id">The ID of the expense to delete.</param>
-    /// <returns>Confirmation of deletion.</returns>
+    /// <remarks>
+    /// Removes the specified expense entry if it belongs to the authenticated user.
+    /// A <c>404 response</c> is returned if the record is not found.
+    /// </remarks>
+    /// <param name="id">The unique identifier of the expense to delete.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating success or failure of the deletion.
+    /// </returns>
     /// <response code="200">Expense deleted successfully.</response>
     /// <response code="404">Expense not found.</response>
     /// <response code="401">Unauthorized access.</response>
@@ -293,9 +336,16 @@ public class ExpenseController(IExpenseService expenseService) : ControllerBase
     }
 
     /// <summary>
-    /// Deletes all expenses for the authenticated user.
+    /// Deletes all expenses for the currently authenticated user.
     /// </summary>
-    /// <returns>Confirmation message.</returns>
+    /// <remarks>
+    /// Removes every expense associated with the user account.
+    /// If no expenses exist, a <c>404 reponse</c> is returned.
+    /// This action is irreversible.
+    /// </remarks>
+    /// <returns>
+    /// An <see cref="IActionResult"/> confirming deletion status.
+    /// </returns>
     /// <response code="200">All expenses deleted successfully.</response>
     /// <response code="404">No expenses found to delete.</response>
     /// <response code="401">Unauthorized access.</response>

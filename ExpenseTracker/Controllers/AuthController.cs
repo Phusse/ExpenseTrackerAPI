@@ -26,7 +26,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// </remarks>
     /// <param name="request">The login credentials (email and password).</param>
     /// <returns>Returns a JWT token if login is successful.</returns>
-    /// <response code="200">Login successful; JWT returned in response.</response>
+    /// <response code="200">Login successful. JWT returned in response.</response>
     /// <response code="400">Login failed due to validation or business logic issues.</response>
     /// <response code="401">Login failed due to invalid credentials.</response>
     [ProducesResponseType(typeof(ApiResponse<AuthLoginResponse>), StatusCodes.Status200OK)]
@@ -71,7 +71,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
-    /// Gets information about the currently authenticated user.
+    /// Gets information of the current authenticated user.
     /// </summary>
     /// <remarks>
     /// This endpoint returns user profile data for the current logged-in user.

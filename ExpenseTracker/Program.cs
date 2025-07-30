@@ -13,17 +13,14 @@ using ExpenseTracker.Models;
 using System.Text.Json;
 using ExpenseTracker.Middleware;
 using ExpenseTracker.Configuration;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 //--------------- Add database connection ---------------
 builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 21))
-    )
-);
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 //--------------- Register application services ---------------
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -83,8 +80,7 @@ if (builder.Environment.IsDevelopment())
 
         // Add global security requirement
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-        {
+        {{
             new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference
@@ -94,8 +90,7 @@ if (builder.Environment.IsDevelopment())
                 }
             },
             Array.Empty<string>()
-        }
-        });
+        }});
     });
 }
 
@@ -132,7 +127,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.ContentType = "application/json";
 
             var response = ApiResponse<object?>.Fail(null, "Invalid or missing token.");
-            var json = JsonSerializer.Serialize(response);
+            string json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
         },
@@ -143,7 +138,7 @@ builder.Services.AddAuthentication(options =>
             context.Response.ContentType = "application/json";
 
             var response = ApiResponse<object?>.Fail(null, "You do not have access to this resource.");
-            var json = JsonSerializer.Serialize(response);
+            string json = JsonSerializer.Serialize(response);
 
             return context.Response.WriteAsync(json);
         }

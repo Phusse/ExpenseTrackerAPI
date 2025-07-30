@@ -1,7 +1,7 @@
 namespace ExpenseTracker.Configuration;
 
 /// <summary>
-/// Represents configuration settings for the email service (e.g., Resend).
+/// Configuration settings for the email service.
 /// </summary>
 public class EmailSettings
 {
