@@ -34,6 +34,6 @@ public class CategoryBudgetOverviewDto
 		100 => "You have reached your budget limit.",
 		>= 70 => "You have used more than 70% of your budget.",
 		> 0 => "You are within your budget.",
-		_ => "No budget set for this category.",
+		_ => "No expenses recorded for this budget yet.",
 	};
 }

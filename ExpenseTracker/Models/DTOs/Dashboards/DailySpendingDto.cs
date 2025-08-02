@@ -9,7 +9,7 @@ public class DailySpendingDto
 	/// <summary>
 	/// Gets or sets the date of the expense activity.
 	/// </summary>
-	public required DateTime Date { get; set; }
+	public required DateOnly Date { get; set; }
 
 	/// <summary>
 	/// Gets or sets the total amount spent on the specified date.

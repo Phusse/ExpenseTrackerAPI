@@ -57,9 +57,10 @@ public interface IBudgetService
     /// Updates an existing budget for the specified user using the provided values.
     /// </summary>
     /// <param name="userId">The ID of the user requesting the update.</param>
+    /// <param name="budgetId">The ID of the budget the requesting update will be made to.</param>
     /// <param name="request">The update request containing the budget ID and optional new values.</param>
     /// <returns>A <see cref="ServiceResult{T}"/> indicating the result of the update operation.</returns>
-    Task<ServiceResult<object?>> UpdateBudgetAsync(Guid userId, UpdateBudgetRequest request);
+    Task<ServiceResult<object?>> UpdateBudgetAsync(Guid userId, Guid budgetId, UpdateBudgetRequest request);
 
     /// <summary>
     /// Deletes a user's budget entry based on its unique identifier.

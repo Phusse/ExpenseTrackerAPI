@@ -11,7 +11,7 @@ public class BudgetSummaryResponse
     /// <summary>
     /// The unique identifier of the budget summary.
     /// </summary>
-    public required Guid Id { get; set; }
+    public required Guid? Id { get; set; }
 
     /// <summary>
     /// The expense category this summary is for.
