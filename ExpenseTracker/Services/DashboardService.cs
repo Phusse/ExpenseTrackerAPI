@@ -44,8 +44,6 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
                 b.Period.Year == currentYear
             ).ToListAsync();
 
-        Console.WriteLine("userBudgets: " + userBudgets.ToString());
-
         // Expenses by category
         List<CategorySpendingDto> expensesByCategory = await _dbContext.Expenses
             .Where(e =>
@@ -60,8 +58,6 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
             }).ToListAsync();
 
         Dictionary<ExpenseCategory, double> spentLookup = expensesByCategory.ToDictionary(e => e.Category, e => e.TotalSpent);
-
-        Console.WriteLine("spent: " + spentLookup.ToString());
 
         // Budget statuses (limit to 5)
         List<BudgetSummaryResponse> budgetStatuses = [.. userBudgets
@@ -113,7 +109,7 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
             .GroupBy(e => e.DateOfExpense.Date)
             .Select(g => new DailySpendingDto
             {
-                Date = g.Key,
+                Date = new(g.Key.Year, g.Key.Month, g.Key.Day),
                 TotalSpent = g.Sum(e => e.Amount),
             })
             .ToListAsync();
