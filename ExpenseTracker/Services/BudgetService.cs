@@ -78,14 +78,13 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
         Budget? budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
             b.UserId == userId &&
             b.Category == request.Category &&
-            b.Period.Month == request.Period.Value.Month &&
-            b.Period.Year == request.Period.Value.Year);
+            b.Period == request.Period);
 
         double spent = await GetSpentAmountForCategoryAsync(userId, request.Category.Value, request.Period.Value);
 
         return new BudgetStatusResponse
         {
-            Id = budget!.Id,
+            Id = budget?.Id,
             BudgetedAmount = budget?.Limit ?? 0,
             SpentAmount = spent,
         };
@@ -93,45 +92,47 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
 
     public async Task<BudgetOverviewSummaryResponse> GetBudgetOverviewAsync(Guid userId, DateOnly period)
     {
-        ExpenseCategory[] categories = Enum.GetValues<ExpenseCategory>();
+        DateOnly normalizedPeriod = new(period.Year, period.Month, 1);
+
+        List<Budget> userBudgets = await _dbContext.Budgets
+            .Where(b => b.UserId == userId && b.Period == normalizedPeriod)
+            .ToListAsync();
+
         List<CategoryBudgetOverviewDto> overview = [];
 
-        foreach (ExpenseCategory category in categories)
+        foreach (Budget budget in userBudgets)
         {
-            BudgetStatusRequest request = new()
-            {
-                Category = category,
-                Period = period,
-            };
+            double spent = await _dbContext.Expenses
+                .Where(e => e.UserId == userId &&
+                            e.Category == budget.Category &&
+                            e.DateOfExpense.Month == normalizedPeriod.Month &&
+                            e.DateOfExpense.Year == normalizedPeriod.Year)
+                .SumAsync(e => e.Amount);
 
-            BudgetStatusResponse status = await GetBudgetStatusAsync(userId, request);
-
-            double percentage = status.BudgetedAmount == 0
+            double percentage = budget.Limit == 0
                 ? 0
-                : Math.Round(status.SpentAmount / status.BudgetedAmount * 100, 2);
-
-            if (percentage == 0) continue;
+                : Math.Round(spent / budget.Limit * 100, 2);
 
             overview.Add(new CategoryBudgetOverviewDto
             {
-                Category = category,
+                Category = budget.Category,
                 PercentageUsed = percentage,
             });
         }
 
         return new BudgetOverviewSummaryResponse
         {
-            Period = new DateOnly(period.Year, period.Month, 1),
+            Period = new DateOnly(normalizedPeriod.Year, normalizedPeriod.Month, 1),
             Categories = overview,
         };
     }
 
-    public async Task<ServiceResult<object?>> UpdateBudgetAsync(Guid userId, UpdateBudgetRequest request)
+    public async Task<ServiceResult<object?>> UpdateBudgetAsync(Guid userId, Guid budgetId, UpdateBudgetRequest request)
     {
         try
         {
             Budget? budget = await _dbContext.Budgets
-                .FirstOrDefaultAsync(b => b.UserId == userId && b.Id == request.BudgetId);
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.Id == budgetId);
 
             if (budget is null)
             {
