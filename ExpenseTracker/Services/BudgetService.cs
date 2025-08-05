@@ -75,10 +75,12 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
             throw new ArgumentException("Category and Period must be provided.");
         }
 
+        DateOnly normalizedPeriod = new(request.Period.Value.Year, request.Period.Value.Month, 1);
+
         Budget? budget = await _dbContext.Budgets.FirstOrDefaultAsync(b =>
             b.UserId == userId &&
             b.Category == request.Category &&
-            b.Period == request.Period);
+            b.Period == normalizedPeriod);
 
         double spent = await GetSpentAmountForCategoryAsync(userId, request.Category.Value, request.Period.Value);
 
