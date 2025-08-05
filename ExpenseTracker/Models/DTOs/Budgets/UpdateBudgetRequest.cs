@@ -9,12 +9,6 @@ namespace ExpenseTracker.Models.DTOs.Budgets;
 public class UpdateBudgetRequest
 {
 	/// <summary>
-	/// The unique identifier of the budget to update.
-	/// </summary>
-	[Required(ErrorMessage = "Budget ID is required.")]
-	public Guid? BudgetId { get; set; }
-
-	/// <summary>
 	/// The new expense category for the budget (optional).
 	/// </summary>
 	public ExpenseCategory? Category { get; set; }

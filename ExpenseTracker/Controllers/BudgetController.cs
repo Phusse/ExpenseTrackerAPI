@@ -80,7 +80,7 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
             return NotFound(ApiResponse<object?>.Fail(null, "No budget set for the selected category and time range."));
         }
 
-        var summary = new BudgetSummaryResponse
+        BudgetSummaryResponse summary = new()
         {
             Id = result.Id,
             Category = request.Category!.Value,
@@ -111,7 +111,7 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
         if (!User.TryGetUserId(out Guid userId))
             return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
 
-        var result = await _budgetService.GetBudgetOverviewAsync(userId, period);
+        BudgetOverviewSummaryResponse result = await _budgetService.GetBudgetOverviewAsync(userId, period);
         return Ok(ApiResponse<BudgetOverviewSummaryResponse>.Ok(result, "Budget overview retrieved successfully."));
     }
 
@@ -141,9 +141,7 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
         if (!User.TryGetUserId(out Guid userId))
             return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
 
-        request.BudgetId = budgetId;
-
-        var result = await _budgetService.UpdateBudgetAsync(userId, request);
+        ServiceResult<object?> result = await _budgetService.UpdateBudgetAsync(userId, budgetId, request);
 
         if (result.Success)
             return Ok(ApiResponse<object?>.Ok(null, result.Message ?? "Budget updated successfully."));
