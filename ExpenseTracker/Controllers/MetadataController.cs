@@ -1,4 +1,3 @@
-using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Metadata;
 using ExpenseTracker.Services;
@@ -27,8 +26,7 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
 	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetExpenseCategories()
 	{
-		List<EnumOptionResponse> result = _enumService.GetExpenseCategories();
-		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(_enumService.GetExpenseCategories()));
 	}
 
 	/// <summary>
@@ -43,8 +41,7 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
 	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetPaymentMethods()
 	{
-		List<EnumOptionResponse> result = _enumService.GetPaymentMethods();
-		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(_enumService.GetPaymentMethods()));
 	}
 
 	/// <summary>
@@ -59,7 +56,6 @@ public class MetadataController(IMetadataService enumService) : ControllerBase
 	[ProducesResponseType(typeof(ApiResponse<List<EnumOptionResponse>>), StatusCodes.Status200OK)]
 	public ActionResult<ApiResponse<List<EnumOptionResponse>>> GetSavingGoalStatuses()
 	{
-		List<EnumOptionResponse> result = _enumService.GetSavingGoalStatuses();
-		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(result));
+		return Ok(ApiResponse<List<EnumOptionResponse>>.Ok(_enumService.GetSavingGoalStatuses()));
 	}
 }

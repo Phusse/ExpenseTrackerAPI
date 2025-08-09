@@ -10,21 +10,36 @@ namespace ExpenseTracker.Services;
 /// </summary>
 internal class MetadataService : IMetadataService
 {
-	private static List<EnumOptionResponse> GetEnumOptions<T>() where T : Enum
+	private static readonly List<EnumOptionResponse> ExpenseCategoriesCache = BuildEnumOptions<ExpenseCategory>();
+	private static readonly List<EnumOptionResponse> PaymentMethodsCache = BuildEnumOptions<PaymentMethod>();
+	private static readonly List<EnumOptionResponse> SavingGoalStatusesCache = BuildEnumOptions<SavingGoalStatus>();
+
+	private static List<EnumOptionResponse> BuildEnumOptions<T>() where T : Enum
 	{
-		return [.. Enum.GetValues(typeof(T))
-			.Cast<T>()
-			.Select(e => new EnumOptionResponse
+		Type type = typeof(T);
+		Array values = Enum.GetValues(type);
+		List<EnumOptionResponse> result = new(values.Length);
+
+		foreach (object value in values)
+		{
+			string name = value.ToString()!;
+
+			string label = type
+				.GetMember(name)[0]
+				.GetCustomAttribute<DisplayAttribute>()?.Name ?? name;
+
+			result.Add(new EnumOptionResponse
 			{
-				Value = e.ToString(),
-				Label = e.GetType()
-					.GetMember(e.ToString())
-					.First()
-					.GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
-			})];
+				Value = name,
+				Label = label
+			});
+		}
+
+		return result;
 	}
 
-	public List<EnumOptionResponse> GetExpenseCategories() => GetEnumOptions<ExpenseCategory>();
-	public List<EnumOptionResponse> GetPaymentMethods() => GetEnumOptions<PaymentMethod>();
-	public List<EnumOptionResponse> GetSavingGoalStatuses() => GetEnumOptions<SavingGoalStatus>();
+	public List<EnumOptionResponse> GetExpenseCategories() => ExpenseCategoriesCache;
+	public List<EnumOptionResponse> GetPaymentMethods() => PaymentMethodsCache;
+	public List<EnumOptionResponse> GetSavingGoalStatuses() => SavingGoalStatusesCache;
 }
+
