@@ -23,14 +23,22 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
 });
 
 //--------------- Add CORS policy ---------------
+string[]? allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+if (allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException(
+        "CORS configuration missing! Please add 'Cors:AllowedOrigins' to appsettings.json."
+    );
+}
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("Policy", policy =>
     {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        policy.SetIsOriginAllowed(origin => allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
@@ -177,7 +185,7 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("Policy");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
