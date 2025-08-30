@@ -22,6 +22,18 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+//--------------- Add CORS policy ---------------
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 //--------------- Register application services ---------------
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddHttpClient<IEmailService, EmailService>();
@@ -164,6 +176,8 @@ else
 {
     app.UseHttpsRedirection();
 }
+
+app.UseCors("AllowAll");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
