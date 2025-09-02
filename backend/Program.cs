@@ -22,6 +22,26 @@ builder.Services.AddDbContext<ExpenseTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+//--------------- Add CORS policy ---------------
+string[]? allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+if (allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException(
+        "CORS configuration missing! Please add 'Cors:AllowedOrigins' to appsettings.json."
+    );
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Policy", policy =>
+    {
+        policy.SetIsOriginAllowed(origin => allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 //--------------- Register application services ---------------
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddHttpClient<IEmailService, EmailService>();
@@ -164,6 +184,8 @@ else
 {
     app.UseHttpsRedirection();
 }
+
+app.UseCors("Policy");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
