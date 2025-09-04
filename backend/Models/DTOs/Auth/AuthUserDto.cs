@@ -1,17 +1,22 @@
 namespace ExpenseTracker.Models.DTOs.Auth;
 
 /// <summary>
-/// Represents the issued authentication token and its expiration information.
+/// Contains basic identity information for the authenticated user.
 /// </summary>
-public class AuthTokenDto
+public class AuthUserDto
 {
 	/// <summary>
-	/// The JWT token generated for the session.
+	/// The unique identifier of the user.
 	/// </summary>
-	public required string Token { get; set; }
+	public required Guid Id { get; set; }
 
 	/// <summary>
-	/// The UTC date and time when the token will expire.
+	/// The full name of the user.
 	/// </summary>
-	public required DateTime ExpiresAt { get; set; }
+	public required string Name { get; set; }
+
+	/// <summary>
+	/// The email address associated with the user's account.
+	/// </summary>
+	public required string Email { get; set; }
 }
