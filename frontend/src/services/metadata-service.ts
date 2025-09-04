@@ -1,7 +1,8 @@
 import { ExpenseTrackerApiRoutes } from "../constants/expense-tracker-api-routes";
 import type { ApiResponse } from "../dtos/api-response";
 import type { EnumOptionResponse } from "../dtos/metadata/enum-option-response";
-import { expenseTrackerApiClient, unwrapApiResponse } from "./expense-tracker-api-client";
+import { expenseTrackerApiClient } from "./expense-tracker-api-client";
+import { unwrapApiResponse } from "../utils/api-response";
 
 export const metadataService =
 {

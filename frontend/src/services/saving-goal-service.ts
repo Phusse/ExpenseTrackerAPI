@@ -4,7 +4,8 @@ import type { AddSavingContributionRequest } from "../dtos/saving-goals/add-savi
 import type { CreateSavingGoalRequest } from "../dtos/saving-goals/create-saving-goal-request";
 import type { CreateSavingGoalResponse } from "../dtos/saving-goals/create-saving-goal-response";
 import type { UpdateSavingGoalRequest } from "../dtos/saving-goals/update-saving-goal-request";
-import { expenseTrackerApiClient, unwrapApiResponse } from "./expense-tracker-api-client";
+import { expenseTrackerApiClient } from "./expense-tracker-api-client";
+import { unwrapApiResponse } from "../utils/api-response";
 
 const pathWithId = (template: string, id: string) => template.replace("{id}", id);
 

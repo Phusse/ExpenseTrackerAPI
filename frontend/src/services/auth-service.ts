@@ -5,7 +5,8 @@ import type { AuthLoginRequest } from "../dtos/auth/auth-login-request";
 import type { AuthLoginResponse } from "../dtos/auth/auth-login-response";
 import type { AuthRegisterRequest } from "../dtos/auth/auth-register-request";
 import type { UserProfileResponse } from "../dtos/auth/user-profile-response";
-import { expenseTrackerApiClient, unwrapApiResponse } from "./expense-tracker-api-client";
+import { expenseTrackerApiClient } from "./expense-tracker-api-client";
+import { unwrapApiResponse } from "../utils/api-response";
 
 export const authService = {
 	async register(payload: AuthRegisterRequest): Promise<ApiResponse<null>> {

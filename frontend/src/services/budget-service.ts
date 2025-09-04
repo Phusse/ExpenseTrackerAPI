@@ -6,7 +6,8 @@ import type { BudgetStatusRequest } from "../dtos/budgets/budget-status-request"
 import type { BudgetSummaryResponse } from "../dtos/budgets/budget-summary-response";
 import type { BudgetOverviewSummaryResponse } from "../dtos/budgets/budget-overview-summary-response";
 import type { UpdateBudgetRequest } from "../dtos/budgets/update-budget-request";
-import { expenseTrackerApiClient, unwrapApiResponse } from "./expense-tracker-api-client";
+import { expenseTrackerApiClient } from "./expense-tracker-api-client";
+import { unwrapApiResponse } from "../utils/api-response";
 
 const pathWithId = (template: string, id: string) => template.replace("{id}", id);
 

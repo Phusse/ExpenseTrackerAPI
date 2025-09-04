@@ -5,7 +5,8 @@ import type { CreateExpenseResponse } from "../dtos/expenses/create-expense-resp
 import type { FilteredExpenseRequest } from "../dtos/expenses/filtered-expense-request";
 import type { TotalExpenseRequest } from "../dtos/expenses/total-expense-request";
 import type { UpdateExpenseRequest } from "../dtos/expenses/update-expense-request";
-import { expenseTrackerApiClient, unwrapApiResponse } from "./expense-tracker-api-client";
+import { expenseTrackerApiClient } from "./expense-tracker-api-client";
+import { unwrapApiResponse } from "../utils/api-response";
 
 const pathWithId = (template: string, id: string) => template.replace("{id}", id);
 
