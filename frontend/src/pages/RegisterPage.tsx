@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useAuth } from "../context/auth-hook";
+import { useNavigate } from "react-router-dom";
+import "./RegisterPage.css";
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -10,10 +11,11 @@ const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
-      await register(name, email, password);
+      await register({ name, email, password });
       navigate('/login');
     } catch (err) {
       setError('Failed to register');
@@ -21,66 +23,46 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Register</h2>
-        {error && <p className="text-red-500 text-center">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="text-sm font-medium text-gray-700"
-            >
-              Name
-            </label>
+    <div className="register">
+      <div className="register__container">
+        <h2 className="register__title">Register</h2>
+        {error && <p className="register__error">{error}</p>}
+        <form onSubmit={handleSubmit} className="register__form">
+          <div className="register__field">
+            <label htmlFor="name" className="register__label">Name</label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="register__input"
             />
           </div>
-          <div>
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
+          <div className="register__field">
+            <label htmlFor="email" className="register__label">Email</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="register__input"
             />
           </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
+          <div className="register__field">
+            <label htmlFor="password" className="register__label">Password</label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="register__input"
             />
           </div>
-          <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Register
-            </button>
+          <div className="register__actions">
+            <button type="submit" className="register__button">Register</button>
           </div>
         </form>
       </div>

@@ -1,101 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import savingGoalService from '../services/savingGoalService';
-import Navbar from '../components/Navbar';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { savingGoalService } from "../services/saving-goal-service";
+import type { UpdateSavingGoalRequest } from "../dtos/saving-goals/update-saving-goal-request";
+import NavBar from "../components/NavBar";
+import "./EditSavingGoalPage.css"
 
-const EditSavingGoalPage = () => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [targetAmount, setTargetAmount] = useState('');
-  const [targetDate, setTargetDate] = useState('');
-  const [error, setError] = useState('');
+const EditSavingGoalPage: React.FC = () => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [targetAmount, setTargetAmount] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    savingGoalService.getSavingGoalById(id)
-      .then(response => {
-        const goal = response.data.data;
-        setName(goal.name);
-        setDescription(goal.description);
-        setTargetAmount(goal.targetAmount);
-        setTargetDate(new Date(goal.targetDate).toISOString().slice(0, 10));
-      })
-      .catch(err => {
-        setError('Failed to fetch saving goal details.');
-      });
+    if (!id) return;
+
+    const fetchGoal = async () => {
+      try {
+        const response = await savingGoalService.getById(id);
+        const goal = response.data;
+
+        if (!goal) {
+          setError("Saving goal not found.");
+          return;
+        }
+
+        setTitle(goal.title);
+        setDescription(goal.description || "");
+        setTargetAmount(goal.targetAmount.toString());
+        setDeadline(goal.deadline ?? "");
+      } catch {
+        setError("Failed to fetch saving goal details.");
+      }
+    };
+
+    fetchGoal();
   }, [id]);
 
-  const handleSubmit = async (e) => {
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const updatedGoal = {
-      id,
-      name,
+
+    if (!id) return;
+
+    const updatedGoal: UpdateSavingGoalRequest = {
+      title,
       description,
       targetAmount: parseFloat(targetAmount),
-      targetDate,
+      deadline,
     };
 
     try {
-      await savingGoalService.updateSavingGoal(id, updatedGoal);
-      navigate('/savings');
-    } catch (err) {
-      setError('Failed to update saving goal.');
+      await savingGoalService.update(id, updatedGoal);
+      navigate("/savings");
+    } catch {
+      setError("Failed to update saving goal.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold mb-6">Edit Saving Goal</h1>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          <form onSubmit={handleSubmit} className="max-w-lg bg-white p-8 rounded-lg shadow">
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-700">Name</label>
+    <div className="edit-goal">
+      <NavBar />
+      <main className="edit-goal__main">
+        <div className="edit-goal__container">
+          <h1 className="edit-goal__title">Edit Saving Goal</h1>
+          {error && <p className="edit-goal__error">{error}</p>}
+          <form onSubmit={handleSubmit} className="edit-goal__form">
+            <div className="edit-goal__field">
+              <label htmlFor="title" className="edit-goal__label">
+                Name
+              </label>
               <input
-                id="name"
+                id="title"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="edit-goal__input"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-700">Description</label>
+            <div className="edit-goal__field">
+              <label htmlFor="description" className="edit-goal__label">
+                Description
+              </label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="edit-goal__input edit-goal__input--textarea"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="targetAmount" className="block text-gray-700">Target Amount</label>
+            <div className="edit-goal__field">
+              <label htmlFor="targetAmount" className="edit-goal__label">
+                Target Amount
+              </label>
               <input
                 id="targetAmount"
                 type="number"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="edit-goal__input"
               />
             </div>
-            <.div className="mb-4">
-              <label htmlFor="targetDate" className="block text-gray-700">Target Date</label>
+            <div className="edit-goal__field">
+              <label htmlFor="deadline" className="edit-goal__label">
+                Target Date
+              </label>
               <input
-                id="targetDate"
+                id="deadline"
                 type="date"
-                value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="edit-goal__input"
               />
             </div>
-            <div className="flex justify-end">
-              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+            <div className="edit-goal__actions">
+              <button type="submit" className="edit-goal__button">
                 Update Goal
               </button>
             </div>

@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-hook";
 import "./NavBar.css";
 
-const Navbar = () => {
+const NavBar = () => {
 	const { user, logout } = useAuth();
 	const navigate = useNavigate();
 
@@ -58,4 +58,4 @@ const Navbar = () => {
 	);
 };
 
-export default Navbar;
+export default NavBar;

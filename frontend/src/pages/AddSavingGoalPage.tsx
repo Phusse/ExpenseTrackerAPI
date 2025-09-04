@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import savingGoalService from '../services/savingGoalService';
-import Navbar from '../components/Navbar';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type { CreateSavingGoalRequest } from "../dtos/saving-goals/create-saving-goal-request";
+import { savingGoalService } from "../services/saving-goal-service";
+import NavBar from "../components/NavBar";
+import "./AddSavingGoalPage.css"
 
 const AddSavingGoalPage = () => {
   const [name, setName] = useState('');
@@ -11,17 +13,18 @@ const AddSavingGoalPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newGoal = {
-      name,
-      description,
+
+    const newGoal: CreateSavingGoalRequest = {
+      title: name,
+      description: description,
       targetAmount: parseFloat(targetAmount),
-      targetDate,
+      deadline: targetDate,
     };
 
     try {
-      await savingGoalService.createSavingGoal(newGoal);
+      await savingGoalService.create(newGoal);
       navigate('/savings');
     } catch (err) {
       setError('Failed to add saving goal.');
@@ -29,59 +32,57 @@ const AddSavingGoalPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold mb-6">Add Saving Goal</h1>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          <form onSubmit={handleSubmit} className="max-w-lg bg-white p-8 rounded-lg shadow">
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-700">Name</label>
+    <div className="add-goal">
+      <NavBar />
+      <main className="add-goal__main">
+        <div className="add-goal__container">
+          <h1 className="add-goal__title">Add Saving Goal</h1>
+          {error && <p className="add-goal__error">{error}</p>}
+          <form onSubmit={handleSubmit} className="add-goal__form">
+            <div className="add-goal__field">
+              <label htmlFor="name" className="add-goal__label">Name</label>
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="add-goal__input"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-700">Description</label>
+            <div className="add-goal__field">
+              <label htmlFor="description" className="add-goal__label">Description</label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="add-goal__input add-goal__input--textarea"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="targetAmount" className="block text-gray-700">Target Amount</label>
+            <div className="add-goal__field">
+              <label htmlFor="targetAmount" className="add-goal__label">Target Amount</label>
               <input
                 id="targetAmount"
                 type="number"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="add-goal__input"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="targetDate" className="block text-gray-700">Target Date</label>
+            <div className="add-goal__field">
+              <label htmlFor="targetDate" className="add-goal__label">Target Date</label>
               <input
                 id="targetDate"
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
                 required
-                className="w-full mt-1 px-3 py-2 border rounded-md"
+                className="add-goal__input"
               />
             </div>
-            <div className="flex justify-end">
-              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                Add Goal
-              </button>
+            <div className="add-goal__actions">
+              <button type="submit" className="add-goal__button">Add Goal</button>
             </div>
           </form>
         </div>
