@@ -2,9 +2,21 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import type { ApiResponse } from './dtos/api-response'
 
 function App() {
   const [count, setCount] = useState(0)
+
+  const response: ApiResponse<object> =
+  {
+    success: true,
+    message: "Operation successful",
+    errors: null,
+    timestamp: new Date().toISOString(),
+    data: null,
+  };
+
+  console.log(response);
 
   return (
     <>

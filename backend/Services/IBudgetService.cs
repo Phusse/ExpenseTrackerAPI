@@ -1,6 +1,5 @@
 using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
-using ExpenseTracker.Models.DTOs.Budget;
 using ExpenseTracker.Models.DTOs.Budgets;
 
 namespace ExpenseTracker.Services;
