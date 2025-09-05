@@ -1,0 +1,82 @@
+.edit-expense {
+	min-height: 100vh;
+	background-color: #f3f4f6;
+}
+
+.edit-expense__main {
+	padding: 2.5rem 1rem;
+}
+
+.edit-expense__container {
+	max-width: 42rem;
+	margin: 0 auto;
+	background-color: white;
+	padding: 2rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.edit-expense__title {
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin-bottom: 1.5rem;
+	color: #111827;
+}
+
+.edit-expense__error {
+	color: #dc2626;
+	margin-bottom: 1rem;
+}
+
+.edit-expense__form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.edit-expense__field {
+	display: flex;
+	flex-direction: column;
+}
+
+.edit-expense__label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #374151;
+}
+
+.edit-expense__input,
+.edit-expense__select {
+	margin-top: 0.25rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #d1d5db;
+	border-radius: 0.375rem;
+	font-size: 0.875rem;
+}
+
+.edit-expense__input:focus,
+.edit-expense__select:focus {
+	outline: none;
+	border-color: #4f46e5;
+	box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.edit-expense__actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.edit-expense__submit {
+	padding: 0.5rem 1rem;
+	background-color: #4f46e5;
+	color: white;
+	border: none;
+	border-radius: 0.375rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.edit-expense__submit:hover {
+	background-color: #4338ca;
+}

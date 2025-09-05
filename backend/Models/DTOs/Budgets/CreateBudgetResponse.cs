@@ -1,6 +1,6 @@
 using ExpenseTracker.Enums;
 
-namespace ExpenseTracker.Models.DTOs.Budget;
+namespace ExpenseTracker.Models.DTOs.Budgets;
 
 /// <summary>
 /// Represents the response returned after successfully creating a budget.
