@@ -1,0 +1,124 @@
+.button {
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+	font-family: inherit;
+	padding: 0.5rem 1rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	transition: all 0.2s ease;
+	font-weight: 500;
+}
+
+/* -------------------- PRIMARY -------------------- */
+.button--primary {
+	background-color: var(--g80);
+	color: var(--g5);
+}
+
+.button--primary:hover:not(:disabled) {
+	background-color: var(--g100);
+}
+
+.button--primary:active:not(:disabled) {
+	background-color: var(--g70);
+}
+
+/* -------------------- SECONDARY -------------------- */
+.button--secondary {
+	background-color: var(--g0);
+	color: var(--g100);
+}
+
+.button--secondary:hover:not(:disabled) {
+	background-color: var(--g10);
+}
+
+.button--secondary:active:not(:disabled) {
+	background-color: var(--g100);
+	color: var(--g0);
+}
+
+/* -------------------- OUTLINE PRIMARY -------------------- */
+.button--primary-outline {
+	background-color: transparent;
+	border: 2px solid var(--g80);
+	color: var(--g80);
+}
+
+.button--primary-outline:hover:not(:disabled) {
+	background-color: var(--g10);
+	border: 2px solid var(--g100);
+	color: var(--g100);
+}
+
+.button--primary-outline:active:not(:disabled) {
+	background-color: var(--g100);
+	color: var(--g0);
+}
+
+/* -------------------- DANGER -------------------- */
+.button--danger {
+	background-color: var(--r500);
+	color: #ffffff;
+}
+
+.button--danger:hover:not(:disabled) {
+	background-color: var(--r900);
+}
+
+.button--danger:active:not(:disabled) {
+	background-color: #ffffff;
+	color: var(--r900);
+}
+
+/* -------------------- CONFIRM -------------------- */
+.button--confirm {
+	background-color: var(--gr500);
+	color: #ffffff;
+}
+
+.button--confirm:hover:not(:disabled) {
+	background-color: var(--gr900);
+}
+
+.button--confirm:active:not(:disabled) {
+	background-color: #ffffff;
+	color: var(--gr900);
+}
+
+/* -------------------- DANGER SECONDARY -------------------- */
+.button--danger-secondary {
+	background-color: var(--r500);
+	color: #ffffff;
+}
+
+.button--danger-secondary:hover:not(:disabled) {
+	background-color: var(--r700);
+}
+
+.button--danger-secondary:active:not(:disabled) {
+	background-color: var(--r900);
+}
+
+/* -------------------- CONFIRM SECONDARY -------------------- */
+.button--confirm-secondary {
+	background-color: var(--gr500);
+	color: #ffffff;
+}
+
+.button--confirm-secondary:hover:not(:disabled) {
+	background-color: var(--gr700);
+}
+
+.button--confirm-secondary:active:not(:disabled) {
+	background-color: var(--gr900);
+}
+
+/* -------------------- DISABLED -------------------- */
+.button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
