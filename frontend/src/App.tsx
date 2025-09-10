@@ -10,16 +10,17 @@ import SavingsPage from './pages/SavingsPage';
 import AddSavingGoalPage from './pages/AddSavingGoalPage';
 import EditSavingGoalPage from './pages/EditSavingGoalPage';
 import PrivateRoute from './components/PrivateRoute';
+import ComponentTest from './pages/ComponentTest';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/components" element={<ComponentTest />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/expenses" element={<ExpensesPage />} />

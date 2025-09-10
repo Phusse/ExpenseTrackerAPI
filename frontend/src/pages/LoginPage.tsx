@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/auth-hook";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
@@ -9,6 +9,8 @@ const LoginPage = () => {
   const [error, setError] = useState<string>('');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // useEffect(() => { navigate('/components'); }, [navigate, email, password, error]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -9,17 +9,40 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchSummary = async () => {
       try {
-        const response = await dashboardService.getDashboardSummary();
+        const response = await dashboardService.getDashboardSummary(controller.signal);
         setSummary(response.data ?? null);
-      } catch {
+      } catch (err: any) {
+        if (err.name === "CanceledError") {
+          console.log("Dashboard request cancelled");
+          return;
+        }
         setError("Failed to fetch dashboard summary.");
       }
     };
 
     fetchSummary();
+
+    return () => {
+      controller.abort(); // cancel request on cleanup
+    };
   }, []);
+  
+  // useEffect(() => {
+  //   const fetchSummary = async () => {
+  //     try {
+  //       const response = await dashboardService.getDashboardSummary();
+  //       setSummary(response.data ?? null);
+  //     } catch {
+  //       setError("Failed to fetch dashboard summary.");
+  //     }
+  //   };
+
+  //   fetchSummary();
+  // }, []);
 
   return (
     <div className="dashboard">
