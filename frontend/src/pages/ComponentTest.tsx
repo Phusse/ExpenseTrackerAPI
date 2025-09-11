@@ -1,5 +1,5 @@
 import Button from "../components/Button/Button";
-import { usePopup } from "../context/usePopup";
+import { usePopup } from "../hooks/popup-hook";
 import "./ComponentTest.css";
 
 const variants = [
