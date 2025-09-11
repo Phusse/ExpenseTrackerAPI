@@ -21,7 +21,7 @@ export default function ComponentTest() {
 
 			<div className="button-test-page__row">
 				{variants.map((v) => (
-					<Button key={v} variant={v} onClick={() => addPopup(`You clicked ${v} button`, 3000)}>
+					<Button key={v} variant={v} onClick={() => addPopup(`You clicked ${v} button, but i want to overflow and see if you can hold or if you will break. Good Luck!!!`, 3000)}>
 						{v}
 					</Button>
 				))}

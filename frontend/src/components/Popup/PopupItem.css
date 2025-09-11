@@ -2,55 +2,39 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-
-	background-color: #1f2937;
-	color: #fff;
+	background-color: var(--g0);
+	color: #ffffff;
 	padding: 0.75rem 1rem;
-	border-radius: 0.5rem;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-
+	border-radius: 10px;
 	cursor: pointer;
-
 	animation: popup-slide-in 0.25s ease-out forwards;
 	opacity: 1;
-	transition: opacity 0.3s ease, transform 0.3s ease;
+	transition: all 0.3s ease;
 }
 
 .popup__message {
 	flex: 1;
-	margin-right: 0.5rem;
+	overflow-wrap: break-word;
+	word-break: break-word;
+	white-space: normal;
 }
 
-.popup__close {
-	background: transparent;
-	border: none;
-	color: inherit;
-	font-size: 1.25rem;
-	cursor: pointer;
-}
-
-/* Type modifiers */
 .popup--info {
-	background-color: #2563eb;
-	/* Blue */
+	background-color: var(--b700);
 }
 
 .popup--success {
-	background-color: #16a34a;
-	/* Green */
+	background-color: var(--gr700);
 }
 
 .popup--warning {
-	background-color: #f59e0b;
-	/* Yellow */
+	background-color: var(--y700);
 }
 
 .popup--danger {
-	background-color: #dc2626;
-	/* Red */
+	background-color: var(--r700);
 }
 
-/* Animations */
 @keyframes popup-slide-in {
 	from {
 		opacity: 0;

@@ -17,16 +17,6 @@ const PopupItem: React.FC<PopupProps> = ({ message, type, closing, onClose }) =>
 			aria-live="assertive"
 		>
 			<small className="popup__message">{message}</small>
-			<button
-				className="popup__close"
-				onClick={(e) => {
-					e.stopPropagation();
-					onClose();
-				}}
-				aria-label="Close popup"
-			>
-				×
-			</button>
 		</div>
 	);
 };
