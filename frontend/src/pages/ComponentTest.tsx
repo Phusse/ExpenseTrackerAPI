@@ -21,11 +21,7 @@ export default function ComponentTest() {
 
 			<div className="button-test-page__row">
 				{variants.map((v) => (
-					<Button
-						key={v}
-						variant={v}
-						onClick={() => addPopup(`You clicked ${v} button`, 3000)}
-					>
+					<Button key={v} variant={v} onClick={() => addPopup(`You clicked ${v} button`, 3000)}>
 						{v}
 					</Button>
 				))}
