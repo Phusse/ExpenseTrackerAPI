@@ -1,0 +1,69 @@
+.popup {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	background-color: #1f2937;
+	color: #fff;
+	padding: 0.75rem 1rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+	cursor: pointer;
+
+	animation: popup-slide-in 0.25s ease-out forwards;
+	opacity: 1;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.popup__message {
+	flex: 1;
+	margin-right: 0.5rem;
+}
+
+.popup__close {
+	background: transparent;
+	border: none;
+	color: inherit;
+	font-size: 1.25rem;
+	cursor: pointer;
+}
+
+/* Type modifiers */
+.popup--info {
+	background-color: #2563eb;
+	/* Blue */
+}
+
+.popup--success {
+	background-color: #16a34a;
+	/* Green */
+}
+
+.popup--warning {
+	background-color: #f59e0b;
+	/* Yellow */
+}
+
+.popup--danger {
+	background-color: #dc2626;
+	/* Red */
+}
+
+/* Animations */
+@keyframes popup-slide-in {
+	from {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+.popup--closing {
+	opacity: 0;
+	transform: translateX(20px);
+}
