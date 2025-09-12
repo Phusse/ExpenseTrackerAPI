@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuth } from "../context/auth-hook";
 import { useNavigate } from "react-router-dom";
 import "./RegisterPage.css";
+import { useAuth } from "../hooks/auth-hook";
 
 const RegisterPage = () => {
   const [name, setName] = useState('');

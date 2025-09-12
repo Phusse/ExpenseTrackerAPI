@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/auth-hook";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
+import { useAuth } from "../hooks/auth-hook";
 
 const LoginPage = () => {
   const [email, setEmail] = useState<string>('');
