@@ -1,26 +1,72 @@
-## Build artifacts
+############################
+# Global Ignore
+############################
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Env & Secrets
+.env
+.env.*
+secrets.json
+
+############################
+# Frontend (Angular)
+############################
+
+# Build output
+/frontend/dist/
+/frontend/tmp/
+/frontend/out-tsc/
+/frontend/bazel-out
+
+# Angular cache
+/frontend/.angular/cache
+
+# Dependencies
+/frontend/node_modules/
+
+# Misc
+/frontend/.sass-cache/
+/frontend/connect.lock
+/frontend/coverage
+/frontend/libpeerconnection.log
+/frontend/testem.log
+/frontend/typings
+/frontend/__screenshots__/
+
+############################
+# Backend (.NET / C#)
+############################
+
+# Build artifacts
 **/bin/
 **/obj/
 out/
 Generated_Code/
 
-## Rider and VS Code
-.idea/
-.vscode/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-## ASP.NET temporary files
+# ASP.NET temp & DB files
 *.dbmdl
+*.mdf
+*.ldf
 *.bak
 *.Backup
-*.log
 *.vspscc
 *.vssscc
 
-## User-specific files
+# User-specific files
 *.user
 *.rsuser
 *.suo
@@ -30,14 +76,12 @@ Generated_Code/
 *.pdb
 .qodo
 
-## Dotnet stuff
+# Dotnet / NuGet
 project.lock.json
 project.fragment.lock.json
 artifacts/
 *.deps.json
 *.runtimeconfig.dev.json
-
-## NuGet packages
 *.nupkg
 *.snupkg
 packages/
@@ -45,65 +89,37 @@ packages/
 *.psmdcp
 *.ps1
 
-## Others
+# Test results
 TestResults/
-*.vs/
-.env
-.env.*
-secrets.json
 
-## Logs
-*.log
+############################
+# IDEs & Editors
+############################
 
-## LocalDB
-*.mdf
-*.ldf
-
-## Mac OS
-.DS_Store
-
-## Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-## Docker
-**/Dockerfile.*
-**/docker-compose*.yml
-**/.dockerignore
-
-# Optional if you use node/npm for front-end in Web API
-node_modules/
-npm-debug.log
-yarn-error.log
-dist/
-
-# Optional if you use ReSharper
+# Rider / JetBrains
+.idea/
+*.sln.docstates
 _ReSharper*/
 *.ReSharper
 *.DotSettings.user
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# VS Code
 .vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 !.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
+
+# Misc editor files
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+############################
+# Docker
+############################
+
+**/Dockerfile.*
+**/docker-compose*.yml
+**/.dockerignore
