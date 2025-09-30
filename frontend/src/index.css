@@ -1,0 +1,162 @@
+:root {
+  color-scheme: light dark;
+
+  --font-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+
+  --g0: light-dark(#ffffff, #000000);
+  --g5: light-dark(#eaeaea, #0e0e0e);
+  --g10: light-dark(#d6d6d6, #171717);
+  --g15: light-dark(#c2c2c2, #1f1f1f);
+  --g20: light-dark(#afafaf, #282828);
+  --g25: light-dark(#9c9c9c, #303030);
+  --g30: light-dark(#898989, #393939);
+  --g35: light-dark(#777777, #424242);
+  --g40: light-dark(#656565, #4b4b4b);
+  --g45: light-dark(#545454, #545454);
+  --g50: light-dark(#4b4b4b, #656565);
+  --g55: light-dark(#424242, #777777);
+  --g60: light-dark(#393939, #898989);
+  --g65: light-dark(#303030, #9c9c9c);
+  --g70: light-dark(#282828, #afafaf);
+  --g75: light-dark(#1f1f1f, #c2c2c2);
+  --g80: light-dark(#171717, #d6d6d6);
+  --g85: light-dark(#0e0e0e, #eaeaea);
+  --g100: light-dark(#000000, #ffffff);
+
+  /* Reds */
+  --r100: light-dark(#e8bcbc, #da9999);
+  --r300: light-dark(#da9999, #cc7575);
+  --r500: light-dark(#cc7575, #bf5c5c);
+  --r700: light-dark(#bf5c5c, #ac4949);
+  --r900: light-dark(#ac4949, #993f3f);
+
+  /* Greens */
+  --gr100: light-dark(#bddfbd, #a6cca6);
+  --gr300: light-dark(#a6cca6, #8fba8f);
+  --gr500: light-dark(#8fba8f, #78a678);
+  --gr700: light-dark(#78a678, #649364);
+  --gr900: light-dark(#649364, #518051);
+
+  /* Yellows */
+  --y100: light-dark(#eee0aa, #decb86);
+  --y300: light-dark(#decb86, #ccb66d);
+  --y500: light-dark(#ccb66d, #b89f55);
+  --y700: light-dark(#b89f55, #a48844);
+  --y900: light-dark(#a48844, #8f7336);
+
+  /* Blues */
+  --b100: light-dark(#b0c6e3, #97b0d4);
+  --b300: light-dark(#97b0d4, #7f99c2);
+  --b500: light-dark(#7f99c2, #6783af);
+  --b700: light-dark(#6783af, #546d9c);
+  --b900: light-dark(#546d9c, #445a83);
+
+  /* Pinks */
+  --p100: light-dark(#e3b6cb, #d39cb3);
+  --p300: light-dark(#d39cb3, #bf7e99);
+  --p500: light-dark(#bf7e99, #aa6784);
+  --p700: light-dark(#aa6784, #94526f);
+  --p900: light-dark(#94526f, #7d435d);
+
+}
+
+html,
+body {
+  font-family: var(--font-secondary);
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  color: var(--g85);
+  background-color: var(--g5);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overscroll-behavior: none;
+  transition: all 0.2s ease;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-family: var(--font-primary);
+}
+
+h2 {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-family: var(--font-primary);
+}
+
+h3 {
+  font-size: clamp(1.125rem, 1.5vw, 1.5rem);
+  font-family: var(--font-primary);
+}
+
+h4,
+h5,
+h6 {
+  font-size: clamp(1rem, 1.25vw, 1.25rem);
+  font-family: var(--font-primary);
+}
+
+p,
+label {
+  font-size: clamp(0.75rem, 0.25vw, 0.875rem);
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+small {
+  font-size: clamp(0.65rem, 0.75vw, 0.875rem);
+}
+
+b,
+strong {
+  font-weight: bold;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+a {
+  color: var(--b500);
+  text-decoration: none;
+  transition: color 0.3s ease-in;
+}
+
+a:hover,
+a:focus,
+a:active {
+  color: var(--b700);
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-secondary);
+  font-size: 1em;
+  color: var(--p500);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: var(--font-secondary);
+  font-size: clamp(0.875rem, 1vw, 1rem);
+  line-height: 1.15;
+  color: var(--g85);
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0;
+  cursor: pointer;
+  transition: color 0.3s, background-color 0.3s;
+}

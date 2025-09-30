@@ -1,76 +1,109 @@
-############################
-# Global
-############################
-# Logs
-logs/
-*.log
-
-# System files
-.DS_Store
-Thumbs.db
-Desktop.ini
-
-# Environment / secrets
-.env
-.env.*
-secrets.json
-
-############################
-# Frontend (Angular / JS)
-############################
-# Build output
-dist/
-out-tsc/
-tmp/
-
-node_modules/
-
-# Angular / JS cache
-**/.angular/
-
-# Test / coverage
-**/coverage/
-__screenshots__/
-
-# Misc
-.sass-cache/
-
-############################
-# Backend (.NET / C#)
-############################
-# Build artifacts
+## Build artifacts
 **/bin/
 **/obj/
 out/
+Generated_Code/
 
-# User-specific files
-*.user
+## Rider and VS Code
+.idea/
+.vscode/
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ASP.NET temporary files
+*.dbmdl
+*.bak
+*.Backup
+*.log
+*.vspscc
+*.vssscc
+
+## User-specific files
+*.user
 *.rsuser
+*.suo
+*.sdf
+*.cache
+*.db
+*.pdb
+.qodo
 
-# Test results
-TestResults/
-
-# NuGet packages / artifacts
-packages/
-*.nupkg
-*.snupkg
+## Dotnet stuff
+project.lock.json
+project.fragment.lock.json
 artifacts/
 *.deps.json
 *.runtimeconfig.dev.json
 
-# Database / temp files
+## NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+*.psmdcp
+*.ps1
+
+## Others
+TestResults/
+*.vs/
+.env
+.env.*
+secrets.json
+
+## Logs
+*.log
+
+## LocalDB
 *.mdf
 *.ldf
-*.bak
-*.db
 
-############################
-# IDEs / Editors
-############################
-# VS Code
+## Mac OS
+.DS_Store
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Docker
+**/Dockerfile.*
+**/docker-compose*.yml
+**/.dockerignore
+
+# Optional if you use node/npm for front-end in Web API
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+
+# Optional if you use ReSharper
+_ReSharper*/
+*.ReSharper
+*.DotSettings.user
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
 !.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
