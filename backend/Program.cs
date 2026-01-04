@@ -60,6 +60,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISavingGoalService, SavingGoalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IMetadataService, MetadataService>();
+builder.Services.AddScoped<AnalyticsService>();
 
 // configure API behavior options
 builder.Services.Configure<ApiBehaviorOptions>(options =>

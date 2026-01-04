@@ -6,7 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>afc37422-66a3-4a1a-b8b9-09214cebf33c</UserSecretsId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ExpenseTracker.Tests\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ExpenseTracker.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />

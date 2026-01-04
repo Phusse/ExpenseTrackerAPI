@@ -108,6 +108,9 @@ internal static class ApiRoutes
 
             /// <summary>Gets a detailed overview of the user's budget.</summary>
             public const string Overview = $"{Base}/overview";
+
+            /// <summary>Gets all budgets for the user.</summary>
+            public const string All = $"{Base}/getall";
         }
 
         /// <summary>PUT endpoints for Budget.</summary>

@@ -20,6 +20,13 @@ public interface IBudgetService
     Task<ServiceResult<CreateBudgetResponse?>> CreateBudgetAsync(CreateBudgetRequest request, Guid userId);
 
     /// <summary>
+    /// Retrieves all budgets for a specific user.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns>A list of all budgets belonging to the user.</returns>
+    Task<List<BudgetListItemDto>> GetAllBudgetsAsync(Guid userId);
+
+    /// <summary>
     /// Calculates the total amount a user has spent in a specific expense category for a given month.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>

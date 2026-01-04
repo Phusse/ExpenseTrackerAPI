@@ -1,3 +1,7 @@
+# ============================================
+# .NET Backend (C#)
+# ============================================
+
 ## Build artifacts
 **/bin/
 **/obj/
@@ -21,9 +25,7 @@ Generated_Code/
 *.vssscc
 
 ## User-specific files
-*.user
 *.rsuser
-*.suo
 *.sdf
 *.cache
 *.db
@@ -43,21 +45,56 @@ artifacts/
 packages/
 *.nuspec
 *.psmdcp
-*.ps1
 
-## Others
+## Test Results
 TestResults/
 *.vs/
-.env
-.env.*
-secrets.json
 
 ## Logs
+logs/
 *.log
 
 ## LocalDB
 *.mdf
 *.ldf
+
+# ============================================
+# Frontend (React/Vite)
+# ============================================
+
+## Dependencies
+node_modules/
+
+## Build output
+dist/
+dist-ssr/
+
+## Development files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Environment Variables
+# ============================================
+# IMPORTANT: Only ignore local env files
+# Keep .env.example for documentation
+
+## Local environment files (with secrets)
+.env.local
+.env.*.local
+backend/appsettings.Development.json
+
+## REMOVE THESE LINES - They were breaking deployment:
+# .env           <- This was ignoring ALL .env files
+# .env.*         <- This was too broad
+# secrets.json   <- Server-side only
+
+# ============================================
+# Operating System Files
+# ============================================
 
 ## Mac OS
 .DS_Store
@@ -67,43 +104,39 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-## Docker
-**/Dockerfile.*
-**/docker-compose*.yml
-**/.dockerignore
+# ============================================
+# Editor Files
+# ============================================
 
-# Optional if you use node/npm for front-end in Web API
-node_modules/
-npm-debug.log
-yarn-error.log
-dist/
+## VS Code
+.vscode/*
+!.vscode/extensions.json
 
-# Optional if you use ReSharper
+## Rider/ReSharper
 _ReSharper*/
 *.ReSharper
 *.DotSettings.user
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
+## Visual Studio
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
+
+# ============================================
+# Docker (Optional - Keep if you use Docker)
+# ============================================
+# Uncomment these if you use Docker:
+# **/Dockerfile.*
+# **/docker-compose*.yml
+# **/.dockerignore
+
+# ============================================
+# Vercel
+# ============================================
+.vercel
+
+# ============================================
+# Documentation (Ignore all .md except README)
+# ============================================
+*.md
+!README.md

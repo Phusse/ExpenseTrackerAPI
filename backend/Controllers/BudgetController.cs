@@ -52,6 +52,24 @@ public class BudgetController(IBudgetService budgetService) : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves all budgets for the authenticated user.
+    /// </summary>
+    /// <returns>A list of all budgets belonging to the user.</returns>
+    /// <response code="200">Budgets retrieved successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpGet(ApiRoutes.Budget.Get.All)]
+    [ProducesResponseType(typeof(ApiResponse<List<BudgetListItemDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAllBudgets()
+    {
+        if (!User.TryGetUserId(out Guid userId))
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid or missing token."));
+
+        var budgets = await _budgetService.GetAllBudgetsAsync(userId);
+        return Ok(ApiResponse<List<BudgetListItemDto>>.Ok(budgets, "Budgets retrieved successfully."));
+    }
+
+    /// <summary>
     /// Returns usage summary for a specific budget.
     /// </summary>
     /// <remarks>

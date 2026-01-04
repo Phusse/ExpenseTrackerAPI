@@ -21,6 +21,18 @@ public class DashboardSummaryResponse
     public required double TotalSavings { get; set; }
 
     /// <summary>
+    /// Gets or sets the total amount of all expenses recorded by the user
+    /// across all time periods.
+    /// </summary>
+    public required double AllTimeExpenses { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total amount categorized as savings by the user
+    /// across all time periods.
+    /// </summary>
+    public required double AllTimeSavings { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of budget statuses grouped by category.
     /// Each entry includes the budgeted amount, spent amount, and calculated remaining balance.
     /// </summary>

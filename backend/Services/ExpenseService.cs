@@ -1,4 +1,5 @@
 using ExpenseTracker.Data;
+using ExpenseTracker.Enums;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.DTOs.Expenses;
 using Microsoft.EntityFrameworkCore;
@@ -22,12 +23,38 @@ internal class ExpenseService(ExpenseTrackerDbContext dbContext) : IExpenseServi
             Category = request.Category,
             Amount = request.Amount,
             DateRecorded = DateTime.UtcNow,
-            DateOfExpense = request.DateOfExpense,
+            DateOfExpense = request.DateOfExpense.ToUniversalTime(),
             PaymentMethod = request.PaymentMethod,
             Description = request.Description,
         };
 
         await _dbContext.Expenses.AddAsync(expense);
+
+        // If this is a savings or investment expense linked to a goal, create the contribution
+        if ((request.Category == ExpenseCategory.Savings || request.Category == ExpenseCategory.Investments) 
+            && request.SavingGoalId.HasValue)
+        {
+            var goal = await _dbContext.SavingGoals
+                .FirstOrDefaultAsync(g => g.Id == request.SavingGoalId.Value && g.UserId == userId);
+
+            if (goal != null)
+            {
+                SavingGoalContribution contribution = new()
+                {
+                    Id = Guid.NewGuid(),
+                    SavingGoalId = goal.Id,
+                    ExpenseId = expense.Id,
+                    Amount = request.Amount,
+                    ContributedAt = DateTime.UtcNow,
+                };
+
+                goal.CurrentAmount += request.Amount;
+                goal.UpdatedAt = DateTime.UtcNow;
+
+                await _dbContext.SavingGoalContributions.AddAsync(contribution);
+            }
+        }
+
         await _dbContext.SaveChangesAsync();
 
         return new CreateExpenseResponse

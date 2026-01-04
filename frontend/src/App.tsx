@@ -1,43 +1,34 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import ExpensesPage from './pages/ExpensesPage';
-import AddExpensePage from './pages/AddExpensePage';
-import EditExpensePage from './pages/EditExpensePage';
-import SavingsPage from './pages/SavingsPage';
-import AddSavingGoalPage from './pages/AddSavingGoalPage';
-import EditSavingGoalPage from './pages/EditSavingGoalPage';
-import PrivateRoute from './components/PrivateRoute';
-import ComponentTest from './pages/ComponentTest';
-import { PopupProvider } from './context/PopupProvider';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './layouts/Layout';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
+import { Dashboard } from './pages/Dashboard';
+import { Expenses } from './pages/Expenses';
+import { Budgets } from './pages/Budgets';
+import { Goals } from './pages/Goals';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
-    <PopupProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/components" element={<ComponentTest />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-            <Route element={<PrivateRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/expenses" element={<ExpensesPage />} />
-              <Route path="/expenses/add" element={<AddExpensePage />} />
-              <Route path="/expenses/edit/:id" element={<EditExpensePage />} />
-              <Route path="/savings" element={<SavingsPage />} />
-              <Route path="/savings/add" element={<AddSavingGoalPage />} />
-              <Route path="/savings/edit/:id" element={<EditSavingGoalPage />} />
-            </Route>
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/budgets" element={<Budgets />} />
+            <Route path="/goals" element={<Goals />} />
+          </Route>
+        </Route>
 
-            <Route path="*" element={<Navigate to="/login" />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </PopupProvider>
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

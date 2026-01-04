@@ -57,6 +57,37 @@ internal class BudgetService(ExpenseTrackerDbContext dbContext) : IBudgetService
         }
     }
 
+    public async Task<List<BudgetListItemDto>> GetAllBudgetsAsync(Guid userId)
+    {
+        List<Budget> budgets = await _dbContext.Budgets
+            .Where(b => b.UserId == userId)
+            .OrderByDescending(b => b.Period)
+            .ToListAsync();
+
+        List<BudgetListItemDto> result = [];
+
+        foreach (Budget budget in budgets)
+        {
+            double spent = await _dbContext.Expenses
+                .Where(e => e.UserId == userId &&
+                            e.Category == budget.Category &&
+                            e.DateOfExpense.Month == budget.Period.Month &&
+                            e.DateOfExpense.Year == budget.Period.Year)
+                .SumAsync(e => e.Amount);
+
+            result.Add(new BudgetListItemDto
+            {
+                Id = budget.Id,
+                Category = budget.Category.ToString(),
+                Limit = budget.Limit,
+                Spent = spent,
+                Period = budget.Period
+            });
+        }
+
+        return result;
+    }
+
     public async Task<double> GetSpentAmountForCategoryAsync(Guid userId, ExpenseCategory category, DateOnly date)
     {
         return await _dbContext.Expenses

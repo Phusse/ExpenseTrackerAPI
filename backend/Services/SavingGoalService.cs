@@ -32,7 +32,9 @@ internal class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoa
                 Title = request.Title.Trim(),
                 Description = request.Description?.Trim(),
                 TargetAmount = request.TargetAmount,
-                Deadline = request.Deadline,
+                Deadline = request.Deadline.HasValue 
+                    ? DateTime.SpecifyKind(request.Deadline.Value, DateTimeKind.Utc) 
+                    : null,
                 Status = SavingGoalStatus.Active,
             };
 
@@ -83,7 +85,9 @@ internal class SavingGoalService(ExpenseTrackerDbContext dbContext) : ISavingGoa
         goal.Title = request.Title ?? goal.Title;
         goal.Description = request.Description ?? goal.Description;
         goal.TargetAmount = request.TargetAmount ?? goal.TargetAmount;
-        goal.Deadline = request.Deadline ?? goal.Deadline;
+        goal.Deadline = request.Deadline.HasValue 
+            ? DateTime.SpecifyKind(request.Deadline.Value, DateTimeKind.Utc) 
+            : goal.Deadline;
         goal.Status = request.Status ?? goal.Status;
         goal.IsArchived = request.IsArchived ?? goal.IsArchived;
         goal.UpdatedAt = DateTime.UtcNow;

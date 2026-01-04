@@ -27,13 +27,25 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
                 e.DateOfExpense.Year == currentYear
             ).SumAsync(e => e.Amount);
 
-        // Total savings
+        // Total savings (current month)
         double totalSavings = await _dbContext.Expenses
             .Where(e =>
                 e.UserId == userId &&
                 e.Category == ExpenseCategory.Savings &&
                 e.DateOfExpense.Month == currentMonth &&
                 e.DateOfExpense.Year == currentYear
+            ).SumAsync(e => e.Amount);
+
+        // All-time expenses
+        double allTimeExpenses = await _dbContext.Expenses
+            .Where(e => e.UserId == userId)
+            .SumAsync(e => e.Amount);
+
+        // All-time savings
+        double allTimeSavings = await _dbContext.Expenses
+            .Where(e =>
+                e.UserId == userId &&
+                e.Category == ExpenseCategory.Savings
             ).SumAsync(e => e.Amount);
 
         // Budgets
@@ -106,10 +118,10 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
                 e.DateOfExpense.Month == currentMonth &&
                 e.DateOfExpense.Year == currentYear
             )
-            .GroupBy(e => e.DateOfExpense.Date)
+            .GroupBy(e => new DateOnly(e.DateOfExpense.Year, e.DateOfExpense.Month, e.DateOfExpense.Day))
             .Select(g => new DailySpendingDto
             {
-                Date = new(g.Key.Year, g.Key.Month, g.Key.Day),
+                Date = g.Key,
                 TotalSpent = g.Sum(e => e.Amount),
             })
             .ToListAsync();
@@ -119,6 +131,8 @@ internal class DashboardService(ExpenseTrackerDbContext dbContext) : IDashboardS
         {
             TotalExpenses = totalExpenses,
             TotalSavings = totalSavings,
+            AllTimeExpenses = allTimeExpenses,
+            AllTimeSavings = allTimeSavings,
             Budgets = budgetStatuses,
             CategoryBreakdown = expensesByCategory,
             RecentTransactions = recentTransactions,

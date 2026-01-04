@@ -31,4 +31,10 @@ public class CreateExpenseRequest
     /// An optional description providing more context about the expense.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Optional. The ID of the saving goal to link this expense to.
+    /// Only applicable when Category is Savings.
+    /// </summary>
+    public Guid? SavingGoalId { get; set; }
 }
