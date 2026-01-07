@@ -27,7 +27,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 export const Settings = () => {
     const navigate = useNavigate();
     const toast = useToast();
-    const { settings, updateSetting, refreshSettings } = useSettings();
+    const { settings, updateSetting } = useSettings();
 
     // State
     const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -43,6 +43,8 @@ export const Settings = () => {
     const [profileForm, setProfileForm] = useState({ name: '', email: '' });
     const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
     const [deletePassword, setDeletePassword] = useState('');
+    const [securityQuestion, setSecurityQuestion] = useState<{ questionId: number; question: string } | null>(null);
+    const [securityAnswer, setSecurityAnswer] = useState('');
     const [saving, setSaving] = useState(false);
 
     const user = authService.getCurrentUser();
@@ -152,14 +154,47 @@ export const Settings = () => {
         }
     };
 
+    const handleInitiateDelete = async () => {
+        setSaving(true);
+        try {
+            // Check for security questions
+            const questions = await authService.getMySecurityQuestions();
+            if (questions && questions.length > 0) {
+                // Pick random question
+                const randomIndex = Math.floor(Math.random() * questions.length);
+                setSecurityQuestion(questions[randomIndex]);
+            } else {
+                setSecurityQuestion(null);
+            }
+            setShowDeleteConfirm(true);
+        } catch (error) {
+            // proceed without security question if failed (or legacy user)
+            setSecurityQuestion(null);
+            setShowDeleteConfirm(true);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDeleteAccount = async () => {
         if (!deletePassword) {
             toast.error('Error', 'Please enter your password to confirm.');
             return;
         }
+
+        if (securityQuestion && !securityAnswer) {
+            toast.error('Error', 'Please answer the security question.');
+            return;
+        }
+
         setSaving(true);
         try {
-            const result = await userService.deleteAccount(deletePassword);
+            const result = await userService.deleteAccount(
+                deletePassword,
+                securityQuestion?.questionId,
+                securityAnswer
+            );
+
             if (result.success) {
                 toast.success('Account Deleted', 'Your account has been permanently deleted.');
                 authService.logout();
@@ -343,7 +378,7 @@ export const Settings = () => {
                     label="Delete Account"
                     value="Permanently delete your account and data"
                     danger
-                    onClick={() => setShowDeleteConfirm(true)}
+                    onClick={handleInitiateDelete}
                 />
             </div>
 
@@ -498,6 +533,22 @@ export const Settings = () => {
                                     </p>
                                 </div>
                                 <div className="space-y-4">
+                                    {/* Security Question Section */}
+                                    {securityQuestion && (
+                                        <div className="space-y-2">
+                                            <p className="text-sm text-gray-400">Security Verification</p>
+                                            <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                                                <p className="text-white text-sm">{securityQuestion.question}</p>
+                                            </div>
+                                            <Input
+                                                label="Answer"
+                                                value={securityAnswer}
+                                                onChange={(e) => setSecurityAnswer(e.target.value)}
+                                                placeholder="Enter your security answer"
+                                            />
+                                        </div>
+                                    )}
+
                                     <Input
                                         label="Enter your password to confirm"
                                         type="password"

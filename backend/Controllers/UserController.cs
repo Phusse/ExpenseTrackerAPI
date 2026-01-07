@@ -158,7 +158,7 @@ public class UserController(IAuthService authService, UserSettingsService settin
             return Unauthorized(new { success = false, message = "Invalid token." });
         }
 
-        var result = await _settingsService.DeleteAccountAsync(userId, request.Password);
+        var result = await _settingsService.DeleteAccountAsync(userId, request.Password, request.SecurityQuestionId, request.SecurityAnswer);
 
         if (result.Success)
         {

@@ -78,9 +78,9 @@ export const userService = {
     },
 
     // Delete account
-    deleteAccount: async (password: string, reason?: string): Promise<ApiResponse<any>> => {
+    deleteAccount: async (password: string, securityQuestionId?: number, securityAnswer?: string): Promise<ApiResponse<any>> => {
         const response = await api.delete<ApiResponse<any>>('/user/account', {
-            data: { password, reason }
+            data: { password, securityQuestionId, securityAnswer }
         });
         return response.data;
     },

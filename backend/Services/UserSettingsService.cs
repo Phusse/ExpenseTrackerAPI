@@ -169,7 +169,10 @@ public class UserSettingsService(ExpenseTrackerDbContext context)
     /// <summary>
     /// Delete user account and all associated data
     /// </summary>
-    public async Task<ServiceResult<object?>> DeleteAccountAsync(Guid userId, string password)
+    /// <summary>
+    /// Delete user account and all associated data
+    /// </summary>
+    public async Task<ServiceResult<object?>> DeleteAccountAsync(Guid userId, string password, int? questionId, string? answer)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
@@ -181,6 +184,35 @@ public class UserSettingsService(ExpenseTrackerDbContext context)
         if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         {
             return ServiceResult<object?>.Fail(null, "Incorrect password.");
+        }
+
+        // Verify Security Question (if provided)
+        if (questionId.HasValue && !string.IsNullOrWhiteSpace(answer))
+        {
+            var securityQuestion = await _context.SecurityQuestions
+                .FirstOrDefaultAsync(sq => sq.UserId == userId && sq.QuestionId == questionId.Value);
+
+            if (securityQuestion == null)
+            {
+                 // Failsafe: if user has questions but passed wrong ID
+                 // Or if user selected a question they don't have set
+                 return ServiceResult<object?>.Fail(null, "Security question not found for this account.");
+            }
+
+            var normalizedAnswer = answer.Trim().ToLowerInvariant();
+            if (!BCrypt.Net.BCrypt.Verify(normalizedAnswer, securityQuestion.AnswerHash))
+            {
+                return ServiceResult<object?>.Fail(null, "Incorrect security answer.");
+            }
+        }
+        else
+        {
+             // Enforce security question if user has them
+             var hasQuestions = await _context.SecurityQuestions.AnyAsync(sq => sq.UserId == userId);
+             if (hasQuestions)
+             {
+                 return ServiceResult<object?>.Fail(null, "Security question verification is required.");
+             }
         }
 
         // Delete all user data (cascade will handle most, but let's be explicit)
@@ -204,6 +236,9 @@ public class UserSettingsService(ExpenseTrackerDbContext context)
 
         var expenses = await _context.Expenses.Where(e => e.UserId == userId).ToListAsync();
         _context.Expenses.RemoveRange(expenses);
+        
+        var userQuestions = await _context.SecurityQuestions.Where(sq => sq.UserId == userId).ToListAsync();
+        _context.SecurityQuestions.RemoveRange(userQuestions);
 
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();

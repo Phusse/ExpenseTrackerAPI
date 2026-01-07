@@ -39,25 +39,28 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             user.LastLoginAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
 
-            try
+            _ = Task.Run(async () =>
             {
-                var payLoad = new
+                try
                 {
-                    UserName = user.Name,
-                    LoginTime = user.LastLoginAt?.ToString("f"),
-                    CurrentYear = DateTime.Now.Year
-                };
+                    var payLoad = new
+                    {
+                        UserName = user.Name,
+                        LoginTime = user.LastLoginAt?.ToString("f"),
+                        CurrentYear = DateTime.Now.Year
+                    };
 
-                await _emailService.SendTemplateEmailAsync(
-                    to: user.Email,
-                    templateId: 40597432,
-                    templateModel: payLoad
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Failed to send welcome email: {ex.Message}", ex.Message);
-            }
+                    await _emailService.SendTemplateEmailAsync(
+                        to: user.Email,
+                        templateId: 40597432,
+                        templateModel: payLoad
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Failed to send login notification email: {ex.Message}", ex.Message);
+                }
+            });
 
             string token = GenerateJwtToken(user);
             AuthLoginResponse authData = new()
@@ -116,34 +119,29 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
-            try
+            _ = Task.Run(async () =>
             {
-                _logger.LogInformation("Sending welcome email to: {email}", user.Email);
-
-                var payLoad = new
+                try
                 {
-                    UserName = user.Name
-                };
+                    _logger.LogInformation("Sending welcome email to: {email}", user.Email);
 
-                bool emailSent = await _emailService.SendTemplateEmailAsync(
-                    to: user.Email,
-                    templateId: 40590712,
-                    templateModel: payLoad
-                );
+                    var payLoad = new
+                    {
+                        UserName = user.Name
+                    };
 
-                if (!emailSent)
-                {
-                    _logger.LogWarning("Failed to send welcome email.");
-                    return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
+                    await _emailService.SendTemplateEmailAsync(
+                        to: user.Email,
+                        templateId: 40590712,
+                        templateModel: payLoad
+                    );
+                    _logger.LogInformation("Welcome email sent to: {email}", user.Email);
                 }
-
-                _logger.LogInformation("User registered successfully: {email}, and welcome email has been sent", request.Email);
-            }
-            catch (Exception emailEx)
-            {
-                _logger.LogError("Failed to send welcome email: {message}", emailEx.Message);
-                return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
-            }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError("Failed to send welcome email: {message}", emailEx.Message);
+                }
+            });
 
             _logger.LogInformation("User registered successfully: {email}, and welcome email has been sent", request.Email);
             return ServiceResult<object?>.Ok(null, "Registration successful.", ["Failed to send welcome email."]);
@@ -187,24 +185,27 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
         user.LastLogoutAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        try
+        _ = Task.Run(async () =>
         {
-            var model = new
+            try
             {
-                UserName = user.Name,
-                LogoutTime = user.LastLogoutAt?.ToString("f") ?? "unknown"
-            };
+                var model = new
+                {
+                    UserName = user.Name,
+                    LogoutTime = user.LastLogoutAt?.ToString("f") ?? "unknown"
+                };
 
-            await _emailService.SendTemplateEmailAsync(
-                to: user.Email,
-                templateId: 40597431,
-                templateModel: model
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("Failed to send logout email: {message}", ex.Message);
-        }
+                await _emailService.SendTemplateEmailAsync(
+                    to: user.Email,
+                    templateId: 40597431,
+                    templateModel: model
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Failed to send logout email: {message}", ex.Message);
+            }
+        });
 
         return ServiceResult<object?>.Ok(null, "Logout successful.");
     }
@@ -323,24 +324,28 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
             await _dbContext.SaveChangesAsync();
 
             // Send password change notification email
-            try
+            // Send password change notification email (fire-and-forget)
+            _ = Task.Run(async () =>
             {
-                var model = new
+                try
                 {
-                    UserName = user.Name,
-                    ChangeTime = DateTime.UtcNow.ToString("f")
-                };
+                    var model = new
+                    {
+                        UserName = user.Name,
+                        ChangeTime = DateTime.UtcNow.ToString("f")
+                    };
 
-                await _emailService.SendTemplateEmailAsync(
-                    to: user.Email,
-                    templateId: 40597432, // Use appropriate template
-                    templateModel: model
-                );
-            }
-            catch (Exception emailEx)
-            {
-                _logger.LogWarning("Failed to send password change email: {message}", emailEx.Message);
-            }
+                    await _emailService.SendTemplateEmailAsync(
+                        to: user.Email,
+                        templateId: 40597432, // Use appropriate template
+                        templateModel: model
+                    );
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogWarning("Failed to send password change email: {message}", emailEx.Message);
+                }
+            });
 
             return ServiceResult<object?>.Ok(null, "Password changed successfully.");
         }
@@ -464,6 +469,36 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
         {
             _logger.LogError("Failed to get security questions: {message}", ex.Message);
             return ServiceResult<ForgotPasswordQuestionsResponse>.Fail(null!, "Failed to retrieve security questions.");
+        }
+    }
+
+    public async Task<ServiceResult<List<UserSecurityQuestion>>> GetMySecurityQuestionsAsync(Guid userId)
+    {
+        try
+        {
+            var questions = await _dbContext.SecurityQuestions
+                .Where(sq => sq.UserId == userId)
+                .OrderBy(sq => sq.QuestionOrder)
+                .ToListAsync();
+
+            if (questions.Count == 0)
+            {
+                return ServiceResult<List<UserSecurityQuestion>>.Fail(null!, "No security questions set for this account.");
+            }
+
+            var result = questions.Select(q => new UserSecurityQuestion
+            {
+                QuestionOrder = q.QuestionOrder,
+                QuestionId = q.QuestionId,
+                Question = SecurityQuestions.GetQuestion(q.QuestionId)
+            }).ToList();
+
+            return ServiceResult<List<UserSecurityQuestion>>.Ok(result, "Security questions retrieved.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to get security questions: {message}", ex.Message);
+            return ServiceResult<List<UserSecurityQuestion>>.Fail(null!, "Failed to retrieve security questions.");
         }
     }
 

@@ -55,14 +55,7 @@ public class DataExportResponse
     public DateTime ExpiresAt { get; set; }
 }
 
-/// <summary>
-/// Request DTO for account deletion
-/// </summary>
-public class DeleteAccountRequest
-{
-    public required string Password { get; set; }
-    public string? Reason { get; set; }
-}
+
 
 /// <summary>
 /// Supported currencies

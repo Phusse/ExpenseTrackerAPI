@@ -137,10 +137,32 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
+    /// Gets the current user's security questions.
+    /// </summary>
+    [Authorize]
+    [HttpGet(ApiRoutes.Auth.Get.MySecurityQuestions)]
+    public async Task<IActionResult> GetMySecurityQuestions()
+    {
+        if (!User.TryGetUserId(out Guid userId))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(null, "Invalid user token."));
+        }
+
+        var result = await _authService.GetMySecurityQuestionsAsync(userId);
+
+        if (result.Success)
+        {
+            return Ok(ApiResponse<List<UserSecurityQuestion>>.Ok(result.Data!, result.Message));
+        }
+
+        return BadRequest(ApiResponse<object?>.Fail(null, result.Message));
+    }
+
+    /// <summary>
     /// Gets all available security questions for registration.
     /// </summary>
     [AllowAnonymous]
-    [HttpGet("security-questions")]
+    [HttpGet(ApiRoutes.Auth.Get.SecurityQuestions)]
     public IActionResult GetSecurityQuestions()
     {
         var questions = _authService.GetAvailableSecurityQuestions();
@@ -151,7 +173,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// Registers a new user with security questions.
     /// </summary>
     [AllowAnonymous]
-    [HttpPost("register-with-security")]
+    [HttpPost(ApiRoutes.Auth.Post.RegisterWithSecurity)]
     public async Task<IActionResult> RegisterWithSecurity([FromBody] AuthRegisterWithSecurityRequest request)
     {
         if (!ModelState.IsValid)
@@ -173,7 +195,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// Initiates forgot password flow - returns user's security questions.
     /// </summary>
     [AllowAnonymous]
-    [HttpPost("forgot-password")]
+    [HttpPost(ApiRoutes.Auth.Post.ForgotPassword)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordInitRequest request)
     {
         var result = await _authService.GetSecurityQuestionsForResetAsync(request.Email);
@@ -190,7 +212,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// Resets password after verifying security question answers.
     /// </summary>
     [AllowAnonymous]
-    [HttpPost("reset-password")]
+    [HttpPost(ApiRoutes.Auth.Post.ResetPassword)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         var result = await _authService.ResetPasswordWithSecurityQuestionsAsync(request);
