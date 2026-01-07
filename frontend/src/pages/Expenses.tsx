@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Filter, Calendar, Trash2, Edit2, Loader2, Receipt, TrendingDown, Sparkles, Target, Clock, ChevronDown } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, Trash2, Loader2, Receipt, TrendingDown, Sparkles, Target, Clock, ChevronDown } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { ConfirmModal } from '../components/ConfirmModal';

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Clock } from 'lucide-react';
+// TopSpendingWidget - no external icons needed
 
 interface TopSpendingProps {
     categories: {

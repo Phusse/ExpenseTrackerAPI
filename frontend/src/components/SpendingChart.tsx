@@ -81,7 +81,7 @@ export const SpendingChart = ({ data }: SpendingChartProps) => {
                                 padding: '8px 12px'
                             }}
                             labelStyle={{ color: '#94a3b8', fontSize: 12 }}
-                            formatter={(value: number) => [`₦${value.toLocaleString()}`, 'Spent']}
+                            formatter={(value: number | string | undefined) => [`₦${Number(value || 0).toLocaleString()}`, 'Spent']}
                         />
                         <Area
                             type="monotone"

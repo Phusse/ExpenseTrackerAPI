@@ -355,7 +355,7 @@ export const Settings = () => {
                 message="Are you sure you want to log out?"
                 confirmText="Log Out"
                 onConfirm={handleLogout}
-                onCancel={() => setShowLogoutConfirm(false)}
+                onClose={() => setShowLogoutConfirm(false)}
             />
 
             {/* Edit Profile Modal */}
