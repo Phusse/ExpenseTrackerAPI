@@ -62,6 +62,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IMetadataService, MetadataService>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<IIncomeService, IncomeService>();
+builder.Services.AddScoped<UserSettingsService>();
 
 // configure API behavior options
 builder.Services.Configure<ApiBehaviorOptions>(options =>

@@ -135,4 +135,71 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return NotFound(ApiResponse<object?>.Fail(null, result.Message));
     }
+
+    /// <summary>
+    /// Gets all available security questions for registration.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("security-questions")]
+    public IActionResult GetSecurityQuestions()
+    {
+        var questions = _authService.GetAvailableSecurityQuestions();
+        return Ok(ApiResponse<SecurityQuestionsListResponse>.Ok(questions, "Security questions retrieved."));
+    }
+
+    /// <summary>
+    /// Registers a new user with security questions.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("register-with-security")]
+    public async Task<IActionResult> RegisterWithSecurity([FromBody] AuthRegisterWithSecurityRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ApiResponse<object?>.Fail(null, "Invalid request data."));
+        }
+
+        var result = await _authService.RegisterWithSecurityQuestionsAsync(request);
+
+        if (result.Success)
+        {
+            return Ok(ApiResponse<object?>.Ok(null, result.Message));
+        }
+
+        return BadRequest(ApiResponse<object?>.Fail(null, result.Message));
+    }
+
+    /// <summary>
+    /// Initiates forgot password flow - returns user's security questions.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordInitRequest request)
+    {
+        var result = await _authService.GetSecurityQuestionsForResetAsync(request.Email);
+
+        if (result.Success)
+        {
+            return Ok(ApiResponse<ForgotPasswordQuestionsResponse>.Ok(result.Data!, result.Message));
+        }
+
+        return BadRequest(ApiResponse<object?>.Fail(null, result.Message));
+    }
+
+    /// <summary>
+    /// Resets password after verifying security question answers.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await _authService.ResetPasswordWithSecurityQuestionsAsync(request);
+
+        if (result.Success)
+        {
+            return Ok(ApiResponse<object?>.Ok(null, result.Message));
+        }
+
+        return BadRequest(ApiResponse<object?>.Fail(null, result.Message));
+    }
 }

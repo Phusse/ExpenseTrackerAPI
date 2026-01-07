@@ -42,7 +42,8 @@ export const Sidebar = () => {
             )}>
                 <div className="flex flex-col h-full bg-slate-900">
                     {/* Logo */}
-                    <div className="h-16 flex items-center px-6 border-b border-slate-800">
+                    <div className="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+                        <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover shadow-lg shadow-primary/20 ring-2 ring-primary/20" />
                         <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             Expensify
                         </span>

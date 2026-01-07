@@ -29,23 +29,18 @@ export const Login = () => {
                 toast.success('Welcome back!', 'You have successfully signed in.');
                 navigate('/');
             } else {
-                // API returned success: false with a message
                 const errorMessage = result.message || 'Login failed. Please try again.';
                 setError(errorMessage);
             }
         } catch (err: any) {
-            // Extract error message from various sources
-            let errorMessage = 'An unexpected error occurred. Please try again.';
+            let errorMessage = 'An unexpected error occurred.';
 
             if (err.response?.data?.message) {
-                // API returned an error response with message
                 errorMessage = err.response.data.message;
             } else if (err.apiError?.message) {
-                // Our enhanced API error handler caught this
                 errorMessage = err.apiError.message;
             } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
-                // Network error
-                errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+                errorMessage = 'Unable to connect to the server.';
                 toast.error('Connection Error', errorMessage);
             } else if (err.message) {
                 errorMessage = err.message;
@@ -58,63 +53,76 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[100px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/10 blur-[100px]" />
+        <div className="min-h-screen flex flex-col justify-center bg-background px-4 py-8">
+            {/* Background */}
+            <div className="fixed top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+            <div className="fixed bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
 
-            <div className="w-full max-w-md relative z-10 bg-surface/50 backdrop-blur-xl border border-white/5 rounded-2xl p-8 shadow-2xl">
+            <div className="w-full max-w-md mx-auto relative z-10">
+                {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-accent mb-4">
-                        <Wallet className="w-6 h-6 text-white" />
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-accent mb-4">
+                        <Wallet className="w-7 h-7 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-                    <p className="text-gray-400">Sign in to manage your finances</p>
+                    <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
+                    <p className="text-gray-400 text-sm mt-1">Sign in to manage your finances</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <Input
-                        label="Email Address"
-                        type="email"
-                        required
-                        placeholder="you@example.com"
-                        icon={<Mail className="w-5 h-5" />}
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+                {/* Form */}
+                <div className="glass-card p-6 md:p-8">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <Input
+                            label="Email Address"
+                            type="email"
+                            required
+                            placeholder="you@example.com"
+                            icon={<Mail className="w-5 h-5" />}
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
 
-                    <Input
-                        label="Password"
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        icon={<Lock className="w-5 h-5" />}
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    />
+                        <Input
+                            label="Password"
+                            type="password"
+                            required
+                            placeholder="••••••••"
+                            icon={<Lock className="w-5 h-5" />}
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        />
 
-                    {error && (
-                        <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm text-center">
-                            {error}
-                        </div>
-                    )}
+                        {error && (
+                            <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm text-center">
+                                {error}
+                            </div>
+                        )}
 
-                    <Button
-                        type="submit"
-                        className="w-full relative group overflow-hidden"
-                        disabled={loading}
-                    >
-                        <span className="relative z-10 flex items-center justify-center">
-                            {loading ? 'Signing In...' : 'Sign In'}
-                            {!loading && <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />}
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </Button>
-                </form>
+                        <Button
+                            type="submit"
+                            loading={loading}
+                            className="w-full"
+                        >
+                            {!loading && (
+                                <>
+                                    Sign In
+                                    <ArrowRight className="w-4 h-4 ml-2" />
+                                </>
+                            )}
+                        </Button>
+                    </form>
 
-                <p className="mt-8 text-center text-sm text-gray-400">
+                    {/* Forgot Password */}
+                    <div className="mt-4 text-center">
+                        <Link to="/forgot-password" className="text-sm text-gray-400 hover:text-primary">
+                            Forgot your password?
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <p className="mt-6 text-center text-sm text-gray-400">
                     Don't have an account?{' '}
-                    <Link to="/signup" className="text-primary hover:text-blue-400 font-medium transition-colors">
+                    <Link to="/signup" className="text-primary hover:text-blue-400 font-medium">
                         Create account
                     </Link>
                 </p>
