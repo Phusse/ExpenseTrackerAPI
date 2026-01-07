@@ -39,6 +39,16 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
     public DbSet<Income> Incomes { get; set; }
 
     /// <summary>
+    /// Gets or sets the UserSettings table.
+    /// </summary>
+    public DbSet<UserSettings> UserSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SecurityQuestions table.
+    /// </summary>
+    public DbSet<SecurityQuestion> SecurityQuestions { get; set; }
+
+    /// <summary>
     /// Configures entity relationships and schema details using Fluent API.
     /// </summary>
     /// <param name="modelBuilder">Provides a simple API for configuring EF Core models.</param>
@@ -54,6 +64,32 @@ public class ExpenseTrackerDbContext(DbContextOptions<ExpenseTrackerDbContext> o
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.PasswordHash).IsRequired();
+        });
+
+        // Configure UserSettings entity (one-to-one with User)
+        modelBuilder.Entity<UserSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.Property(e => e.Currency).HasMaxLength(3).HasDefaultValue("NGN");
+            entity.Property(e => e.Locale).HasMaxLength(10).HasDefaultValue("en-US");
+            
+            entity.HasOne(s => s.User)
+                .WithOne()
+                .HasForeignKey<UserSettings>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure SecurityQuestion entity
+        modelBuilder.Entity<SecurityQuestion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.QuestionOrder }).IsUnique();
+            
+            entity.HasOne(s => s.User)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure Expense entity

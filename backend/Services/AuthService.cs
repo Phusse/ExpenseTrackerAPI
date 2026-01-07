@@ -249,4 +249,304 @@ internal class AuthService(ExpenseTrackerDbContext dbContext, IConfiguration con
     {
         return Encryption.BCrypt.HashPassword(password);
     }
+
+    public async Task<ServiceResult<UserProfileResponse>> UpdateProfileAsync(Guid userId, string? name, string? email)
+    {
+        try
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult<UserProfileResponse>.Fail(null!, "User not found.");
+            }
+
+            // Update name if provided
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                user.Name = name.Trim();
+            }
+
+            // Update email if provided and different
+            if (!string.IsNullOrWhiteSpace(email) && email.ToLower() != user.Email.ToLower())
+            {
+                // Check if email is already in use
+                var existingUser = await GetUserByEmailAsync(email);
+                if (existingUser != null)
+                {
+                    return ServiceResult<UserProfileResponse>.Fail(null!, "Email is already in use by another account.");
+                }
+                user.Email = email.ToLower().Trim();
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return ServiceResult<UserProfileResponse>.Ok(new UserProfileResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt
+            }, "Profile updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to update profile: {message}", ex.Message);
+            return ServiceResult<UserProfileResponse>.Fail(null!, "Failed to update profile.");
+        }
+    }
+
+    public async Task<ServiceResult<object?>> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+    {
+        try
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult<object?>.Fail(null, "User not found.");
+            }
+
+            // Verify current password
+            if (!VerifyPassword(currentPassword, user.PasswordHash))
+            {
+                return ServiceResult<object?>.Fail(null, "Current password is incorrect.");
+            }
+
+            // Validate new password
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                return ServiceResult<object?>.Fail(null, "New password must be at least 6 characters.");
+            }
+
+            // Update password
+            user.PasswordHash = HashPassword(newPassword);
+            await _dbContext.SaveChangesAsync();
+
+            // Send password change notification email
+            try
+            {
+                var model = new
+                {
+                    UserName = user.Name,
+                    ChangeTime = DateTime.UtcNow.ToString("f")
+                };
+
+                await _emailService.SendTemplateEmailAsync(
+                    to: user.Email,
+                    templateId: 40597432, // Use appropriate template
+                    templateModel: model
+                );
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogWarning("Failed to send password change email: {message}", emailEx.Message);
+            }
+
+            return ServiceResult<object?>.Ok(null, "Password changed successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to change password: {message}", ex.Message);
+            return ServiceResult<object?>.Fail(null, "Failed to change password.");
+        }
+    }
+
+    public async Task<ServiceResult<object?>> RegisterWithSecurityQuestionsAsync(AuthRegisterWithSecurityRequest request)
+    {
+        try
+        {
+            // Validate security questions
+            if (request.SecurityQuestions == null || request.SecurityQuestions.Count != 3)
+            {
+                return ServiceResult<object?>.Fail(null, "Exactly 3 security questions are required.");
+            }
+
+            var questionIds = request.SecurityQuestions.Select(q => q.QuestionId).ToList();
+            if (questionIds.Distinct().Count() != 3)
+            {
+                return ServiceResult<object?>.Fail(null, "All 3 security questions must be different.");
+            }
+
+            foreach (var q in request.SecurityQuestions)
+            {
+                if (!SecurityQuestions.Questions.ContainsKey(q.QuestionId))
+                {
+                    return ServiceResult<object?>.Fail(null, $"Invalid question ID: {q.QuestionId}");
+                }
+                if (string.IsNullOrWhiteSpace(q.Answer) || q.Answer.Trim().Length < 2)
+                {
+                    return ServiceResult<object?>.Fail(null, "Security answer must be at least 2 characters.");
+                }
+            }
+
+            // Check existing user
+            User? existingUser = await GetUserByEmailAsync(request.Email);
+            if (existingUser is not null)
+            {
+                return ServiceResult<object?>.Fail(null, "User with this email already exists.");
+            }
+
+            // Create user
+            User user = new()
+            {
+                Id = Guid.NewGuid(),
+                Name = request.Name,
+                Email = request.Email.ToLower(),
+                PasswordHash = HashPassword(request.Password),
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+            };
+
+            await _dbContext.Users.AddAsync(user);
+
+            // Create security questions
+            int order = 1;
+            foreach (var sq in request.SecurityQuestions)
+            {
+                var securityQuestion = new SecurityQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    QuestionId = sq.QuestionId,
+                    AnswerHash = HashSecurityAnswer(sq.Answer),
+                    QuestionOrder = order++,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _dbContext.SecurityQuestions.AddAsync(securityQuestion);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("User registered with security questions: {email}", request.Email);
+            return ServiceResult<object?>.Ok(null, "Registration successful.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to register user with security questions: {message}", ex.Message);
+            return ServiceResult<object?>.Fail(null, "Failed to register user.");
+        }
+    }
+
+    public async Task<ServiceResult<ForgotPasswordQuestionsResponse>> GetSecurityQuestionsForResetAsync(string email)
+    {
+        try
+        {
+            var user = await GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return ServiceResult<ForgotPasswordQuestionsResponse>.Fail(null!, "No account found with this email.");
+            }
+
+            var questions = await _dbContext.SecurityQuestions
+                .Where(sq => sq.UserId == user.Id)
+                .OrderBy(sq => sq.QuestionOrder)
+                .ToListAsync();
+
+            if (questions.Count == 0)
+            {
+                return ServiceResult<ForgotPasswordQuestionsResponse>.Fail(null!, "No security questions set for this account.");
+            }
+
+            var response = new ForgotPasswordQuestionsResponse
+            {
+                Email = email,
+                Questions = questions.Select(q => new UserSecurityQuestion
+                {
+                    QuestionOrder = q.QuestionOrder,
+                    QuestionId = q.QuestionId,
+                    Question = SecurityQuestions.GetQuestion(q.QuestionId)
+                }).ToList()
+            };
+
+            return ServiceResult<ForgotPasswordQuestionsResponse>.Ok(response, "Security questions retrieved.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to get security questions: {message}", ex.Message);
+            return ServiceResult<ForgotPasswordQuestionsResponse>.Fail(null!, "Failed to retrieve security questions.");
+        }
+    }
+
+    public async Task<ServiceResult<object?>> ResetPasswordWithSecurityQuestionsAsync(ResetPasswordRequest request)
+    {
+        try
+        {
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return ServiceResult<object?>.Fail(null, "Passwords do not match.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 6)
+            {
+                return ServiceResult<object?>.Fail(null, "Password must be at least 6 characters.");
+            }
+
+            var user = await GetUserByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return ServiceResult<object?>.Fail(null, "No account found with this email.");
+            }
+
+            var storedQuestions = await _dbContext.SecurityQuestions
+                .Where(sq => sq.UserId == user.Id)
+                .ToListAsync();
+
+            if (storedQuestions.Count == 0)
+            {
+                return ServiceResult<object?>.Fail(null, "No security questions set for this account.");
+            }
+
+            // Verify all answers
+            foreach (var answer in request.Answers)
+            {
+                var storedQ = storedQuestions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
+                if (storedQ == null)
+                {
+                    return ServiceResult<object?>.Fail(null, "Invalid security question.");
+                }
+
+                if (!VerifySecurityAnswer(answer.Answer, storedQ.AnswerHash))
+                {
+                    return ServiceResult<object?>.Fail(null, "One or more security answers are incorrect.");
+                }
+            }
+
+            // All answers correct - reset password
+            user.PasswordHash = HashPassword(request.NewPassword);
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Password reset via security questions for: {email}", request.Email);
+            return ServiceResult<object?>.Ok(null, "Password reset successfully. You can now log in.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to reset password: {message}", ex.Message);
+            return ServiceResult<object?>.Fail(null, "Failed to reset password.");
+        }
+    }
+
+    public SecurityQuestionsListResponse GetAvailableSecurityQuestions()
+    {
+        return new SecurityQuestionsListResponse
+        {
+            Questions = SecurityQuestions.Questions.Select(q => new SecurityQuestionItem
+            {
+                Id = q.Key,
+                Question = q.Value
+            }).ToList()
+        };
+    }
+
+    private static string HashSecurityAnswer(string answer)
+    {
+        // Normalize: lowercase, trim whitespace
+        var normalized = answer.Trim().ToLowerInvariant();
+        return Encryption.BCrypt.HashPassword(normalized);
+    }
+
+    private static bool VerifySecurityAnswer(string answer, string hash)
+    {
+        var normalized = answer.Trim().ToLowerInvariant();
+        return Encryption.BCrypt.Verify(normalized, hash);
+    }
 }

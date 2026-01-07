@@ -1,4 +1,4 @@
-import { AlertTriangle, X } from 'lucide-react';
+import { X, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from './Button';
 
 interface ConfirmModalProps {
@@ -9,7 +9,7 @@ interface ConfirmModalProps {
     message: string;
     confirmText?: string;
     cancelText?: string;
-    variant?: 'danger' | 'warning' | 'info';
+    variant?: 'danger' | 'warning' | 'default';
 }
 
 export const ConfirmModal = ({
@@ -20,70 +20,71 @@ export const ConfirmModal = ({
     message,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    variant = 'danger'
+    variant = 'default'
 }: ConfirmModalProps) => {
     if (!isOpen) return null;
-
-    const variantStyles = {
-        danger: {
-            iconBg: 'bg-rose-500/10',
-            iconColor: 'text-rose-500',
-            buttonBg: 'bg-rose-500 hover:bg-rose-600'
-        },
-        warning: {
-            iconBg: 'bg-amber-500/10',
-            iconColor: 'text-amber-500',
-            buttonBg: 'bg-amber-500 hover:bg-amber-600'
-        },
-        info: {
-            iconBg: 'bg-blue-500/10',
-            iconColor: 'text-blue-500',
-            buttonBg: 'bg-primary hover:bg-blue-600'
-        }
-    };
-
-    const styles = variantStyles[variant];
 
     const handleConfirm = () => {
         onConfirm();
         onClose();
     };
 
+    const iconColors = {
+        danger: 'bg-danger/10 text-danger',
+        warning: 'bg-warning/10 text-warning',
+        default: 'bg-primary/10 text-primary'
+    };
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-surface border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-start gap-4 mb-6">
-                    <div className={`p-3 rounded-xl ${styles.iconBg}`}>
-                        <AlertTriangle className={`w-6 h-6 ${styles.iconColor}`} />
+        <>
+            {/* Overlay */}
+            <div
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in"
+                onClick={onClose}
+            />
+
+            {/* Modal - Bottom sheet on mobile, centered on desktop */}
+            <div className="fixed inset-x-0 bottom-0 z-50 md:inset-0 md:flex md:items-center md:justify-center p-0 md:p-4">
+                <div className="bg-surface-solid rounded-t-3xl md:rounded-2xl w-full md:max-w-md animate-slide-up md:animate-fade-in">
+                    {/* Drag handle - mobile only */}
+                    <div className="bottom-sheet-handle md:hidden" />
+
+                    <div className="p-6 pb-8 md:pb-6">
+                        {/* Icon */}
+                        <div className="flex justify-center mb-4">
+                            <div className={`w-14 h-14 rounded-full ${iconColors[variant]} flex items-center justify-center`}>
+                                {variant === 'danger' ? (
+                                    <Trash2 className="w-7 h-7" />
+                                ) : (
+                                    <AlertTriangle className="w-7 h-7" />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <h3 className="text-xl font-bold text-white text-center mb-2">{title}</h3>
+                        <p className="text-gray-400 text-center text-sm mb-6">{message}</p>
+
+                        {/* Actions - Stacked on mobile, side by side on desktop */}
+                        <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-3">
+                            <Button
+                                variant="ghost"
+                                onClick={onClose}
+                                className="md:flex-1"
+                            >
+                                {cancelText}
+                            </Button>
+                            <Button
+                                variant={variant === 'danger' ? 'danger' : 'primary'}
+                                onClick={handleConfirm}
+                                className="md:flex-1"
+                            >
+                                {confirmText}
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <h2 className="text-xl font-bold text-white mb-2">{title}</h2>
-                        <p className="text-gray-400 text-sm">{message}</p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-white transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-                <div className="flex justify-end gap-3">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={onClose}
-                    >
-                        {cancelText}
-                    </Button>
-                    <Button
-                        type="button"
-                        onClick={handleConfirm}
-                        className={styles.buttonBg}
-                    >
-                        {confirmText}
-                    </Button>
                 </div>
             </div>
-        </div>
+        </>
     );
 };

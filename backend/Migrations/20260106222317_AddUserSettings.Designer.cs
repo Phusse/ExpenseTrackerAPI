@@ -3,6 +3,7 @@ using System;
 using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(ExpenseTrackerDbContext))]
-    partial class ExpenseTrackerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260106222317_AddUserSettings")]
+    partial class AddUserSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,36 +206,6 @@ namespace ExpenseTracker.Migrations
                     b.ToTable("SavingGoalContributions");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.SecurityQuestion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AnswerHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("QuestionOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "QuestionOrder")
-                        .IsUnique();
-
-                    b.ToTable("SecurityQuestions");
-                });
-
             modelBuilder.Entity("ExpenseTracker.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -383,17 +356,6 @@ namespace ExpenseTracker.Migrations
                     b.Navigation("Expense");
 
                     b.Navigation("SavingGoal");
-                });
-
-            modelBuilder.Entity("ExpenseTracker.Models.SecurityQuestion", b =>
-                {
-                    b.HasOne("ExpenseTracker.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ExpenseTracker.Models.UserSettings", b =>

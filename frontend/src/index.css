@@ -5,6 +5,8 @@
 @tailwind utilities;
 
 @layer base {
+
+  /* Default dark mode */
   body {
     @apply bg-background text-text-main font-sans antialiased;
     background-image:
@@ -13,6 +15,75 @@
       radial-gradient(at 0% 50%, rgba(244, 114, 182, 0.03) 0px, transparent 50%),
       radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.04) 0px, transparent 50%);
     background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light mode overrides */
+  html.light body {
+    background-color: #f8fafc;
+    color: #1e293b;
+    background-image:
+      radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(244, 114, 182, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+  }
+
+  html.light .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  html.light .glass-card::before {
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.03), transparent);
+  }
+
+  html.light .text-white {
+    color: #1e293b;
+  }
+
+  html.light .text-gray-400 {
+    color: #64748b;
+  }
+
+  html.light .text-gray-500 {
+    color: #475569;
+  }
+
+  html.light .text-gray-600 {
+    color: #334155;
+  }
+
+  html.light .bg-slate-800 {
+    background-color: #e2e8f0;
+  }
+
+  html.light .bg-slate-700 {
+    background-color: #cbd5e1;
+  }
+
+  html.light .bg-surface-solid {
+    background-color: #ffffff;
+  }
+
+  html.light .hover\:bg-white\/5:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  html.light .hover\:bg-white\/10:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  html.light .bg-white\/5 {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  html.light .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -59,9 +130,20 @@
     border: 1px solid rgba(148, 163, 184, 0.06);
   }
 
-  /* Glowing accent button */
+  /* Mobile card with touch feedback */
+  .mobile-card {
+    @apply glass-card p-4 transition-transform duration-150;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Glowing accent button - Touch friendly 44px+ */
   .btn-glow {
-    @apply relative px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    @apply relative px-5 py-3 rounded-xl font-semibold transition-all duration-300;
+    @apply flex items-center justify-center;
+    min-height: 44px;
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
   }
@@ -69,6 +151,10 @@
   .btn-glow:hover {
     box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
     transform: translateY(-1px);
+  }
+
+  .btn-glow:active {
+    transform: scale(0.97);
   }
 
   .btn-glow-secondary {
@@ -81,69 +167,11 @@
     box-shadow: 0 6px 24px rgba(16, 185, 129, 0.5);
   }
 
-  /* Gradient text */
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-  }
-
-  .text-gradient-emerald {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  }
-
-  /* Glowing border effect */
-  .border-glow {
-    @apply relative;
-  }
-
-  .border-glow::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.1));
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .border-glow:hover::after {
-    opacity: 1;
-  }
-
-  /* Stat card with accent color */
-  .stat-card {
-    @apply glass-card p-5;
-  }
-
-  .stat-card-primary {
-    @apply stat-card;
-    border-color: rgba(99, 102, 241, 0.2);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
-  }
-
-  .stat-card-secondary {
-    @apply stat-card;
-    border-color: rgba(16, 185, 129, 0.2);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
-  }
-
-  .stat-card-warning {
-    @apply stat-card;
-    border-color: rgba(245, 158, 11, 0.2);
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
-  }
-
-  .stat-card-danger {
-    @apply stat-card;
-    border-color: rgba(239, 68, 68, 0.2);
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
-  }
-
-  /* Input fields with glass effect */
+  /* Input glass - Mobile optimized 48px height */
   .input-glass {
     @apply w-full px-4 py-3 rounded-xl transition-all duration-200;
+    min-height: 48px;
+    font-size: 16px;
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(148, 163, 184, 0.1);
     color: #f8fafc;
@@ -159,7 +187,115 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   }
 
-  /* Badge styles */
+  /* Bottom Navigation - Mobile only */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    @apply flex items-center justify-around;
+    height: 64px;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center;
+    @apply text-gray-500 transition-colors duration-200;
+    min-width: 64px;
+    min-height: 48px;
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.95);
+  }
+
+  .bottom-nav-item.active {
+    @apply text-primary;
+  }
+
+  .bottom-nav-item span {
+    font-size: 10px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Mobile header */
+  .mobile-header {
+    @apply sticky top-0 z-40;
+    @apply flex items-center justify-between;
+    @apply px-4;
+    height: 56px;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Desktop navbar - hidden on mobile by default */
+  .desktop-nav {
+    @apply hidden;
+  }
+
+  /* Bottom sheet handle */
+  .bottom-sheet-handle {
+    @apply w-10 h-1 bg-gray-600 rounded-full mx-auto;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+
+  /* Stat scroll container for mobile */
+  .stat-scroll-container {
+    @apply flex gap-3 overflow-x-auto pb-2;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .stat-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stat-scroll-container>* {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    width: 140px;
+  }
+
+  /* FAB - Floating Action Button */
+  .fab {
+    @apply fixed z-40;
+    @apply flex items-center justify-center;
+    @apply rounded-full;
+    width: 56px;
+    height: 56px;
+    right: 16px;
+    bottom: calc(64px + 16px + env(safe-area-inset-bottom));
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .fab:active {
+    transform: scale(0.95);
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  }
+
+  .text-gradient-emerald {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  }
+
+  /* Badges */
   .badge {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium;
     background: rgba(99, 102, 241, 0.15);
@@ -184,7 +320,7 @@
     color: #f87171;
   }
 
-  /* Icon container with gradient background */
+  /* Icon containers */
   .icon-container {
     @apply flex items-center justify-center rounded-xl;
   }
@@ -212,29 +348,114 @@
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
   }
+
+  /* Transaction list cards */
+  .transaction-card {
+    @apply mobile-card flex items-center gap-3;
+  }
+
+  .transaction-icon {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0;
+    background: rgba(30, 41, 59, 0.5);
+  }
 }
 
-/* Custom scrollbar */
+/* Desktop responsive overrides */
+@media (min-width: 768px) {
+  .mobile-card {
+    @apply p-6;
+  }
+
+  .mobile-card:hover {
+    transform: scale(1.01);
+  }
+
+  .input-glass {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .mobile-header {
+    display: none;
+  }
+
+  .desktop-nav {
+    @apply sticky top-0 z-50 block;
+  }
+
+  .stat-scroll-container {
+    @apply grid grid-cols-3 gap-4 overflow-visible;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .stat-scroll-container>* {
+    width: auto;
+  }
+
+  .fab {
+    width: 48px;
+    height: 48px;
+    right: 24px;
+    bottom: 24px;
+  }
+
+  .bottom-sheet-handle {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stat-scroll-container {
+    @apply grid-cols-6;
+  }
+}
+
+/* Utility: Custom scrollbar - hidden on mobile */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-}
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
-  border-radius: 3px;
-}
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
+  ::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+  }
 }
 
 /* Selection color */
 ::selection {
   background: rgba(99, 102, 241, 0.3);
   color: #f8fafc;
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
 }

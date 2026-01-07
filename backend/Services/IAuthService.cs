@@ -42,4 +42,34 @@ public interface IAuthService
     /// <param name="userId">The ID of the user to log out.</param>
     /// <returns><c>true</c> if logout was successful; otherwise, <c>false</c>.</returns>
     Task<ServiceResult<object?>> LogoutAsync(Guid userId);
+
+    /// <summary>
+    /// Updates user profile information.
+    /// </summary>
+    Task<ServiceResult<UserProfileResponse>> UpdateProfileAsync(Guid userId, string? name, string? email);
+
+    /// <summary>
+    /// Changes user password.
+    /// </summary>
+    Task<ServiceResult<object?>> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
+
+    /// <summary>
+    /// Registers a new user with security questions.
+    /// </summary>
+    Task<ServiceResult<object?>> RegisterWithSecurityQuestionsAsync(AuthRegisterWithSecurityRequest request);
+
+    /// <summary>
+    /// Gets user's security questions for password reset (no answers).
+    /// </summary>
+    Task<ServiceResult<ForgotPasswordQuestionsResponse>> GetSecurityQuestionsForResetAsync(string email);
+
+    /// <summary>
+    /// Verifies security answers and resets password.
+    /// </summary>
+    Task<ServiceResult<object?>> ResetPasswordWithSecurityQuestionsAsync(ResetPasswordRequest request);
+
+    /// <summary>
+    /// Gets list of all available security questions.
+    /// </summary>
+    SecurityQuestionsListResponse GetAvailableSecurityQuestions();
 }
