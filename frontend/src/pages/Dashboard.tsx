@@ -13,6 +13,8 @@ import { FinancialHealthScoreWidget } from '../components/FinancialHealthScoreWi
 import { AIInsightsWidget } from '../components/AIInsightsWidget';
 import { authService } from '../services/authService';
 import { useSettings } from '../context/SettingsContext';
+import { HealthScoreModal } from '../components/HealthScoreModal';
+import type { FinancialHealthScore } from '../services/analyticsService';
 
 // Mobile-optimized stat card
 const StatCard = ({ title, value, icon: Icon, trend, color = 'primary' }: any) => {
@@ -78,6 +80,7 @@ const TransactionItem = ({ transaction, formatCurrency }: any) => {
     );
 };
 
+
 export const Dashboard = () => {
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [incomeSummary, setIncomeSummary] = useState<IncomeSummary | null>(null);
@@ -85,6 +88,8 @@ export const Dashboard = () => {
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showHealthModal, setShowHealthModal] = useState(false);
+    const [healthScore, setHealthScore] = useState<FinancialHealthScore | null>(null);
     const user = authService.getCurrentUser();
     const { formatCurrency } = useSettings();
 
@@ -111,6 +116,11 @@ export const Dashboard = () => {
 
         fetchDashboard();
     }, []);
+
+    const handleHealthClick = (score: FinancialHealthScore) => {
+        setHealthScore(score);
+        setShowHealthModal(true);
+    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -262,7 +272,7 @@ export const Dashboard = () => {
 
             {/* Financial Health - Simplified on mobile */}
             {!isEmptyAccount && (
-                <FinancialHealthScoreWidget />
+                <FinancialHealthScoreWidget onClick={handleHealthClick} />
             )}
 
             {/* Recent Transactions - Mobile optimized */}
@@ -415,6 +425,12 @@ export const Dashboard = () => {
                     <Plus className="w-6 h-6 text-white" />
                 </Link>
             )}
+
+            <HealthScoreModal
+                isOpen={showHealthModal}
+                onClose={() => setShowHealthModal(false)}
+                score={healthScore}
+            />
         </div>
     );
 };
