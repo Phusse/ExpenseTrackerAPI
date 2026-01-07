@@ -28,6 +28,15 @@ internal static class ApiRoutes
 
             /// <summary>Logs out the user.</summary>
             public const string Logout = $"{Base}/logout";
+
+            /// <summary>Registers a new user with security questions.</summary>
+            public const string RegisterWithSecurity = $"{Base}/register-with-security";
+
+            /// <summary>Initiates forgot password flow.</summary>
+            public const string ForgotPassword = $"{Base}/forgot-password";
+
+            /// <summary>Resets password using security questions.</summary>
+            public const string ResetPassword = $"{Base}/reset-password";
         }
 
         /// <summary>GET endpoints for Auth.</summary>
@@ -35,6 +44,12 @@ internal static class ApiRoutes
         {
             /// <summary>Gets the user</summary>
             public const string CurrentUser = $"{Base}/me";
+
+            /// <summary>Gets available security questions.</summary>
+            public const string SecurityQuestions = $"{Base}/security-questions";
+
+            /// <summary>Gets current user's security questions.</summary>
+            public const string MySecurityQuestions = $"{Base}/me/security-questions";
         }
     }
 

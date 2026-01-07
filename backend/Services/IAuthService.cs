@@ -64,6 +64,11 @@ public interface IAuthService
     Task<ServiceResult<ForgotPasswordQuestionsResponse>> GetSecurityQuestionsForResetAsync(string email);
 
     /// <summary>
+    /// Gets the current user's security questions.
+    /// </summary>
+    Task<ServiceResult<List<UserSecurityQuestion>>> GetMySecurityQuestionsAsync(Guid userId);
+
+    /// <summary>
     /// Verifies security answers and resets password.
     /// </summary>
     Task<ServiceResult<object?>> ResetPasswordWithSecurityQuestionsAsync(ResetPasswordRequest request);

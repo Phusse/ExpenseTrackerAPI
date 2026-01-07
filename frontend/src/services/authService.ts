@@ -81,6 +81,12 @@ export const authService = {
         return response.data.data?.questions || [];
     },
 
+    // NEW: Get current user's security questions
+    getMySecurityQuestions: async (): Promise<UserSecurityQuestion[]> => {
+        const response = await api.get<ApiResponse<UserSecurityQuestion[]>>('/auth/me/security-questions');
+        return response.data.data || [];
+    },
+
     // NEW: Initiate forgot password flow
     forgotPassword: async (email: string): Promise<ApiResponse<ForgotPasswordQuestionsResponse>> => {
         const response = await api.post<ApiResponse<ForgotPasswordQuestionsResponse>>('/auth/forgot-password', { email });
