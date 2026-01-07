@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { analyticsService, type FinancialHealthScore } from '../services/analyticsService';
 
-export const FinancialHealthScoreWidget = () => {
+interface Props {
+    onClick?: (score: FinancialHealthScore) => void;
+}
+
+export const FinancialHealthScoreWidget = ({ onClick }: Props) => {
     const [score, setScore] = useState<FinancialHealthScore | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -45,7 +49,10 @@ export const FinancialHealthScoreWidget = () => {
     };
 
     return (
-        <div className="glass-card p-4 md:p-6">
+        <div
+            className={`glass-card p-4 md:p-6 transition-transform active:scale-[0.98] ${onClick ? 'cursor-pointer hover:bg-white/5' : ''}`}
+            onClick={() => onClick?.(score)}
+        >
             <div className="flex items-center gap-4">
                 {/* Score Circle */}
                 <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
