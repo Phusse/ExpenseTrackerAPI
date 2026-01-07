@@ -1,4 +1,4 @@
-import { Sparkles, TrendingUp, TrendingDown, AlertTriangle, Lightbulb, Target, PiggyBank } from 'lucide-react';
+import { Sparkles, AlertTriangle, Lightbulb, Target, PiggyBank } from 'lucide-react';
 import type { PredictiveInsights } from '../services/analyticsService';
 
 interface AIInsightsWidgetProps {

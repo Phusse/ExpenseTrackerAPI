@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, DollarSign, TrendingUp, Calendar, RefreshCw, Search, X, Briefcase, Monitor, Building2, BarChart2, Home, Gift, Wallet, FileText } from 'lucide-react';
+import { Plus, Trash2, Edit2, DollarSign, TrendingUp, Calendar, RefreshCw, Search, Briefcase, Monitor, Building2, BarChart2, Home, Gift, Wallet, FileText } from 'lucide-react';
 import {
     incomeService,
     type Income,

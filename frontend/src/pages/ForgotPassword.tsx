@@ -4,11 +4,9 @@ import { Mail, Lock, ArrowRight, Wallet, ChevronLeft, Shield, Check } from 'luci
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { authService, type SecurityQuestionAnswer, type UserSecurityQuestion } from '../services/authService';
-import { useToast } from '../context/ToastContext';
 
 export const ForgotPassword = () => {
     const navigate = useNavigate();
-    const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [step, setStep] = useState(1); // 1 = Email, 2 = Security Questions, 3 = New Password, 4 = Success

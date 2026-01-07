@@ -1,4 +1,4 @@
-import { X, AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from './Button';
 
 interface ConfirmModalProps {
