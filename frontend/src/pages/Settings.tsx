@@ -27,7 +27,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 export const Settings = () => {
     const navigate = useNavigate();
     const toast = useToast();
-    const { settings, updateSetting, refreshSettings } = useSettings();
+    const { settings, updateSetting } = useSettings();
 
     // State
     const [currencies, setCurrencies] = useState<Currency[]>([]);
