@@ -5,6 +5,7 @@ import { Input } from '../components/Input';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { goalService } from '../services/goalService';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import type { SavingGoal, CreateSavingGoalDto } from '../types';
 
 const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
@@ -30,6 +31,7 @@ const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
 
 export const Goals = () => {
     const toast = useToast();
+    const { formatCurrency } = useSettings();
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,9 +118,9 @@ export const Goals = () => {
                     <div>
                         <p className="text-xs text-gray-400">Total Progress</p>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-emerald-400">₦{totalSaved.toLocaleString()}</span>
+                            <span className="text-lg font-bold text-emerald-400">{formatCurrency(totalSaved)}</span>
                             <span className="text-gray-500">/</span>
-                            <span className="text-gray-400">₦{totalTarget.toLocaleString()}</span>
+                            <span className="text-gray-400">{formatCurrency(totalTarget)}</span>
                         </div>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -168,10 +170,10 @@ export const Goals = () => {
 
                                 <div className="flex justify-between items-end mb-2">
                                     <span className="text-xl font-bold text-white">
-                                        ₦{goal.currentAmount.toLocaleString()}
+                                        {formatCurrency(goal.currentAmount)}
                                     </span>
                                     <span className="text-gray-400 text-sm">
-                                        of ₦{goal.targetAmount.toLocaleString()}
+                                        of {formatCurrency(goal.targetAmount)}
                                     </span>
                                 </div>
 
@@ -187,7 +189,7 @@ export const Goals = () => {
                                         {percentage.toFixed(0)}% complete
                                     </span>
                                     <span className="text-gray-500">
-                                        ₦{(goal.targetAmount - goal.currentAmount).toLocaleString()} to go
+                                        {formatCurrency(goal.targetAmount - goal.currentAmount)} to go
                                     </span>
                                 </div>
                             </div>

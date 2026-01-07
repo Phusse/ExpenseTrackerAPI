@@ -11,9 +11,10 @@ interface MonthComparisonProps {
         savings: number;
         budgetUsed: number;
     };
+    formatCurrency?: (amount: number) => string;
 }
 
-export const MonthComparison = ({ currentMonth, lastMonth }: MonthComparisonProps) => {
+export const MonthComparison = ({ currentMonth, lastMonth, formatCurrency }: MonthComparisonProps) => {
     const expenseChange = lastMonth.expenses > 0
         ? ((currentMonth.expenses - lastMonth.expenses) / lastMonth.expenses * 100).toFixed(0)
         : '0';
@@ -24,6 +25,11 @@ export const MonthComparison = ({ currentMonth, lastMonth }: MonthComparisonProp
 
     const isExpenseUp = Number(expenseChange) > 0;
     const isSavingsUp = Number(savingsChange) > 0;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     return (
         <div className="glass-card p-4 md:p-6">
@@ -37,7 +43,7 @@ export const MonthComparison = ({ currentMonth, lastMonth }: MonthComparisonProp
                         </div>
                         <div>
                             <p className="text-sm font-medium text-white">Expenses</p>
-                            <p className="text-xs text-gray-500">₦{currentMonth.expenses.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">{formatAmount(currentMonth.expenses)}</p>
                         </div>
                     </div>
                     <div className={`text-sm font-bold ${isExpenseUp ? 'text-rose-400' : 'text-emerald-400'}`}>
@@ -53,7 +59,7 @@ export const MonthComparison = ({ currentMonth, lastMonth }: MonthComparisonProp
                         </div>
                         <div>
                             <p className="text-sm font-medium text-white">Savings</p>
-                            <p className="text-xs text-gray-500">₦{currentMonth.savings.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">{formatAmount(currentMonth.savings)}</p>
                         </div>
                     </div>
                     <div className={`text-sm font-bold ${isSavingsUp ? 'text-emerald-400' : 'text-rose-400'}`}>

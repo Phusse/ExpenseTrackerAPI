@@ -3,10 +3,16 @@ import { type GoalPrediction } from '../services/analyticsService';
 
 interface GoalPredictionsProps {
     predictions: GoalPrediction[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const GoalPredictions = ({ predictions }: GoalPredictionsProps) => {
+export const GoalPredictions = ({ predictions, formatCurrency }: GoalPredictionsProps) => {
     if (!predictions || predictions.length === 0) return null;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     const getStatusColor = (status: string) => {
         if (status === 'on-track') return 'text-emerald-400';
@@ -46,7 +52,7 @@ export const GoalPredictions = ({ predictions }: GoalPredictionsProps) => {
                                 <div className="flex items-center justify-between text-xs">
                                     <span className="text-gray-400">Progress</span>
                                     <span className="text-white font-medium">
-                                        ₦{pred.currentAmount.toLocaleString()} / ₦{pred.targetAmount.toLocaleString()}
+                                        {formatAmount(pred.currentAmount)} / {formatAmount(pred.targetAmount)}
                                     </span>
                                 </div>
                                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -57,7 +63,7 @@ export const GoalPredictions = ({ predictions }: GoalPredictionsProps) => {
                                 </div>
                                 {pred.monthlyContributionNeeded > 0 && (
                                     <p className="text-xs text-gray-500 mt-2">
-                                        Avg contribution: ₦{pred.monthlyContributionNeeded.toFixed(0)}/month
+                                        Avg contribution: {formatAmount(pred.monthlyContributionNeeded)}/month
                                     </p>
                                 )}
                             </div>

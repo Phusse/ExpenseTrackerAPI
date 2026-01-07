@@ -9,12 +9,18 @@ interface CategoryData {
 
 interface CategoryBreakdownChartProps {
     data: CategoryData[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const CategoryBreakdownChart = ({ data }: CategoryBreakdownChartProps) => {
+export const CategoryBreakdownChart = ({ data, formatCurrency }: CategoryBreakdownChartProps) => {
     if (data.length === 0) return null;
 
     const total = data.reduce((sum, item) => sum + item.value, 0);
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     return (
         <div className="glass-card p-4 md:p-6">
@@ -44,7 +50,7 @@ export const CategoryBreakdownChart = ({ data }: CategoryBreakdownChartProps) =>
                                     borderRadius: '8px',
                                     fontSize: '12px'
                                 }}
-                                formatter={(value: number | string | undefined) => [`₦${Number(value || 0).toLocaleString()}`, '']}
+                                formatter={(value: number | string | undefined) => [formatAmount(Number(value || 0)), '']}
                             />
                         </PieChart>
                     </ResponsiveContainer>

@@ -3,10 +3,16 @@ import { type SpendingForecast } from '../services/analyticsService';
 
 interface SpendingForecastWidgetProps {
     forecast: SpendingForecast;
+    formatCurrency?: (amount: number) => string;
 }
 
-export const SpendingForecastWidget = ({ forecast }: SpendingForecastWidgetProps) => {
+export const SpendingForecastWidget = ({ forecast, formatCurrency }: SpendingForecastWidgetProps) => {
     if (!forecast) return null;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     const projectionAccuracy = forecast.daysElapsed > 0 ? (forecast.daysElapsed / (forecast.daysElapsed + forecast.daysRemaining)) * 100 : 0;
 
@@ -23,7 +29,7 @@ export const SpendingForecastWidget = ({ forecast }: SpendingForecastWidgetProps
                         <DollarSign className="w-4 h-4 text-blue-400" />
                         <span className="text-xs text-gray-400">Current</span>
                     </div>
-                    <p className="text-xl font-bold text-white">₦{forecast.currentSpending.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-white">{formatAmount(forecast.currentSpending)}</p>
                 </div>
 
                 <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
@@ -31,7 +37,7 @@ export const SpendingForecastWidget = ({ forecast }: SpendingForecastWidgetProps
                         <TrendingUp className="w-4 h-4 text-amber-400" />
                         <span className="text-xs text-gray-400">Projected</span>
                     </div>
-                    <p className="text-xl font-bold text-amber-400">₦{forecast.projectedMonthEnd.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-amber-400">{formatAmount(forecast.projectedMonthEnd)}</p>
                 </div>
 
                 <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
@@ -46,11 +52,11 @@ export const SpendingForecastWidget = ({ forecast }: SpendingForecastWidgetProps
             <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400">Daily average</span>
-                    <span className="text-white font-medium">₦{forecast.dailyAverage.toFixed(0)}</span>
+                    <span className="text-white font-medium">{formatAmount(forecast.dailyAverage)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400">Projected additional</span>
-                    <span className="text-white font-medium">₦{forecast.projectedAdditionalSpending.toFixed(0)}</span>
+                    <span className="text-white font-medium">{formatAmount(forecast.projectedAdditionalSpending)}</span>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-800">

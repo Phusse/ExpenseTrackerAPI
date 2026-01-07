@@ -3,10 +3,16 @@ import { type BudgetWarning } from '../services/analyticsService';
 
 interface BudgetWarningsProps {
     warnings: BudgetWarning[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const BudgetWarnings = ({ warnings }: BudgetWarningsProps) => {
+export const BudgetWarnings = ({ warnings, formatCurrency }: BudgetWarningsProps) => {
     if (!warnings || warnings.length === 0) return null;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     const getIcon = (severity: string) => {
         if (severity === 'critical') return AlertTriangle;
@@ -56,9 +62,9 @@ export const BudgetWarnings = ({ warnings }: BudgetWarningsProps) => {
                                 {warning.message}
                             </p>
                             <div className="flex items-center gap-4 text-xs text-gray-400">
-                                <span>Current: ₦{warning.currentSpending.toLocaleString()}</span>
-                                <span>Projected: ₦{warning.projectedTotal.toLocaleString()}</span>
-                                <span>Limit: ₦{warning.budgetLimit.toLocaleString()}</span>
+                                <span>Current: {formatAmount(warning.currentSpending)}</span>
+                                <span>Projected: {formatAmount(warning.projectedTotal)}</span>
+                                <span>Limit: {formatAmount(warning.budgetLimit)}</span>
                             </div>
                         </div>
                     </div>

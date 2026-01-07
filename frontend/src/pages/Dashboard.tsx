@@ -12,6 +12,7 @@ import { AchievementBadges } from '../components/AchievementBadges';
 import { FinancialHealthScoreWidget } from '../components/FinancialHealthScoreWidget';
 import { AIInsightsWidget } from '../components/AIInsightsWidget';
 import { authService } from '../services/authService';
+import { useSettings } from '../context/SettingsContext';
 
 // Mobile-optimized stat card
 const StatCard = ({ title, value, icon: Icon, trend, color = 'primary' }: any) => {
@@ -53,7 +54,7 @@ const QuickAction = ({ icon: Icon, label, to, color }: any) => (
 );
 
 // Transaction item for mobile
-const TransactionItem = ({ transaction }: any) => {
+const TransactionItem = ({ transaction, formatCurrency }: any) => {
     let displayDate = 'No date';
     if (transaction.dateOfExpense) {
         const parts = transaction.dateOfExpense.split('T')[0].split('-');
@@ -72,7 +73,7 @@ const TransactionItem = ({ transaction }: any) => {
                 <p className="text-sm font-medium text-white truncate">{transaction.description || 'Expense'}</p>
                 <p className="text-xs text-gray-500">{displayDate}</p>
             </div>
-            <span className="text-rose-400 font-semibold text-sm">-₦{transaction.amount.toLocaleString()}</span>
+            <span className="text-rose-400 font-semibold text-sm">-{formatCurrency ? formatCurrency(transaction.amount) : `₦${transaction.amount.toLocaleString()}`}</span>
         </div>
     );
 };
@@ -85,6 +86,7 @@ export const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const user = authService.getCurrentUser();
+    const { formatCurrency } = useSettings();
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -211,21 +213,21 @@ export const Dashboard = () => {
             <div className="stat-scroll-container">
                 <StatCard
                     title="Monthly Income"
-                    value={incomeSummary?.totalMonthlyIncome ? `₦${incomeSummary.totalMonthlyIncome.toLocaleString()}` : '₦0'}
+                    value={incomeSummary?.totalMonthlyIncome ? formatCurrency(incomeSummary.totalMonthlyIncome) : formatCurrency(0)}
                     icon={DollarSign}
                     trend={incomeSummary?.totalMonthlyIncome ? 'up' : null}
                     color="secondary"
                 />
                 <StatCard
                     title="Expenses"
-                    value={`₦${(summary?.totalExpenses || 0).toLocaleString()}`}
+                    value={formatCurrency(summary?.totalExpenses || 0)}
                     icon={TrendingDown}
                     trend={!isEmptyAccount ? 'down' : null}
                     color="danger"
                 />
                 <StatCard
                     title="Net Flow"
-                    value={incomeSummary ? `₦${incomeSummary.netCashFlow.toLocaleString()}` : '₦0'}
+                    value={incomeSummary ? formatCurrency(incomeSummary.netCashFlow) : formatCurrency(0)}
                     icon={BarChart3}
                     trend={incomeSummary?.netCashFlow && incomeSummary.netCashFlow >= 0 ? 'up' : 'down'}
                     color="primary"
@@ -238,14 +240,14 @@ export const Dashboard = () => {
                 />
                 <StatCard
                     title="Savings"
-                    value={`₦${(summary?.totalSavings || 0).toLocaleString()}`}
+                    value={formatCurrency(summary?.totalSavings || 0)}
                     icon={PiggyBank}
                     trend={!isEmptyAccount ? 'up' : null}
                     color="secondary"
                 />
                 <StatCard
                     title="All-Time"
-                    value={incomeSummary?.totalAllTimeIncome ? `₦${incomeSummary.totalAllTimeIncome.toLocaleString()}` : '₦0'}
+                    value={incomeSummary?.totalAllTimeIncome ? formatCurrency(incomeSummary.totalAllTimeIncome) : formatCurrency(0)}
                     icon={TrendingUp}
                     color="primary"
                 />
@@ -254,7 +256,7 @@ export const Dashboard = () => {
             {/* AI Insights - Hidden on mobile, shown on desktop */}
             {!isEmptyAccount && predictions && (
                 <div className="hidden md:block">
-                    <AIInsightsWidget insights={predictions} />
+                    <AIInsightsWidget insights={predictions} formatCurrency={formatCurrency} />
                 </div>
             )}
 
@@ -274,7 +276,7 @@ export const Dashboard = () => {
                     </div>
                     <div className="space-y-2">
                         {summary.recentTransactions.slice(0, 5).map((t: any) => (
-                            <TransactionItem key={t.id} transaction={t} />
+                            <TransactionItem key={t.id} transaction={t} formatCurrency={formatCurrency} />
                         ))}
                     </div>
                 </div>
@@ -284,17 +286,17 @@ export const Dashboard = () => {
             {!isEmptyAccount && (
                 <div className="hidden md:grid md:grid-cols-2 gap-6">
                     <div className="glass-card-elevated p-6 min-h-[350px]">
-                        <SpendingChart data={summary?.dailyTrend || []} />
+                        <SpendingChart data={summary?.dailyTrend || []} formatCurrency={formatCurrency} />
                     </div>
                     {categorySpending.length > 0 && (
-                        <CategoryBreakdownChart data={categoryChartData} />
+                        <CategoryBreakdownChart data={categoryChartData} formatCurrency={formatCurrency} />
                     )}
                 </div>
             )}
 
             {/* Top Spending Widget */}
             {!isEmptyAccount && categorySpending.length > 0 && (
-                <TopSpendingWidget categories={categorySpending} />
+                <TopSpendingWidget categories={categorySpending} formatCurrency={formatCurrency} />
             )}
 
             {/* Month Comparison - Desktop only */}
@@ -303,6 +305,7 @@ export const Dashboard = () => {
                     <MonthComparison
                         currentMonth={monthComparison.currentMonth}
                         lastMonth={monthComparison.lastMonth}
+                        formatCurrency={formatCurrency}
                     />
                     {achievements.filter(a => a.earned || a.progress).length > 0 && (
                         <AchievementBadges achievements={achievements} />
@@ -329,7 +332,7 @@ export const Dashboard = () => {
                                     <div className="flex justify-between text-sm mb-1">
                                         <span className="text-white font-medium">{budget.category}</span>
                                         <span className="text-gray-400">
-                                            ₦{budget.spentAmount.toLocaleString()} / ₦{budget.budgetedAmount.toLocaleString()}
+                                            {formatCurrency(budget.spentAmount)} / {formatCurrency(budget.budgetedAmount)}
                                         </span>
                                     </div>
                                     <div className="h-2 bg-slate-800 rounded-full overflow-hidden">

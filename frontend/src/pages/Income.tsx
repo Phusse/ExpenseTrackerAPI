@@ -9,6 +9,7 @@ import {
     getIncomeSourceColor
 } from '../services/incomeService';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -53,6 +54,7 @@ export default function Income() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterSource, setFilterSource] = useState<IncomeSource | ''>('');
     const toast = useToast();
+    const { formatCurrency } = useSettings();
 
     const [formData, setFormData] = useState<CreateIncomeRequest>({
         source: IncomeSource.Salary,
@@ -169,7 +171,7 @@ export default function Income() {
                     <div>
                         <p className="text-emerald-400 text-xs md:text-sm font-medium uppercase">Total Income</p>
                         <p className="text-2xl md:text-3xl font-bold text-white mt-1">
-                            ₦{totalIncome.toLocaleString()}
+                            {formatCurrency(totalIncome)}
                         </p>
                         <p className="text-gray-400 text-xs mt-1">
                             {filteredIncomes.length} transaction{filteredIncomes.length !== 1 ? 's' : ''}
@@ -246,7 +248,7 @@ export default function Income() {
                                 </p>
                             </div>
                             <span className="text-emerald-400 font-bold text-sm flex-shrink-0">
-                                +₦{income.amount.toLocaleString()}
+                                +{formatCurrency(income.amount)}
                             </span>
                             <div className="flex items-center gap-1">
                                 <button

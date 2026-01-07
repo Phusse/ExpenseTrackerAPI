@@ -83,5 +83,16 @@ export const userService = {
             data: { password, reason }
         });
         return response.data;
+    },
+
+    // Exchange rates
+    getExchangeRates: async (baseCurrency: string = 'NGN'): Promise<ExchangeRatesResponse> => {
+        const response = await api.get<ApiResponse<ExchangeRatesResponse>>(`/user/exchange-rates?baseCurrency=${baseCurrency}`);
+        return response.data.data!;
     }
 };
+
+export interface ExchangeRatesResponse {
+    baseCurrency: string;
+    rates: Record<string, number>;
+}

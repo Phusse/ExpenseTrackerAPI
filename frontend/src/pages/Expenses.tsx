@@ -6,6 +6,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { expenseService } from '../services/expenseService';
 import { goalService } from '../services/goalService';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import type { Expense, CreateExpenseDto, SavingGoal, CreateSavingGoalDto } from '../types';
 
 const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
@@ -31,6 +32,7 @@ const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
 
 export const Expenses = () => {
     const toast = useToast();
+    const { formatCurrency } = useSettings();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -193,7 +195,7 @@ export const Expenses = () => {
                 paymentMethod: 0,
                 description: ''
             });
-            toast.success('Expense Added', `₦${newExpense.amount.toFixed(2)} expense recorded.`);
+            toast.success('Expense Added', `${formatCurrency(newExpense.amount)} expense recorded.`);
         } catch (error) {
             // Error handled
         }
@@ -242,7 +244,7 @@ export const Expenses = () => {
                         </div>
                         <span className="text-xs text-gray-400">Total</span>
                     </div>
-                    <p className="text-lg font-bold text-white">₦{totalAmount.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-white">{formatCurrency(totalAmount)}</p>
                 </div>
                 <div className="glass-card p-4 min-w-[140px] md:min-w-0 flex-shrink-0 md:flex-shrink">
                     <div className="flex items-center gap-2 mb-2">
@@ -251,7 +253,7 @@ export const Expenses = () => {
                         </div>
                         <span className="text-xs text-gray-400">This Month</span>
                     </div>
-                    <p className="text-lg font-bold text-white">₦{totalMonth.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-white">{formatCurrency(totalMonth)}</p>
                 </div>
                 <div className="glass-card p-4 min-w-[140px] md:min-w-0 flex-shrink-0 md:flex-shrink">
                     <div className="flex items-center gap-2 mb-2">
@@ -260,7 +262,7 @@ export const Expenses = () => {
                         </div>
                         <span className="text-xs text-gray-400">Today</span>
                     </div>
-                    <p className="text-lg font-bold text-white">₦{totalToday.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-white">{formatCurrency(totalToday)}</p>
                 </div>
             </div>
 
@@ -341,7 +343,7 @@ export const Expenses = () => {
                                             {expense.description || 'Expense'}
                                         </p>
                                         <p className="text-rose-400 font-bold text-sm whitespace-nowrap">
-                                            -₦{expense.amount.toLocaleString()}
+                                            -{formatCurrency(expense.amount)}
                                         </p>
                                     </div>
                                     {/* Bottom row: Category, Date, Payment, Delete */}

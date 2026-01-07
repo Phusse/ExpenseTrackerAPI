@@ -130,7 +130,6 @@ export const Settings = () => {
             await updateSetting('currency', currency);
             setShowCurrencyModal(false);
             toast.success('Currency Updated', `Currency changed to ${currency}.`);
-            refreshSettings();
         } catch (error) {
             toast.error('Error', 'Failed to update currency.');
         }
