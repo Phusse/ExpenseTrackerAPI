@@ -10,9 +10,10 @@ interface DailySpending {
 
 interface SpendingChartProps {
     data: DailySpending[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const SpendingChart = ({ data }: SpendingChartProps) => {
+export const SpendingChart = ({ data, formatCurrency }: SpendingChartProps) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-full flex items-center justify-center text-gray-500">
@@ -20,6 +21,24 @@ export const SpendingChart = ({ data }: SpendingChartProps) => {
             </div>
         );
     }
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
+
+    const formatAxisAmount = (value: number) => {
+        if (formatCurrency) {
+            const formatted = formatCurrency(value);
+            // Shorten for axis (e.g., "$1.5k" instead of "$1,500")
+            if (value >= 1000) {
+                const symbol = formatted.charAt(0);
+                return `${symbol}${(value / 1000).toFixed(0)}k`;
+            }
+            return formatted;
+        }
+        return `₦${(value / 1000).toFixed(0)}k`;
+    };
 
     // Normalize data - handle both frontend (date, amount) and backend (Date, TotalSpent) formats
     const chartData = data.map(item => {
@@ -70,7 +89,7 @@ export const SpendingChart = ({ data }: SpendingChartProps) => {
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: '#64748b', fontSize: 11 }}
-                            tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+                            tickFormatter={formatAxisAmount}
                             width={50}
                         />
                         <Tooltip
@@ -81,7 +100,7 @@ export const SpendingChart = ({ data }: SpendingChartProps) => {
                                 padding: '8px 12px'
                             }}
                             labelStyle={{ color: '#94a3b8', fontSize: 12 }}
-                            formatter={(value: number | string | undefined) => [`₦${Number(value || 0).toLocaleString()}`, 'Spent']}
+                            formatter={(value: number | string | undefined) => [formatAmount(Number(value || 0)), 'Spent']}
                         />
                         <Area
                             type="monotone"

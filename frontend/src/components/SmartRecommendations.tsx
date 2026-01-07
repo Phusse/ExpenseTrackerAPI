@@ -3,10 +3,16 @@ import { type Recommendation } from '../services/analyticsService';
 
 interface SmartRecommendationsProps {
     recommendations: Recommendation[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const SmartRecommendations = ({ recommendations }: SmartRecommendationsProps) => {
+export const SmartRecommendations = ({ recommendations, formatCurrency }: SmartRecommendationsProps) => {
     if (!recommendations || recommendations.length === 0) return null;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     const getIcon = (type: string) => {
         if (type === 'budget') return DollarSign;
@@ -63,7 +69,7 @@ export const SmartRecommendations = ({ recommendations }: SmartRecommendationsPr
                                 </p>
                                 {rec.suggestedAmount && (
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Suggested: ₦{rec.suggestedAmount.toLocaleString()}
+                                        Suggested: {formatAmount(rec.suggestedAmount)}
                                     </p>
                                 )}
                             </div>

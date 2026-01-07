@@ -6,6 +6,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { budgetService } from '../services/budgetService';
 import { expenseService } from '../services/expenseService';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import type { Budget, CreateBudgetDto } from '../types';
 
 const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
@@ -31,6 +32,7 @@ const EmptyState = ({ onAddClick }: { onAddClick: () => void }) => (
 
 export const Budgets = () => {
     const toast = useToast();
+    const { formatCurrency } = useSettings();
     const [budgets, setBudgets] = useState<Budget[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,7 +72,7 @@ export const Budgets = () => {
             setIsModalOpen(false);
             fetchBudgets();
             const categoryName = categories.find(c => c.id === newBudget.category)?.name || 'Category';
-            toast.success('Budget Created', `₦${newBudget.limit.toLocaleString()} budget set for ${categoryName}.`);
+            toast.success('Budget Created', `${formatCurrency(newBudget.limit)} budget set for ${categoryName}.`);
             setNewBudget({ limit: 0, category: 0, period: new Date().toISOString().split('T')[0] });
         } catch (error) {
             // Error handled
@@ -114,7 +116,7 @@ export const Budgets = () => {
                 <div className="glass-card p-4 flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-400">Total Budget</p>
-                        <p className="text-lg font-bold text-white">₦{totalBudget.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-white">{formatCurrency(totalBudget)}</p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
                         <Wallet className="w-5 h-5 text-violet-400" />
@@ -164,17 +166,17 @@ export const Budgets = () => {
                                 {isOver && (
                                     <div className="mb-3 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg">
                                         <p className="text-rose-400 text-xs font-bold">
-                                            Over by ₦{Math.abs(remaining).toLocaleString()}
+                                            Over by {formatCurrency(Math.abs(remaining))}
                                         </p>
                                     </div>
                                 )}
 
                                 <div className="flex justify-between items-end mb-2">
                                     <span className={`text-xl font-bold ${isOver ? 'text-rose-400' : 'text-white'}`}>
-                                        ₦{spent.toLocaleString()}
+                                        {formatCurrency(spent)}
                                     </span>
                                     <span className="text-gray-400 text-sm">
-                                        of ₦{budget.limit.toLocaleString()}
+                                        of {formatCurrency(budget.limit)}
                                     </span>
                                 </div>
 
@@ -190,7 +192,7 @@ export const Budgets = () => {
                                         {percentage.toFixed(0)}% used
                                     </span>
                                     <span className={remaining < 0 ? 'text-rose-400' : 'text-gray-400'}>
-                                        {remaining >= 0 ? `₦${remaining.toLocaleString()} left` : 'Exceeded'}
+                                        {remaining >= 0 ? `${formatCurrency(remaining)} left` : 'Exceeded'}
                                     </span>
                                 </div>
                             </div>

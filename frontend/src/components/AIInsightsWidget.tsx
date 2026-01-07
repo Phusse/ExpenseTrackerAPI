@@ -3,10 +3,16 @@ import type { PredictiveInsights } from '../services/analyticsService';
 
 interface AIInsightsWidgetProps {
     insights: PredictiveInsights;
+    formatCurrency?: (amount: number) => string;
 }
 
-export const AIInsightsWidget = ({ insights }: AIInsightsWidgetProps) => {
+export const AIInsightsWidget = ({ insights, formatCurrency }: AIInsightsWidgetProps) => {
     if (!insights) return null;
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     // Check if there's any data to display
     const hasBudgetWarnings = insights.budgetWarnings && insights.budgetWarnings.length > 0;
@@ -99,7 +105,7 @@ export const AIInsightsWidget = ({ insights }: AIInsightsWidgetProps) => {
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-300">{opp.message}</p>
                                 <p className="text-xs text-emerald-400 mt-0.5">
-                                    Save ₦{opp.potentialMonthlySavings?.toLocaleString() || 0}/month
+                                    Save {formatAmount(opp.potentialMonthlySavings || 0)}/month
                                 </p>
                             </div>
                         </div>

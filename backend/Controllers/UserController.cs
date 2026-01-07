@@ -13,10 +13,11 @@ namespace ExpenseTracker.Controllers;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
-public class UserController(IAuthService authService, UserSettingsService settingsService) : ControllerBase
+public class UserController(IAuthService authService, UserSettingsService settingsService, IExchangeRateService exchangeRateService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
     private readonly UserSettingsService _settingsService = settingsService;
+    private readonly IExchangeRateService _exchangeRateService = exchangeRateService;
 
     /// <summary>
     /// Update user profile (name, email)
@@ -115,6 +116,17 @@ public class UserController(IAuthService authService, UserSettingsService settin
         });
 
         return Ok(new { success = true, data = currencies });
+    }
+
+    /// <summary>
+    /// Get current exchange rates from NGN base
+    /// </summary>
+    [HttpGet("exchange-rates")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetExchangeRates([FromQuery] string baseCurrency = "NGN")
+    {
+        var rates = await _exchangeRateService.GetExchangeRatesAsync(baseCurrency);
+        return Ok(new { success = true, data = new { baseCurrency, rates } });
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-// TopSpendingWidget - no external icons needed
+// TopSpendingWidget
 
 interface TopSpendingProps {
     categories: {
@@ -7,12 +7,18 @@ interface TopSpendingProps {
         percentage: number;
         color: string;
     }[];
+    formatCurrency?: (amount: number) => string;
 }
 
-export const TopSpendingWidget = ({ categories }: TopSpendingProps) => {
+export const TopSpendingWidget = ({ categories, formatCurrency }: TopSpendingProps) => {
     if (categories.length === 0) return null;
 
     const topCategories = categories.slice(0, 5);
+
+    const formatAmount = (amount: number) => {
+        if (formatCurrency) return formatCurrency(amount);
+        return `₦${amount.toLocaleString()}`;
+    };
 
     return (
         <div className="glass-card p-4 md:p-6">
@@ -29,7 +35,7 @@ export const TopSpendingWidget = ({ categories }: TopSpendingProps) => {
                         <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-sm font-medium text-white truncate">{cat.category}</span>
-                                <span className="text-sm text-gray-400 ml-2">₦{cat.amount.toLocaleString()}</span>
+                                <span className="text-sm text-gray-400 ml-2">{formatAmount(cat.amount)}</span>
                             </div>
                             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                 <div

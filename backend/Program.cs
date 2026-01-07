@@ -63,6 +63,8 @@ builder.Services.AddScoped<IMetadataService, MetadataService>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<IIncomeService, IncomeService>();
 builder.Services.AddScoped<UserSettingsService>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IExchangeRateService, ExchangeRateService>();
 
 // configure API behavior options
 builder.Services.Configure<ApiBehaviorOptions>(options =>

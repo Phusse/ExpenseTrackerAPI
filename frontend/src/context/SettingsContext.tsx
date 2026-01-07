@@ -8,6 +8,8 @@ interface SettingsContextType {
     updateSetting: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => Promise<void>;
     refreshSettings: () => Promise<void>;
     formatCurrency: (amount: number) => string;
+    convertAmount: (amount: number) => number;
+    exchangeRates: Record<string, number> | null;
 }
 
 const defaultSettings: UserSettings = {
@@ -26,7 +28,12 @@ const currencySymbols: Record<string, string> = {
     GBP: '£',
     GHS: '₵',
     KES: 'KSh',
-    ZAR: 'R'
+    ZAR: 'R',
+    CAD: 'C$',
+    AUD: 'A$',
+    JPY: '¥',
+    CNY: '¥',
+    INR: '₹'
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -42,6 +49,25 @@ export const useSettings = () => {
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [settings, setSettings] = useState<UserSettings | null>(null);
     const [loading, setLoading] = useState(true);
+    const [exchangeRates, setExchangeRates] = useState<Record<string, number> | null>(null);
+
+    const fetchExchangeRates = useCallback(async () => {
+        try {
+            const data = await userService.getExchangeRates('NGN');
+            setExchangeRates(data.rates);
+        } catch (error) {
+            console.error('Failed to fetch exchange rates', error);
+            // Fallback rates
+            setExchangeRates({
+                NGN: 1,
+                USD: 0.00063,
+                EUR: 0.00058,
+                GBP: 0.00050,
+                CAD: 0.00084,
+                AUD: 0.00096
+            });
+        }
+    }, []);
 
     const fetchSettings = useCallback(async () => {
         if (!authService.isAuthenticated()) {
@@ -53,8 +79,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
             const data = await userService.getSettings();
             setSettings(data);
-            // Apply dark mode
-            applyTheme(data.darkModeEnabled);
         } catch (error) {
             console.error('Failed to fetch settings', error);
             setSettings(defaultSettings);
@@ -63,27 +87,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     }, []);
 
-    const applyTheme = (isDark: boolean) => {
-        const root = document.documentElement;
-        if (isDark) {
-            root.classList.add('dark');
-            root.classList.remove('light');
-        } else {
-            root.classList.add('light');
-            root.classList.remove('dark');
-        }
-    };
-
     const updateSetting = async <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => {
         try {
             const result = await userService.updateSettings({ [key]: value });
             if (result.success && result.data) {
                 setSettings(result.data);
-
-                // Apply theme immediately if dark mode changed
-                if (key === 'darkModeEnabled') {
-                    applyTheme(value as boolean);
-                }
             }
         } catch (error) {
             console.error('Failed to update setting', error);
@@ -91,33 +99,50 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     };
 
+    // Convert amount from NGN to selected currency
+    const convertAmount = useCallback((amount: number): number => {
+        const currency = settings?.currency || 'NGN';
+        if (currency === 'NGN' || !exchangeRates) {
+            return amount;
+        }
+        const rate = exchangeRates[currency];
+        if (!rate) return amount;
+        return Math.round(amount * rate * 100) / 100;
+    }, [settings?.currency, exchangeRates]);
+
+    // Format amount with currency symbol
     const formatCurrency = useCallback((amount: number): string => {
         const currency = settings?.currency || 'NGN';
         const symbol = currencySymbols[currency] || currency;
 
+        // Convert the amount if not NGN
+        const convertedAmount = convertAmount(amount);
+
         // Format number with commas
         const formatted = new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: 0,
+            minimumFractionDigits: currency === 'NGN' ? 0 : 2,
             maximumFractionDigits: 2
-        }).format(amount);
+        }).format(convertedAmount);
 
         return `${symbol}${formatted}`;
-    }, [settings?.currency]);
+    }, [settings?.currency, convertAmount]);
 
     useEffect(() => {
         fetchSettings();
-    }, [fetchSettings]);
+        fetchExchangeRates();
+    }, [fetchSettings, fetchExchangeRates]);
 
     // Re-fetch when auth state changes
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === 'token') {
                 fetchSettings();
+                fetchExchangeRates();
             }
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [fetchSettings]);
+    }, [fetchSettings, fetchExchangeRates]);
 
     return (
         <SettingsContext.Provider value={{
@@ -125,7 +150,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             loading,
             updateSetting,
             refreshSettings: fetchSettings,
-            formatCurrency
+            formatCurrency,
+            convertAmount,
+            exchangeRates
         }}>
             {children}
         </SettingsContext.Provider>
